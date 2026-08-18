@@ -1,5 +1,6 @@
 ## This module is not recommended
-Please check out [Apache Flink](https://github.com/apache/flink) 
+
+Please check out [Apache Flink](https://github.com/apache/flink)
 repository for the latest support: [Avro SerializationSchema and DeserializationSchema](https://github.com/apache/flink/tree/master/flink-formats/flink-avro-glue-schema-registry) and [JSON SerializationSchema and Deserialization](https://github.com/apache/flink/tree/master/flink-formats/flink-json-glue-schema-registry). Protobuf integration will be followed up soon.
 
 ## Instructions
@@ -8,21 +9,23 @@ The recommended way to use the AWS Glue Schema Registry Flink Connector for Java
 
 **Minimum requirements** &mdash; Apache Flink versions supported **Flink 1.11+**
 
-**Working with Kinesis Data Analytics** &mdash; AWS Glue Schema Registry can be setup with [Amazon Kinesis Data 
-Analytics 
+**Working with Kinesis Data Analytics** &mdash; AWS Glue Schema Registry can be setup with [Amazon Kinesis Data
+Analytics
 for Apache Flink](https://docs.aws.amazon.com/kinesisanalytics/latest/java/what-is.html).
 
-For using Amazon VPC with Kinesis Data Analytics please see [Configuring Kinesis Data Analytics for Apache Flink 
-inside Amazon VPC.](https://docs.aws.amazon.com/kinesisanalytics/latest/java/vpc.html) 
+For using Amazon VPC with Kinesis Data Analytics please see [Configuring Kinesis Data Analytics for Apache Flink
+inside Amazon VPC.](https://docs.aws.amazon.com/kinesisanalytics/latest/java/vpc.html)
 
 ### Maven Dependency
-  ``` xml
-  <dependency>
-       <groupId>software.amazon.glue</groupId>
-       <artifactId>schema-registry-flink-serde</artifactId>
-       <version>1.1.24/version>
-  </dependency>
-  ```
+
+```xml
+<dependency>
+     <groupId>software.amazon.glue</groupId>
+     <artifactId>schema-registry-flink-serde</artifactId>
+     <version>1.1.24/version>
+</dependency>
+```
+
 ### Code Example
 
 #### Flink Kafka Producer with AVRO format

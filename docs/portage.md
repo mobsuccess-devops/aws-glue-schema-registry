@@ -15,16 +15,16 @@ ensuite le langage — pour qu'un test rouge n'ait jamais deux causes possibles.
 La référence est la suite de tests du repo source, mesurée sous Maven avant toute
 modification (JDK 17, `mvn test -pl '!integration-tests'`) :
 
-| Module | Tests |
-|---|---|
-| `common` | 139 |
-| `serializer-deserializer` | 1346 |
-| `kafkastreams-serde` | 22 |
-| `avro-kafkaconnect-converter` | 22 |
-| `avro-flink-serde` | 20 |
-| `jsonschema-kafkaconnect-converter` | 329 |
-| `protobuf-kafkaconnect-converter` | 95 |
-| **Total** | **1973** |
+| Module                              | Tests    |
+| ----------------------------------- | -------- |
+| `common`                            | 139      |
+| `serializer-deserializer`           | 1346     |
+| `kafkastreams-serde`                | 22       |
+| `avro-kafkaconnect-converter`       | 22       |
+| `avro-flink-serde`                  | 20       |
+| `jsonschema-kafkaconnect-converter` | 329      |
+| `protobuf-kafkaconnect-converter`   | 95       |
+| **Total**                           | **1973** |
 
 Le build Gradle reproduit ces 1973 tests à l'identique, module par module, sans échec.
 Ce total est le seuil à retrouver après chaque étape de conversion Kotlin.
@@ -44,7 +44,7 @@ Ce total est le seuil à retrouver après chaque étape de conversion Kotlin.
   `schema-registry-serde` publié sur Maven Central (2.0.0 en compile, 1.0.2 en test) au
   lieu du module voisin.
 - **`org.lz4:lz4-java` exclu globalement.** Le pom l'excluait de chaque artefact Kafka au
-  profit du fork `at.yawk.lz4:lz4-java`. Les deux déclarent la même *capability*, que
+  profit du fork `at.yawk.lz4:lz4-java`. Les deux déclarent la même _capability_, que
   Gradle refuse d'arbitrer seul.
 - **Coordonnées de publication.** Groupe `com.mobsuccess.glue` au lieu de
   `software.amazon.glue`, pour qu'un artefact de ce fork ne puisse pas se substituer

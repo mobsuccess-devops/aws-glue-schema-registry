@@ -15,12 +15,13 @@ aws kinesis create-stream --stream-name testStream --shard-count 1 --region us-w
 ```
 
 Build the code.
+
 ```
 mvn clean install
 ```
 
 Run the sample code.
+
 ```
 mvn exec:java -Dexec.mainClass="com.amazonaws.services.schemaregistry.examples.kds.PutRecordGetRecordExample" -Dexec.args="--region us-west-2 --stream testStream --numRecords 5 --schema testGsrSchema"
 ```
-
