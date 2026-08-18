@@ -112,6 +112,7 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakeFileSystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okioFakeFs" }
 jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxbApi" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 
 # --- Logs ---
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
