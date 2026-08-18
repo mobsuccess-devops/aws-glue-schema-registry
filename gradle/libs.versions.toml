@@ -2,7 +2,7 @@
 # Les versions reprennent à l'identique celles du pom.xml d'origine (awslabs eed1506)
 # afin que le portage Gradle reste iso au build Maven.
 [versions]
-awsSdkV2 = "2.32.25"
+awsSdkV2 = "2.53.1"
 awsSdkV1 = "1.12.782"
 mskIamAuth = "2.0.3"
 kafka = "3.6.1"
