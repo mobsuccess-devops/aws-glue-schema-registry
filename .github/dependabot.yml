@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 100
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Les dépendances Kotlin tirées par mbknor-jackson-jsonschema et wire sont
+      # figées ensemble (kotlinRuntime dans le catalogue) : les bumper séparément
+      # casse la résolution.
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin:*"
+      aws:
+        patterns:
+          - "software.amazon.awssdk:*"
+      junit:
+        patterns:
+          - "org.junit*"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 100
+    commit-message:
+      prefix: chore
+      include: scope
