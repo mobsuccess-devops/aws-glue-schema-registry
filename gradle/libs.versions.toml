@@ -46,7 +46,7 @@ podam = "7.2.5.RELEASE"
 jaxbApi = "2.3.1"
 
 # Plugins
-shadow = "9.2.2"
+shadow = "9.6.1"
 protobufPlugin = "0.9.5"
 avroPlugin = "1.9.1"
 
