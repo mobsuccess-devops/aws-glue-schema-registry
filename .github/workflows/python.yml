@@ -1,0 +1,48 @@
+# DO NOT EDIT: BEGIN
+# This snippet has been inserted automatically by mobsuccessbot, do not edit!
+# If changes are needed, update the action python in
+# https://github.com/mobsuccess-devops/github-mobsuccess-policy
+on:
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches: [main, master, preprod, prod]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+name: Python
+jobs:
+  flake8:
+    name: Flake8
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Flake8
+        uses: docker://public.ecr.aws/u9q7y3l4/github-actions-flake8
+  black:
+    name: Black
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Black
+        uses: docker://public.ecr.aws/u9q7y3l4/github-actions-black
+  notify:
+    needs:
+      [
+        flake8,
+        black,
+      ]
+    if: failure()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Notify
+        uses: mobsuccess-devops/github-actions-notify@master
+        with:
+          notify-type: "workflow-failure"
+          slack-token: ${{ secrets.SLACK_TOKEN_MSBOT }}
+          slack-channel: ${{ vars.SLACK_CHANNEL_NOTIFY_WORKFLOW_FAIL }}
+          platform-pat: ${{ secrets.MS_PLATFORM_LIST_USERS_PAT }}
+# DO NOT EDIT: END
