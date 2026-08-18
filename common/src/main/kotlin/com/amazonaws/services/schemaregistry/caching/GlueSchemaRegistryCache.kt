@@ -13,51 +13,44 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.caching;
+package com.amazonaws.services.schemaregistry.caching
 
-public interface GlueSchemaRegistryCache<K, V, Stats> {
-
+interface GlueSchemaRegistryCache<K, V, Stats> {
     /**
      * Get the Value corresponding to the key.
      *
      * @param key key for cache entry
-     * @return Value associated with the key. if the value is not present return
-     * null.
+     * @return Value associated with the key, or null when absent.
      */
-    V get(K key);
+    fun get(key: K): V?
 
     /**
      * Put the key and value in the cache for subsequent use.
-     *
-     * @param key   key for cache entry
-     * @param value value of the cache entry
      */
-    void put(K key, V value);
+    fun put(
+        key: K,
+        value: V,
+    )
 
     /**
      * Deletes the given element from the cache.
-     *
-     * @param key key for cache entry
      */
-    void delete(K key);
+    fun delete(key: K)
 
     /**
      * Flushes the content of the cache.
      */
-    void flushCache();
+    fun flushCache()
 
     /**
      * Get the current cache size.
      *
      * @return number of entries in the cache
      */
-    long getCacheSize();
+    fun getCacheSize(): Long
 
     /**
      * Get the cache stats. This will give the detailed view of the cache.
-     *
-     * @return stats object with cache statistic information
      */
-    Stats getCacheStats();
-
+    fun getCacheStats(): Stats
 }

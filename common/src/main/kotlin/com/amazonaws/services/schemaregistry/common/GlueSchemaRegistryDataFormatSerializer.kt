@@ -13,41 +13,32 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.common;
-
-import lombok.NonNull;
+package com.amazonaws.services.schemaregistry.common
 
 /**
  * Interface for all schemaType/protocol/dataformat specific serializer implementations.
  */
-public interface GlueSchemaRegistryDataFormatSerializer {
+interface GlueSchemaRegistryDataFormatSerializer {
     /**
      * serializes the given Object to an byte array.
-     *
-     * @param data data to de-serialize as byte array
-     * @return serialized byte array
      */
-    byte[] serialize(@NonNull Object data);
+    fun serialize(data: Any): ByteArray
 
     /**
      * Gets schema definition from Object
-     *
-     * @param object
-     * @return
      */
-    String getSchemaDefinition(@NonNull Object object);
+    fun getSchemaDefinition(objectToSerialize: Any): String
 
     /**
      * Validate the given data against the schema definition if the implementing format supports it.
-     *
-     * @param schemaDefinition SchemaDefinition as String.
-     * @param data Data as byte array.
      */
-    void validate(@NonNull String schemaDefinition, @NonNull byte[] data);
+    fun validate(
+        schemaDefinition: String,
+        data: ByteArray,
+    )
 
     /**
      * Validate the data format object to ensure it conforms to schema if implementation supports it.
-     * @param data DataFormat specific object.
      */
-    void validate(@NonNull Object data);
+    fun validate(data: Any)
 }

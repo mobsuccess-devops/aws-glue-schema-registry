@@ -13,22 +13,23 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.common;
+package com.amazonaws.services.schemaregistry.common
 
-import lombok.NonNull;
-
-import java.nio.ByteBuffer;
+import java.nio.ByteBuffer
 
 /**
  * Interface for all schemaType/protocol/dataformat specific de-serializer implementations.
  */
-public interface GlueSchemaRegistryDataFormatDeserializer {
+interface GlueSchemaRegistryDataFormatDeserializer {
     /**
      * De-serializes the given ByteBuffer to an Object.
      *
-     * @param data     data to de-serialize as byte array
-     * @param schema   schema for the data
+     * @param data data to de-serialize as byte array
+     * @param schema schema for the data
      * @return de-serialized object
      */
-    Object deserialize(@NonNull ByteBuffer data, @NonNull Schema schema);
+    fun deserialize(
+        data: ByteBuffer,
+        schema: Schema,
+    ): Any?
 }
