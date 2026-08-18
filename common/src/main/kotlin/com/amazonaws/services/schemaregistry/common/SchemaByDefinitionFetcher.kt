@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit
 /**
  * Fetches the schema version for the given schema definition optionally registering the schema if required.
  */
-class SchemaByDefinitionFetcher(
+// `open` : les classes Kotlin sont finales par défaut, contrairement aux classes Java,
+// et plusieurs suites de tests mockent ce type.
+open class SchemaByDefinitionFetcher(
     private val awsSchemaRegistryClient: AWSSchemaRegistryClient,
     private val glueSchemaRegistryConfiguration: GlueSchemaRegistryConfiguration,
 ) {
@@ -51,7 +53,7 @@ class SchemaByDefinitionFetcher(
      *
      * @throws AWSSchemaRegistryException on any error while fetching the schema version ID
      */
-    fun getORRegisterSchemaVersionId(
+    open fun getORRegisterSchemaVersionId(
         schemaDefinition: String,
         schemaName: String,
         dataFormat: String,
