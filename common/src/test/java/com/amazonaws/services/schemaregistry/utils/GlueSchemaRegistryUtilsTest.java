@@ -28,12 +28,12 @@ public class GlueSchemaRegistryUtilsTest {
 
     @Test
     public void testCheckIfPresentInMap_nullMap_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> glueSchemaRegistryUtils.checkIfPresentInMap(null, "test-key"));
+        assertThrows(NullPointerException.class, () -> glueSchemaRegistryUtils.checkIfPresentInMap(null, "test-key"));
     }
 
     @Test
     public void testCheckIfPresentInMap_nullKey_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> glueSchemaRegistryUtils.checkIfPresentInMap(configs, null));
+        assertThrows(NullPointerException.class, () -> glueSchemaRegistryUtils.checkIfPresentInMap(configs, null));
     }
 
     @Test

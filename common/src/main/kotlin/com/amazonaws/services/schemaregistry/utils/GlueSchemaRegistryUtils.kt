@@ -24,17 +24,11 @@ import org.slf4j.LoggerFactory
 class GlueSchemaRegistryUtils private constructor() {
     /**
      * Check value is present in the map or not.
-     *
-     * Les paramètres restent nullables et sont validés par `require` : lombok.config
-     * fixe `lombok.nonNull.exceptionType = IllegalArgumentException`, alors qu'un type
-     * non-nullable Kotlin lèverait un NullPointerException.
      */
     fun checkIfPresentInMap(
-        map: Map<String, *>?,
-        key: String?,
+        map: Map<String, *>,
+        key: String,
     ): Boolean {
-        require(map != null) { "map is marked non-null but is null" }
-        require(key != null) { "key is marked non-null but is null" }
         Validate.notEmpty(map)
         return map.containsKey(key)
     }
@@ -71,8 +65,7 @@ class GlueSchemaRegistryUtils private constructor() {
     /**
      * Instantiates classes provided in the kafka properties.
      */
-    private fun initializeStrategy(className: String?): AWSSchemaNamingStrategy? {
-        require(className != null) { "className is marked non-null but is null" }
+    private fun initializeStrategy(className: String): AWSSchemaNamingStrategy? {
         var schemaNameStrategy: AWSSchemaNamingStrategy? = null
         try {
             val newInstance = Class.forName(className).getDeclaredConstructor().newInstance()
@@ -90,10 +83,7 @@ class GlueSchemaRegistryUtils private constructor() {
 
     private fun useDefaultStrategy(): AWSSchemaNamingStrategy = AWSSchemaNamingStrategyDefaultImpl()
 
-    private fun useCustomerProvidedStrategy(className: String?): AWSSchemaNamingStrategy? {
-        require(className != null) { "className is marked non-null but is null" }
-        return initializeStrategy(className)
-    }
+    private fun useCustomerProvidedStrategy(className: String): AWSSchemaNamingStrategy? = initializeStrategy(className)
 
     private fun isSchemaGenerationClassPresent(configs: Map<String, *>): Boolean = checkIfPresentInMap(configs, AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS)
 
