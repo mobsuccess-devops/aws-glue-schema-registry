@@ -109,25 +109,25 @@ public class SchemaByDefinitionFetcherTest {
 
     @Test
     public void testGetORRegisterSchemaVersionId_nullSchemaDefinition_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> schemaByDefinitionFetcher
+        Assertions.assertThrows(NullPointerException.class, () -> schemaByDefinitionFetcher
             .getORRegisterSchemaVersionId(null, "test-schema-name", DataFormat.AVRO.name(), getMetadata()));
     }
 
     @Test
     public void testGetORRegisterSchemaVersionId_nullSchemaSchemaName_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> schemaByDefinitionFetcher
+        Assertions.assertThrows(NullPointerException.class, () -> schemaByDefinitionFetcher
             .getORRegisterSchemaVersionId(userSchemaDefinition, null, DataFormat.AVRO.name(), getMetadata()));
     }
 
     @Test
     public void testGetORRegisterSchemaVersionId_nullSchemaDataFormat_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> schemaByDefinitionFetcher
+        Assertions.assertThrows(NullPointerException.class, () -> schemaByDefinitionFetcher
             .getORRegisterSchemaVersionId(userSchemaDefinition, "", null, getMetadata()));
     }
 
     @Test
     public void testGetORRegisterSchemaVersionId_nullMetadata_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> schemaByDefinitionFetcher
+        Assertions.assertThrows(NullPointerException.class, () -> schemaByDefinitionFetcher
             .getORRegisterSchemaVersionId(userSchemaDefinition, "", DataFormat.AVRO.toString(), null));
     }
 

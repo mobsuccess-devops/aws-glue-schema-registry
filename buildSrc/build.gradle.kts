@@ -17,4 +17,5 @@ dependencies {
 
     // Nécessaire pour appliquer le plugin Kotlin depuis gsr.java-conventions.
     implementation(libs.kotlin.gradlePlugin)
+    implementation(libs.kotlin.lombokPlugin)
 }

@@ -115,6 +115,7 @@ jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxbApi" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-lombokPlugin = { module = "org.jetbrains.kotlin.plugin.lombok:org.jetbrains.kotlin.plugin.lombok.gradle.plugin", version.ref = "kotlin" }
 
 # --- Logs ---
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }

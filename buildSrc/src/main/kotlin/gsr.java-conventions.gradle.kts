@@ -6,6 +6,9 @@ plugins {
     `java-library`
     jacoco
     kotlin("jvm")
+    // Sans ce plugin, Kotlin ne voit pas les accesseurs générés par Lombok sur les
+    // classes Java encore non converties et se heurte aux champs privés.
+    kotlin("plugin.lombok")
 }
 
 val libs = the<LibrariesForLibs>()
