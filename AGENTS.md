@@ -78,6 +78,22 @@ l'ordre à suivre pour la conversion Kotlin.
 - Lint Kotlin : ktlint 1.4.1, configuré dans `.editorconfig`, style `intellij_idea`
 - Hooks locaux : `pre-commit install` (prettier, ktlint, fins de fichier)
 - Commits et PR en français, une PR par module converti
+- **Le titre de la PR détermine le numéro de version.** Les merges sont en squash avec
+  `PR_TITLE` comme message de commit, et `scripts/version.sh` déduit le bump des commits
+  conventionnels depuis le dernier tag `v*`. Un titre sans préfixe reconnu donne un bump
+  de patch silencieux.
+
+  | Préfixe du titre                             | Bump   |
+  | -------------------------------------------- | ------ |
+  | `feat!:`, ou `BREAKING CHANGE` dans le corps | majeur |
+  | `feat:`                                      | mineur |
+  | `fix:`, `chore:`, `docs:`, tout le reste     | patch  |
+
+  La conversion Kotlin doit donc être livrée sous `feat!:` pour sortir en 2.0.0.
+
+- Versions : le tag git porte le préfixe `v` (`v1.0.0`), la version Maven non (`1.0.0`).
+  Le préfixe n'est pas cosmétique — `version.sh` fait `git describe --match 'v*'` puis
+  retire le `v` ; sans lui, chaque release repartirait de 1.0.0.
 - `.mobsuccess.yml` désactive les workflows `linear`, `ms-testers`, `mobsuccess`, `closed`
   et `python` : ce repo n'exige pas de ticket Linear par PR.
 
