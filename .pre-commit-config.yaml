@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.0-alpha.4
+    hooks:
+      - id: prettier
+        # Le périmètre réel est défini dans .prettierignore ; ce filtre évite que
+        # pre-commit passe malgré tout les fixtures de test au formateur.
+        exclude: ^(gradlew|gradlew\.bat|gradle/wrapper/|.*/src/)
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.14.0
+    hooks:
+      - id: pretty-format-kotlin
+        args: [--autofix, --ktlint-version=1.4.1]
