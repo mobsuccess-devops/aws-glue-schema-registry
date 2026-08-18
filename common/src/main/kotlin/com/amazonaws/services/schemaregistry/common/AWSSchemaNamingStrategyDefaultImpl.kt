@@ -13,19 +13,14 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.common;
+package com.amazonaws.services.schemaregistry.common
 
-public class AWSSchemaNamingStrategyDefaultImpl implements AWSSchemaNamingStrategy {
-
+class AWSSchemaNamingStrategyDefaultImpl : AWSSchemaNamingStrategy {
     /**
      * Returns the schemaName.
      *
      * @param transportName topic Name or stream name etc.
      * @return schema name.
      */
-    @Override
-    public String getSchemaName(String transportName) {
-        return transportName;
-    }
-
+    override fun getSchemaName(transportName: String?): String? = transportName
 }

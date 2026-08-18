@@ -13,23 +13,23 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.common;
+package com.amazonaws.services.schemaregistry.common
 
 /**
  * Defines the schema name to be used, while registering schema.
  * An implementation of this interface can be provided and passed via property.
  */
-public interface AWSSchemaNamingStrategy {
-    default String getSchemaName(String transportName,
-                                 Object data) {
-        return getSchemaName(transportName);
-    }
+interface AWSSchemaNamingStrategy {
+    fun getSchemaName(
+        transportName: String?,
+        data: Any?,
+    ): String? = getSchemaName(transportName)
 
-    default String getSchemaName(String transportName,
-                                 Object data,
-                                 boolean isKey) {
-        return isKey ? getSchemaName(transportName) : getSchemaName(transportName, data);
-    }
+    fun getSchemaName(
+        transportName: String?,
+        data: Any?,
+        isKey: Boolean,
+    ): String? = if (isKey) getSchemaName(transportName) else getSchemaName(transportName, data)
 
     /**
      * Returns the schemaName.
@@ -37,5 +37,5 @@ public interface AWSSchemaNamingStrategy {
      * @param transportName topic Name or stream name etc.
      * @return schema name.
      */
-    String getSchemaName(String transportName);
+    fun getSchemaName(transportName: String?): String?
 }

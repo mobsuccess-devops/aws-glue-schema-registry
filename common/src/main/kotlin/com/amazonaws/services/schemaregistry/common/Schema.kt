@@ -13,29 +13,17 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.common;
-
-import lombok.AllArgsConstructor;
-import lombok.Value;
+package com.amazonaws.services.schemaregistry.common
 
 /**
  * Schema entity represents a schema and it's properties stored in Glue Schema Registry.
+ *
+ * @property schemaDefinition string representation of the schema version stored during registration.
+ * @property dataFormat string notation of the data format used during registration. Ex: Avro, JSON etc.
+ * @property schemaName name of the schema under which the schema version was registered.
  */
-@AllArgsConstructor
-@Value
-public class Schema {
-    /**
-     * Schema Definition contains the string representation of schema version stored during registration.
-     */
-    private String schemaDefinition;
-
-    /**
-     * Data Format represents the string notation of data format used during registration of schea. Ex: Avro, JSON etc.
-     */
-    private String dataFormat;
-
-    /**
-     * Schema Name represents name of the schema under which the schema version was registered.
-     */
-    private String schemaName;
-}
+data class Schema(
+    val schemaDefinition: String,
+    val dataFormat: String,
+    val schemaName: String,
+)
