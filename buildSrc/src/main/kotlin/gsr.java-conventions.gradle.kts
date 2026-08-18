@@ -7,7 +7,10 @@ plugins {
 
 val libs = the<LibrariesForLibs>()
 
-group = "com.mobsuccess.glue"
+// Groupe de l'orga, comme geojson-jackson. Volontairement différent de
+// `software.amazon.glue` : un artefact de ce fork ne doit pas pouvoir se
+// substituer à celui de Maven Central chez un consommateur.
+group = "com.mobsuccess"
 version = System.getenv("PACKAGE_VERSION") ?: "0.0.0-LOCAL"
 
 java {
