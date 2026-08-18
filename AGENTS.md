@@ -56,7 +56,7 @@ l'ordre à suivre pour la conversion Kotlin.
   dur dans un `build.gradle.kts`
 - Conventions communes dans `buildSrc/src/main/kotlin/gsr.*.gradle.kts`, pas de
   `subprojects {}` dans le build racine
-- Publication sur GitHub Packages, groupe `com.mobsuccess.glue`
+- Publication sur GitHub Packages, groupe `com.mobsuccess`
 
 ### Pièges connus
 

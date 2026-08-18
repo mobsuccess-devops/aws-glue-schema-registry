@@ -23,7 +23,7 @@ What changed is everything around the code:
 | Build        | Maven                  | Gradle 9.6.1, Kotlin DSL           |
 | Languages    | Java + C#              | Java only, Kotlin port in progress |
 | Distribution | Maven Central          | GitHub Packages                    |
-| Group        | `software.amazon.glue` | `com.mobsuccess.glue`              |
+| Group        | `software.amazon.glue` | `com.mobsuccess`                   |
 | JVM target   | 8                      | 17                                 |
 
 The C# binding and its native (GraalVM) layer were removed: without a binding, the native
@@ -73,7 +73,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.mobsuccess.glue:schema-registry-serde:<version>")
+    implementation("com.mobsuccess:schema-registry-serde:<version>")
 }
 ```
 
@@ -118,7 +118,7 @@ The recommended way to use the AWS Glue Schema Registry Library for Java is to c
 ### Gradle dependency
 
 ```kotlin
-implementation("com.mobsuccess.glue:schema-registry-serde:<version>")
+implementation("com.mobsuccess:schema-registry-serde:<version>")
 ```
 
 ### Code Example
@@ -654,7 +654,7 @@ It should look like this
 ### Gradle dependency
 
 ```kotlin
-implementation("com.mobsuccess.glue:schema-registry-kafkastreams-serde:<version>")
+implementation("com.mobsuccess:schema-registry-kafkastreams-serde:<version>")
 ```
 
 ```java
@@ -689,7 +689,7 @@ repository for the latest support: [Avro SerializationSchema and Deserialization
 ### Gradle dependency
 
 ```kotlin
-implementation("com.mobsuccess.glue:schema-registry-flink-serde:<version>")
+implementation("com.mobsuccess:schema-registry-flink-serde:<version>")
 ```
 
 ### Code Example
