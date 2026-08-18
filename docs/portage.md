@@ -46,7 +46,7 @@ Ce total est le seuil à retrouver après chaque étape de conversion Kotlin.
 - **`org.lz4:lz4-java` exclu globalement.** Le pom l'excluait de chaque artefact Kafka au
   profit du fork `at.yawk.lz4:lz4-java`. Les deux déclarent la même _capability_, que
   Gradle refuse d'arbitrer seul.
-- **Coordonnées de publication.** Groupe `com.mobsuccess.glue` au lieu de
+- **Coordonnées de publication.** Groupe `com.mobsuccess` au lieu de
   `software.amazon.glue`, pour qu'un artefact de ce fork ne puisse pas se substituer
   silencieusement à celui de Maven Central chez un consommateur. Les `artifactId` sont
   inchangés.
