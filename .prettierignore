@@ -1,0 +1,11 @@
+# Sources générées ou dont le format est imposé par un outil tiers
+gradlew
+gradlew.bat
+gradle/wrapper/
+**/build/
+# Fixtures de test : leur contenu exact fait partie des assertions
+**/src/**
+LICENSE.txt
+NOTICE.txt
+THIRD-PARTY-LICENSES.txt
+CHANGELOG.md
