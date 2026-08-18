@@ -46,6 +46,7 @@ podam = "7.2.5.RELEASE"
 jaxbApi = "2.3.1"
 
 # Plugins
+kotlin = "2.4.10"
 shadow = "9.2.2"
 protobufPlugin = "0.9.5"
 avroPlugin = "1.9.1"
@@ -113,6 +114,7 @@ okio-fakeFileSystem = { module = "com.squareup.okio:okio-fakefilesystem", versio
 jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxbApi" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 # --- Logs ---
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }

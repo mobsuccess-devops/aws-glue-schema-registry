@@ -1,8 +1,11 @@
 import org.gradle.accessors.dm.LibrariesForLibs
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     `java-library`
     jacoco
+    kotlin("jvm")
 }
 
 val libs = the<LibrariesForLibs>()
@@ -29,6 +32,16 @@ configurations.configureEach {
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+}
+
+// Java et Kotlin cohabitent le temps de la conversion : Kotlin compile en premier,
+// puis javac voit ses classes. Les sources restées en Java valident donc le code
+// déjà converti sans qu'on ait touché aux tests.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs.add("-Xjsr305=strict")
+    }
 }
 
 dependencies {

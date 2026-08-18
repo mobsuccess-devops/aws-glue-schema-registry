@@ -14,4 +14,7 @@ dependencies {
 
     // Nécessaire pour appliquer le plugin shadow depuis gsr.shaded-conventions.
     implementation(libs.shadow.plugin)
+
+    // Nécessaire pour appliquer le plugin Kotlin depuis gsr.java-conventions.
+    implementation(libs.kotlin.gradlePlugin)
 }
