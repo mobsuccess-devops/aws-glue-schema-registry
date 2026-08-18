@@ -1,0 +1,34 @@
+# DO NOT EDIT: BEGIN
+# This snippet has been inserted automatically by mobsuccessbot, do not edit!
+# If changes are needed, update the action dockerfile in
+# https://github.com/mobsuccess-devops/github-mobsuccess-policy
+name: Dockerfile
+
+on:
+  merge_group:
+    types:
+      - checks_requested
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  push:
+    branches:
+      - master
+      - prod
+
+jobs:
+  dockerfile:
+    name: Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Dockerfile lint
+        uses: hadolint/hadolint-action@v3.3.0
+        with:
+          dockerfile: "Dockerfile*"
+          recursive: true
+          format: tty
+          failure-threshold: warning
+# DO NOT EDIT: END
