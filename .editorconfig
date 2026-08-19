@@ -15,6 +15,10 @@ ktlint_standard_type-parameter-comment = disabled
 ktlint_standard_value-argument-comment = disabled
 ktlint_standard_value-parameter-comment = disabled
 
+# Generated sources: ktlint runs from a bare checkout in CI, this keeps local runs identical
+[**/build/**]
+ktlint = disabled
+
 [**/test/**/*.{kt,kts}]
 ij_kotlin_allow_trailing_comma_on_call_site = false
 ktlint_standard_wrapping = disabled

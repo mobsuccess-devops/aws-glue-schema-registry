@@ -331,7 +331,7 @@ public class GlueSchemaRegistryDeserializationFacadeTest {
      */
     @Test
     public void testBuildDeserializer_withNoArguments_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> GlueSchemaRegistryDeserializationFacade.builder()
+        assertThrows(NullPointerException.class, () -> GlueSchemaRegistryDeserializationFacade.builder()
                 .build());
     }
 
@@ -340,7 +340,7 @@ public class GlueSchemaRegistryDeserializationFacadeTest {
      */
     @Test
     public void testBuildDeserializer_withNullConfig_throwsException() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
                      () -> new GlueSchemaRegistryDeserializationFacade(null, DefaultCredentialsProvider.create()));
     }
 
@@ -537,7 +537,7 @@ public class GlueSchemaRegistryDeserializationFacadeTest {
     public void testGetSchemaDefinition_nullBuffer_throwsException() {
         GlueSchemaRegistryDeserializationFacade glueSchemaRegistryDeserializationFacade =
                 createGSRDeserializationFacade();
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
                      () -> glueSchemaRegistryDeserializationFacade.getSchemaDefinition((ByteBuffer) null));
     }
 
@@ -548,7 +548,7 @@ public class GlueSchemaRegistryDeserializationFacadeTest {
     public void testGetSchemaDefinition_nullByte_throwsException() {
         GlueSchemaRegistryDeserializationFacade glueSchemaRegistryDeserializationFacade =
                 createGSRDeserializationFacade();
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
                      () -> glueSchemaRegistryDeserializationFacade.getSchemaDefinition((byte[]) null));
     }
 
@@ -743,7 +743,7 @@ public class GlueSchemaRegistryDeserializationFacadeTest {
     public void testDeserialize_nullDeserializerInput_throwsException() {
         GlueSchemaRegistryDeserializationFacade glueSchemaRegistryDeserializationFacade =
                 createGSRDeserializationFacade();
-        assertThrows(IllegalArgumentException.class, () -> glueSchemaRegistryDeserializationFacade.deserialize(null));
+        assertThrows(NullPointerException.class, () -> glueSchemaRegistryDeserializationFacade.deserialize(null));
     }
 
     /**

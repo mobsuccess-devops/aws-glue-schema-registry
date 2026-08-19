@@ -16,4 +16,3 @@ dependencies {
 avro {
     stringType.set("String")
 }
-

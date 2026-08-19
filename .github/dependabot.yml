@@ -9,9 +9,9 @@ updates:
       prefix: chore
       include: scope
     groups:
-      # Les dépendances Kotlin tirées par mbknor-jackson-jsonschema et wire sont
-      # figées ensemble (kotlinRuntime dans le catalogue) : les bumper séparément
-      # casse la résolution.
+      # The Kotlin dependencies pulled in by mbknor-jackson-jsonschema and wire are
+      # pinned together (kotlinRuntime in the catalog): bumping them separately
+      # breaks resolution.
       kotlin:
         patterns:
           - "org.jetbrains.kotlin:*"

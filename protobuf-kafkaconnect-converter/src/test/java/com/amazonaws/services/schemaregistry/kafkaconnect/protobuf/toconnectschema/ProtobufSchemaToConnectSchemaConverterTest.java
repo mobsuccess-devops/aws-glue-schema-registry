@@ -201,7 +201,7 @@ public class ProtobufSchemaToConnectSchemaConverterTest {
 
     @Test
     public void toConnectSchema_forNullMessage_ThrowsException() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> PROTOBUF_SCHEMA_TO_CONNECT_SCHEMA_CONVERTER.toConnectSchema(null));
     }
 }

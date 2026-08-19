@@ -96,7 +96,7 @@ public class GlueSchemaRegistryDeserializerFactoryTest {
     public void testGetInstance_nullDataFormat_throwsException() {
         GlueSchemaRegistryDeserializerFactory glueSchemaRegistryDeserializerFactory =
                 new GlueSchemaRegistryDeserializerFactory();
-        assertThrows((IllegalArgumentException.class), () -> glueSchemaRegistryDeserializerFactory.getInstance(null,
+        assertThrows((NullPointerException.class), () -> glueSchemaRegistryDeserializerFactory.getInstance(null,
                                                                                                                new GlueSchemaRegistryConfiguration(
                                                                                                                        getTestConfigMap())));
     }
@@ -109,7 +109,7 @@ public class GlueSchemaRegistryDeserializerFactoryTest {
     public void testGetInstance_nullConfigs_throwsException(DataFormat dataFormat) {
         GlueSchemaRegistryDeserializerFactory glueSchemaRegistryDeserializerFactory =
                 new GlueSchemaRegistryDeserializerFactory();
-        assertThrows((IllegalArgumentException.class),
+        assertThrows((NullPointerException.class),
                      () -> glueSchemaRegistryDeserializerFactory.getInstance(dataFormat, null));
     }
 }

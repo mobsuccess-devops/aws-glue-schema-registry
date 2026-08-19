@@ -1,8 +1,8 @@
-// Le build racine ne porte aucun code : la configuration commune vit dans les
-// plugins de convention `gsr.*` (buildSrc), appliqués module par module.
+// The root build carries no code: shared configuration lives in the `gsr.*`
+// convention plugins (buildSrc), applied module by module.
 tasks.register("printModules") {
     group = "help"
-    description = "Liste les modules publiés et leur artifactId."
+    description = "Lists the published modules and their artifactId."
     val modules = subprojects.associate { it.path to it.name }
     doLast { modules.forEach { (path, name) -> println("$path -> $name") } }
 }

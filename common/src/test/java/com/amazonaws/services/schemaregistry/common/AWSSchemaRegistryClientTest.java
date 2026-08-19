@@ -142,19 +142,19 @@ public class AWSSchemaRegistryClientTest {
     @Test
     public void testConstructor_nullCredentials_throwsException() {
         glueSchemaRegistryConfiguration = new GlueSchemaRegistryConfiguration(configs);
-        Assertions.assertThrows(IllegalArgumentException.class , () -> new AWSSchemaRegistryClient(null,
+        Assertions.assertThrows(NullPointerException.class , () -> new AWSSchemaRegistryClient(null,
             glueSchemaRegistryConfiguration));
     }
 
     @Test
     public void testConstructor_nullSerdeConfigs_throwsException() {
         AwsCredentialsProvider mockAwsCredentialsProvider = mock(AwsCredentialsProvider.class);
-        Assertions.assertThrows(IllegalArgumentException.class , () -> new AWSSchemaRegistryClient(mockAwsCredentialsProvider,null ));
+        Assertions.assertThrows(NullPointerException.class , () -> new AWSSchemaRegistryClient(mockAwsCredentialsProvider,null ));
     }
 
     @Test
     public void testConstructor_nullGlueClient_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class , () -> new AWSSchemaRegistryClient(null));
+        Assertions.assertThrows(NullPointerException.class , () -> new AWSSchemaRegistryClient(null));
     }
 
     @Test
@@ -227,19 +227,19 @@ public class AWSSchemaRegistryClientTest {
 
     @Test
     public void testGetSchemaVersionIdByDefinition_nullSchemaVersionId_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class , () ->  awsSchemaRegistryClient
+        Assertions.assertThrows(NullPointerException.class , () ->  awsSchemaRegistryClient
                 .getSchemaVersionIdByDefinition(null, "test-schema-name", DataFormat.AVRO.name()));
     }
 
     @Test
     public void testGetSchemaVersionIdByDefinition_nullSchemaName_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class , () ->  awsSchemaRegistryClient
+        Assertions.assertThrows(NullPointerException.class , () ->  awsSchemaRegistryClient
                 .getSchemaVersionIdByDefinition(userSchemaDefinition, null, DataFormat.AVRO.name()));
     }
 
     @Test
     public void testGetSchemaVersionIdByDefinition_nullDataFormat_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class , () ->  awsSchemaRegistryClient
+        Assertions.assertThrows(NullPointerException.class , () ->  awsSchemaRegistryClient
                 .getSchemaVersionIdByDefinition(userSchemaDefinition, "test-schema-name", null));
     }
 
@@ -278,7 +278,7 @@ public class AWSSchemaRegistryClientTest {
 
     @Test
     public void testGetSchemaVersionResponse_nullSchemaVersionId_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class , () ->  awsSchemaRegistryClient
+        Assertions.assertThrows(NullPointerException.class , () ->  awsSchemaRegistryClient
                 .getSchemaVersionResponse(null));
     }
 

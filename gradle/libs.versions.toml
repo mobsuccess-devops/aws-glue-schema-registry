@@ -1,6 +1,6 @@
-# Catalogue de versions — source unique de vérité pour tout le build.
-# Les versions reprennent à l'identique celles du pom.xml d'origine (awslabs eed1506)
-# afin que le portage Gradle reste iso au build Maven.
+# Version catalog — single source of truth for the whole build.
+# Versions are carried over unchanged from the original pom.xml (awslabs eed1506) so
+# that the Gradle port stays behaviour-identical to the Maven build.
 [versions]
 awsSdkV2 = "2.32.25"
 awsSdkV1 = "1.12.782"
@@ -12,7 +12,7 @@ flink = "1.12.2"
 protobuf = "3.25.5"
 apicurio = "2.1.3.Final"
 wire = "5.2.0"
-kotlinRuntime = "1.9.25"       # dépendances Kotlin tirées par mbknor/wire, distinctes du Kotlin de compilation
+kotlinRuntime = "1.9.25"       # Kotlin deps pulled in by mbknor/wire, distinct from the compiler version
 mbknorJsonSchema = "1.0.39"
 everitJsonSchema = "1.14.5"
 classgraph = "4.8.120"
@@ -46,6 +46,7 @@ podam = "7.2.5.RELEASE"
 jaxbApi = "2.3.1"
 
 # Plugins
+kotlin = "2.4.10"
 shadow = "9.2.2"
 protobufPlugin = "0.9.5"
 avroPlugin = "1.9.1"
@@ -72,7 +73,7 @@ kafka-streams = { module = "org.apache.kafka:kafka-streams", version.ref = "kafk
 kafka-connectApi = { module = "org.apache.kafka:connect-api", version.ref = "kafka" }
 kafka-connectJson = { module = "org.apache.kafka:connect-json", version.ref = "kafka" }
 
-# --- Sérialisation ---
+# --- Serialization ---
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 avro-compiler = { module = "org.apache.avro:avro-compiler", version.ref = "avro" }
 avro-ipc = { module = "org.apache.avro:avro-ipc", version.ref = "avro" }
@@ -89,7 +90,7 @@ mbknor-jsonSchema = { module = "com.kjetland:mbknor-jackson-jsonschema_2.12", ve
 everit-jsonSchema = { module = "com.github.erosb:everit-json-schema", version.ref = "everitJsonSchema" }
 kotlinx-serializationCore = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm", version.ref = "kotlinxSerialization" }
 
-# --- Runtime Kotlin tiré par les libs tierces ---
+# --- Kotlin runtime pulled in by third-party libraries ---
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinRuntime" }
 kotlin-stdlibJdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlinRuntime" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlinRuntime" }
@@ -100,7 +101,7 @@ kotlin-scriptingCompilerEmbeddable = { module = "org.jetbrains.kotlin:kotlin-scr
 flink-avro = { module = "org.apache.flink:flink-avro", version.ref = "flink" }
 flink-streamingJava = { module = "org.apache.flink:flink-streaming-java_2.11", version.ref = "flink" }
 
-# --- Utilitaires ---
+# --- Utilities ---
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commonsCollections4" }
@@ -113,8 +114,10 @@ okio-fakeFileSystem = { module = "com.squareup.okio:okio-fakefilesystem", versio
 jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxbApi" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-lombokPlugin = { module = "org.jetbrains.kotlin.plugin.lombok:org.jetbrains.kotlin.plugin.lombok.gradle.plugin", version.ref = "kotlin" }
 
-# --- Logs ---
+# --- Logging ---
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }

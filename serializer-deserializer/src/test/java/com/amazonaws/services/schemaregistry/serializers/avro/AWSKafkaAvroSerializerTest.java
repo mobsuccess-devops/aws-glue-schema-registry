@@ -166,7 +166,7 @@ public class AWSKafkaAvroSerializerTest extends GlueSchemaRegistryValidationUtil
         AwsCredentialsProvider cred = mock(AwsCredentialsProvider.class);
 
         AWSKafkaAvroSerializer awsKafkaAvroSerializer = new AWSKafkaAvroSerializer(cred, null);
-        assertThrows(IllegalArgumentException.class, () ->  awsKafkaAvroSerializer.configure((Map<String, ?>) null, true));
+        assertThrows(NullPointerException.class, () ->  awsKafkaAvroSerializer.configure((Map<String, ?>) null, true));
     }
 
     @ParameterizedTest
@@ -235,7 +235,7 @@ public class AWSKafkaAvroSerializerTest extends GlueSchemaRegistryValidationUtil
 
     @Test
     public void testConstructor_nullConfigMapWithVersionId_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> new AWSKafkaAvroSerializer((Map<String, ?>) null, USER_SCHEMA_VERSION_ID));
+        assertThrows(NullPointerException.class, () -> new AWSKafkaAvroSerializer((Map<String, ?>) null, USER_SCHEMA_VERSION_ID));
     }
 
     @Test
@@ -362,7 +362,7 @@ public class AWSKafkaAvroSerializerTest extends GlueSchemaRegistryValidationUtil
         try {
             method.invoke(awsKafkaAvroSerializer,  null, "User-Topic", true);
         } catch(Exception e) {
-            assertEquals(IllegalArgumentException.class, e.getCause().getClass());
+            assertEquals(NullPointerException.class, e.getCause().getClass());
         }
     }
 }

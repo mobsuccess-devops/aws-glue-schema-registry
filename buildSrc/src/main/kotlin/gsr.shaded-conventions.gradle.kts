@@ -6,9 +6,9 @@ plugins {
     id("com.gradleup.shadow")
 }
 
-// Le pom d'origine faisait remplacer l'artefact principal par l'uber-jar du
-// maven-shade-plugin : ces modules sont déposés tels quels sur un plugin path
-// Kafka Connect, où rien ne résout les dépendances transitives.
+// The original pom had maven-shade-plugin replace the main artifact with the uber-jar:
+// these modules are dropped as-is onto a Kafka Connect plugin path, where nothing
+// resolves transitive dependencies.
 tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set("")
 }
@@ -21,8 +21,8 @@ tasks.named("assemble") {
     dependsOn(tasks.named("shadowJar"))
 }
 
-// `from(components["java"])` publie l'artefact de la tâche `jar`, ici désactivée.
-// On substitue l'uber-jar, en gardant les dépendances calculées pour le pom.
+// `from(components["java"])` publishes the artifact of the `jar` task, disabled here.
+// Substitute the uber-jar, keeping the dependencies computed for the pom.
 publishing.publications.named<MavenPublication>("maven") {
     setArtifacts(
         listOf(
@@ -32,10 +32,9 @@ publishing.publications.named<MavenPublication>("maven") {
     )
 }
 
-// L'uber-jar embarque déjà toutes ses dépendances : les répéter dans le pom les
-// ferait résoudre une seconde fois chez le consommateur, avec des classes en
-// double. C'est exactement ce qu'évitait le dependency-reduced-pom du
-// maven-shade-plugin.
+// The uber-jar already bundles all of its dependencies: repeating them in the pom
+// would have consumers resolve them a second time, with duplicate classes on the
+// classpath. This is exactly what maven-shade-plugin's dependency-reduced-pom avoided.
 publishing.publications.named<MavenPublication>("maven") {
     pom.withXml {
         val root = asNode()
@@ -44,7 +43,7 @@ publishing.publications.named<MavenPublication>("maven") {
     }
 }
 
-// Les métadonnées de module Gradle décriraient encore le jar non produit.
+// Gradle module metadata would still describe the jar that is no longer produced.
 tasks.withType<GenerateModuleMetadata>().configureEach {
     enabled = false
 }

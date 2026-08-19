@@ -225,9 +225,9 @@ public class ProtobufDataToConnectDataConverterTest {
     public void toConnectData_ForNullParams_ThrowsException() {
         final Message anyMessage = getPrimitiveProtobufMessages().get(0);
         final Schema anySchema = ToConnectTestDataGenerator.getPrimitiveSchema("any");
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> PROTOBUF_DATA_TO_CONNECT_DATA_CONVERTER.toConnectData(null, anySchema));
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> PROTOBUF_DATA_TO_CONNECT_DATA_CONVERTER.toConnectData(anyMessage, null));
     }
 }

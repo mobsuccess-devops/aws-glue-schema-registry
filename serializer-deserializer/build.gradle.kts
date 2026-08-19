@@ -46,8 +46,8 @@ protobuf {
     }
 }
 
-// Le pom publiait un jar de tests (classifier `tests`) : les classes générées depuis
-// src/test/proto y sont réutilisées par le module integration-tests.
+// The pom published a test jar (classifier `tests`): the classes generated from
+// src/test/proto are reused there by the integration-tests module.
 val testJar by tasks.registering(Jar::class) {
     archiveClassifier.set("tests")
     from(sourceSets["test"].output)

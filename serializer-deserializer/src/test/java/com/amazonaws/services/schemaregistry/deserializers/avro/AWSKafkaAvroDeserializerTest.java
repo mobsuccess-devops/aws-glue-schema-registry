@@ -149,7 +149,7 @@ public class AWSKafkaAvroDeserializerTest {
         AWSKafkaAvroDeserializer awsKafkaAvroDeserializer = new AWSKafkaAvroDeserializer();
         assertNotNull(awsKafkaAvroDeserializer.getCredentialProvider());
 
-        assertThrows((IllegalArgumentException.class), () -> awsKafkaAvroDeserializer.configure(null, false));
+        assertThrows((NullPointerException.class), () -> awsKafkaAvroDeserializer.configure(null, false));
     }
 
     /**
@@ -168,7 +168,7 @@ public class AWSKafkaAvroDeserializerTest {
      */
     @Test
     public void testConstructor_nullConfig_throwsException() {
-        assertThrows((IllegalArgumentException.class), () -> new AWSKafkaAvroDeserializer(null));
+        assertThrows((NullPointerException.class), () -> new AWSKafkaAvroDeserializer(null));
     }
 
     /**

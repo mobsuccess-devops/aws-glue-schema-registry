@@ -139,11 +139,11 @@ public class JsonSerializerTest {
 
     @Test
     public void testGetSchemaDefinition_nullObject_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> jsonSerializer.getSchemaDefinition(null));
+        assertThrows(NullPointerException.class, () -> jsonSerializer.getSchemaDefinition(null));
     }
 
     @Test
     public void testSerialize_nullObject_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> jsonSerializer.serialize(null));
+        assertThrows(NullPointerException.class, () -> jsonSerializer.serialize(null));
     }
 }

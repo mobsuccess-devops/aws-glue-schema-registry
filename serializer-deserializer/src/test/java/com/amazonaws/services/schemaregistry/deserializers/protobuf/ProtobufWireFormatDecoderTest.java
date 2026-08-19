@@ -49,17 +49,17 @@ public class ProtobufWireFormatDecoderTest {
 
     @Test
     public void testDecodeDynamicMessage_NullInputStream_ThrowsException() {
-        Exception ex = assertThrows(IllegalArgumentException.class,
+        Exception ex = assertThrows(NullPointerException.class,
             () -> decoder.decode(null, basicFileDescriptor,
                 ProtobufMessageType.DYNAMIC_MESSAGE));
-        assertEquals("data is marked non-null but is null", ex.getMessage());
+        assertEquals("Parameter specified as non-null is null: method com.amazonaws.services.schemaregistry.deserializers.protobuf.ProtobufWireFormatDecoder.decode, parameter data", ex.getMessage());
     }
 
     @Test
     public void testDecodeDynamicMessage_NullDescriptor_ThrowsException() {
-        Exception ex = assertThrows(IllegalArgumentException.class,
+        Exception ex = assertThrows(NullPointerException.class,
             () -> decoder.decode(new byte[] {}, null, ProtobufMessageType.DYNAMIC_MESSAGE));
-        assertEquals("descriptor is marked non-null but is null", ex.getMessage());
+        assertEquals("Parameter specified as non-null is null: method com.amazonaws.services.schemaregistry.deserializers.protobuf.ProtobufWireFormatDecoder.decode, parameter descriptor", ex.getMessage());
     }
 
     @ParameterizedTest

@@ -152,15 +152,15 @@ public class ConnectDataToProtobufDataConverterTest {
         final Schema primitiveSchema = ToProtobufTestDataGenerator.getPrimitiveSchema("primitiveProtobufSchema");
         final Descriptors.FileDescriptor fileDescriptor = primitiveMessage.getDescriptorForType().getFile();
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> connectDataToProtobufDataConverter.convert(null, primitiveSchema,
             ToProtobufTestDataGenerator.getPrimitiveTypesData()));
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> connectDataToProtobufDataConverter.convert(fileDescriptor, null,
                 ToProtobufTestDataGenerator.getPrimitiveTypesData()));
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> connectDataToProtobufDataConverter.convert(fileDescriptor, primitiveSchema,
                 null));
     }

@@ -68,6 +68,8 @@ jobs:
     permissions:
       contents: read
       checks: write
+      # reviewdog reads the pull request diff to place its findings
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v7
