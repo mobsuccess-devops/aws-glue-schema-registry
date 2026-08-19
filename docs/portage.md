@@ -58,3 +58,16 @@ The inherited suite is thus an oracle that has not moved, validating the convert
 - **Publication coordinates.** Group `com.mobsuccess` instead of `software.amazon.glue`,
   so that an artifact of this fork can never silently substitute itself for the Maven
   Central one in a consumer's dependency graph. The artifactIds are unchanged.
+- **Reflection dropped in `DynamicSchema.init`.** The upstream code read
+  `FileDescriptorProto.getDependencyList()` through `java.lang.reflect.Method` to work
+  around a signature change in protobuf 2.6.1, wrapping any failure in a
+  `RuntimeException`. The pinned protobuf version exposes the method directly, so it is
+  now called directly.
+- **`ProtoParser` reached through its public entry point.** `ProtobufFile` built a
+  `ProtoParser` with its constructor and called `readProtoFile()`. That constructor is
+  `internal` in Wire — visible from Java, not from Kotlin — so the conversion uses the
+  public `ProtoParser.parse(location, data)`, which does exactly those two steps.
+- **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
+  `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
+  through public methods — legal in Java, rejected by Kotlin. They are now public classes
+  with an `internal` constructor, so they still cannot be built from outside the library.

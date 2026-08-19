@@ -103,6 +103,14 @@ These all cost a red test at least once. They are listed in the order they bite.
   or `mapOf` changes the output.
 - **The order of `instanceof` branches matters** when the types are related — `EnumSchema`
   extends `StringSchema`, so reordering a `when` changes which converter is selected.
+- **`String.split` does not drop trailing empty parts** the way Java's does. `"a/b/".split("/")`
+  yields three elements in Kotlin and two in Java; append `.dropLastWhile { it.isEmpty() }`
+  wherever the Java code relied on that trimming.
+- **`internal` members of a Kotlin dependency are unreachable.** Wire's `ProtoParser`
+  constructor is `internal`: Java saw it as public, Kotlin does not. Look for the public
+  entry point that wraps it rather than working around the visibility.
+- **Java's package-private and `protected` nested types have no Kotlin equivalent** when a
+  public method exposes them. Make the class public with an `internal` constructor.
 
 ## Other build notes
 
