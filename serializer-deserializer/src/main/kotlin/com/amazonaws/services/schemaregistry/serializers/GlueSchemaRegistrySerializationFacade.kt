@@ -58,13 +58,12 @@ open class GlueSchemaRegistrySerializationFacade(
 
     private val glueSchemaRegistrySerializerFactory = GlueSchemaRegistrySerializerFactory()
 
-    open fun getOrRegisterSchemaVersion(serializerInput: AWSSerializerInput): UUID =
-        schemaByDefinitionFetcher.getORRegisterSchemaVersionId(
-            serializerInput.schemaDefinition!!,
-            serializerInput.schemaName!!,
-            serializerInput.dataFormat!!,
-            constructSchemaVersionMetadata(serializerInput.transportName),
-        )
+    open fun getOrRegisterSchemaVersion(serializerInput: AWSSerializerInput): UUID = schemaByDefinitionFetcher.getORRegisterSchemaVersionId(
+        serializerInput.schemaDefinition!!,
+        serializerInput.schemaName!!,
+        serializerInput.dataFormat!!,
+        constructSchemaVersionMetadata(serializerInput.transportName),
+    )
 
     private fun constructSchemaVersionMetadata(transportName: String?): Map<String, String> {
         val metadata = HashMap<String, String>()
@@ -116,10 +115,9 @@ open class GlueSchemaRegistrySerializationFacade(
     open fun getSchemaDefinition(
         dataFormat: DataFormat,
         data: Any,
-    ): String =
-        glueSchemaRegistrySerializerFactory
-            .getInstance(dataFormat, glueSchemaRegistryConfiguration)
-            .getSchemaDefinition(data)
+    ): String = glueSchemaRegistrySerializerFactory
+        .getInstance(dataFormat, glueSchemaRegistryConfiguration)
+        .getSchemaDefinition(data)
 
     /** Mirrors the fluent API Lombok generated: called from Java code. */
     class GlueSchemaRegistrySerializationFacadeBuilder internal constructor() {
@@ -129,27 +127,23 @@ open class GlueSchemaRegistrySerializationFacade(
         private var configs: Map<String, *>? = null
         private var properties: Properties? = null
 
-        fun credentialProvider(credentialProvider: AwsCredentialsProvider?) =
-            apply { this.credentialProvider = credentialProvider }
+        fun credentialProvider(credentialProvider: AwsCredentialsProvider?) = apply { this.credentialProvider = credentialProvider }
 
-        fun schemaByDefinitionFetcher(schemaByDefinitionFetcher: SchemaByDefinitionFetcher?) =
-            apply { this.schemaByDefinitionFetcher = schemaByDefinitionFetcher }
+        fun schemaByDefinitionFetcher(schemaByDefinitionFetcher: SchemaByDefinitionFetcher?) = apply { this.schemaByDefinitionFetcher = schemaByDefinitionFetcher }
 
-        fun glueSchemaRegistryConfiguration(glueSchemaRegistryConfiguration: GlueSchemaRegistryConfiguration?) =
-            apply { this.glueSchemaRegistryConfiguration = glueSchemaRegistryConfiguration }
+        fun glueSchemaRegistryConfiguration(glueSchemaRegistryConfiguration: GlueSchemaRegistryConfiguration?) = apply { this.glueSchemaRegistryConfiguration = glueSchemaRegistryConfiguration }
 
         fun configs(configs: Map<String, *>?) = apply { this.configs = configs }
 
         fun properties(properties: Properties?) = apply { this.properties = properties }
 
-        fun build(): GlueSchemaRegistrySerializationFacade =
-            GlueSchemaRegistrySerializationFacade(
-                credentialProvider!!,
-                schemaByDefinitionFetcher,
-                glueSchemaRegistryConfiguration,
-                configs,
-                properties,
-            )
+        fun build(): GlueSchemaRegistrySerializationFacade = GlueSchemaRegistrySerializationFacade(
+            credentialProvider!!,
+            schemaByDefinitionFetcher,
+            glueSchemaRegistryConfiguration,
+            configs,
+            properties,
+        )
     }
 
     companion object {
