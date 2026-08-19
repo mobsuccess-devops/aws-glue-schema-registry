@@ -128,14 +128,13 @@ open class AWSKafkaAvroSerializer(
         data: Any,
         topic: String?,
         isKey: Boolean?,
-    ): AWSSerializerInput =
-        AWSSerializerInput
-            .builder()
-            .schemaDefinition(AVROUtils.getInstance().getSchemaDefinition(data))
-            .schemaName(getSchemaName(topic, data, isKey))
-            .transportName(topic)
-            .dataFormat(DATA_FORMAT.name)
-            .build()
+    ): AWSSerializerInput = AWSSerializerInput
+        .builder()
+        .schemaDefinition(AVROUtils.getInstance().getSchemaDefinition(data))
+        .schemaName(getSchemaName(topic, data, isKey))
+        .transportName(topic)
+        .dataFormat(DATA_FORMAT.name)
+        .build()
 
     companion object {
         private val log = LoggerFactory.getLogger(AWSKafkaAvroSerializer::class.java)

@@ -98,8 +98,7 @@ open class AWSKafkaAvroDeserializer(
     private fun prepareInput(
         data: ByteArray,
         topic: String?,
-    ): AWSDeserializerInput =
-        AWSDeserializerInput.builder().buffer(ByteBuffer.wrap(data)).transportName(topic).build()
+    ): AWSDeserializerInput = AWSDeserializerInput.builder().buffer(ByteBuffer.wrap(data)).transportName(topic).build()
 
     /**
      * Configure the secondary de-serializer and validate that it comes from Kafka.
@@ -121,13 +120,11 @@ open class AWSKafkaAvroDeserializer(
         topic: String?,
         data: ByteArray,
         headerVersionByte: Byte,
-    ): Any =
-        if (headerVersionByte == AWSSchemaRegistryConstants.HEADER_VERSION_BYTE) {
-            glueSchemaRegistryDeserializationFacade!!.deserialize(prepareInput(data, topic))
-        } else {
-            secondaryDeserializer.deserialize(topic, data)
-        }
+    ): Any = if (headerVersionByte == AWSSchemaRegistryConstants.HEADER_VERSION_BYTE) {
+        glueSchemaRegistryDeserializationFacade!!.deserialize(prepareInput(data, topic))
+    } else {
+        secondaryDeserializer.deserialize(topic, data)
+    }
 
-    private fun getHeaderVersionByte(data: ByteArray): Byte =
-        GlueSchemaRegistryDeserializerDataParser.getInstance().getHeaderVersionByte(ByteBuffer.wrap(data))
+    private fun getHeaderVersionByte(data: ByteArray): Byte = GlueSchemaRegistryDeserializerDataParser.getInstance().getHeaderVersionByte(ByteBuffer.wrap(data))
 }
