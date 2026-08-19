@@ -13,25 +13,21 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.kafkaconnect;
+package com.amazonaws.services.schemaregistry.kafkaconnect
 
-import org.apache.kafka.common.config.AbstractConfig;
-import org.apache.kafka.common.config.ConfigDef;
-
-import java.util.Map;
+import org.apache.kafka.common.config.AbstractConfig
+import org.apache.kafka.common.config.ConfigDef
 
 /**
  * Amazon Schema Registry Avro converter config.
+ *
+ * @param props property elements for the converter config
  */
-public class AWSKafkaAvroConverterConfig extends AbstractConfig {
-    public static ConfigDef configDef() {
-        return new ConfigDef();
-    }
-    /**
-     * Constructor used by AWSKafkaAvroConverter.
-     * @param props property elements for the converter config
-     */
-    public AWSKafkaAvroConverterConfig(Map<String, ?> props) {
-        super(configDef(), props);
+class AWSKafkaAvroConverterConfig(
+    props: Map<String, *>,
+) : AbstractConfig(configDef(), props) {
+    companion object {
+        @JvmStatic
+        fun configDef(): ConfigDef = ConfigDef()
     }
 }
