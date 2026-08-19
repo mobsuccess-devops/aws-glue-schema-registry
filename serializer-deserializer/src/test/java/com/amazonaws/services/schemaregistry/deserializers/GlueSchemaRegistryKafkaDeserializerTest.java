@@ -144,7 +144,7 @@ public class GlueSchemaRegistryKafkaDeserializerTest {
         GlueSchemaRegistryKafkaDeserializer glueSchemaRegistryKafkaDeserializer = new GlueSchemaRegistryKafkaDeserializer();
         assertNotNull(glueSchemaRegistryKafkaDeserializer.getCredentialProvider());
 
-        assertThrows((IllegalArgumentException.class), () -> glueSchemaRegistryKafkaDeserializer.configure(null, false));
+        assertThrows((NullPointerException.class), () -> glueSchemaRegistryKafkaDeserializer.configure(null, false));
     }
 
     /**
@@ -163,7 +163,7 @@ public class GlueSchemaRegistryKafkaDeserializerTest {
      */
     @Test
     public void testConstructor_nullConfig_throwsException() {
-        assertThrows((IllegalArgumentException.class), () -> new GlueSchemaRegistryKafkaDeserializer(null));
+        assertThrows((NullPointerException.class), () -> new GlueSchemaRegistryKafkaDeserializer(null));
     }
 
     /**

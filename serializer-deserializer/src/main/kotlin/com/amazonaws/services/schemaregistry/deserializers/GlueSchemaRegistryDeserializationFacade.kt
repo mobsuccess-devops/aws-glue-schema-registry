@@ -80,12 +80,11 @@ open class GlueSchemaRegistryDeserializationFacade : Closeable {
         cache = initializeCache()
     }
 
-    private fun initializeCache(): LoadingCache<UUID, Schema> =
-        CacheBuilder
-            .newBuilder()
-            .maximumSize(glueSchemaRegistryConfiguration.cacheSize.toLong())
-            .refreshAfterWrite(glueSchemaRegistryConfiguration.timeToLiveMillis, TimeUnit.MILLISECONDS)
-            .build(GlueSchemaRegistryDeserializationCacheLoader())
+    private fun initializeCache(): LoadingCache<UUID, Schema> = CacheBuilder
+        .newBuilder()
+        .maximumSize(glueSchemaRegistryConfiguration.cacheSize.toLong())
+        .refreshAfterWrite(glueSchemaRegistryConfiguration.timeToLiveMillis, TimeUnit.MILLISECONDS)
+        .build(GlueSchemaRegistryDeserializationCacheLoader())
 
     /**
      * Overrides the user-agent app name for the de-serializer, replacing the value previously set
@@ -102,8 +101,7 @@ open class GlueSchemaRegistryDeserializationFacade : Closeable {
      */
     open fun getSchemaDefinition(buffer: ByteBuffer): String = getAwsDeserializerSchema(buffer).schema.schemaDefinition
 
-    open fun getActualData(data: ByteArray): ByteArray =
-        GlueSchemaRegistryDeserializerDataParser.getInstance().getPlainData(ByteBuffer.wrap(data))
+    open fun getActualData(data: ByteArray): ByteArray = GlueSchemaRegistryDeserializerDataParser.getInstance().getPlainData(ByteBuffer.wrap(data))
 
     open fun getSchema(data: ByteArray): Schema = getAwsDeserializerSchema(ByteBuffer.wrap(data)).schema
 
@@ -154,12 +152,11 @@ open class GlueSchemaRegistryDeserializationFacade : Closeable {
      *
      * @throws AWSSchemaRegistryException when getting the schema by id fails
      */
-    private fun retrieveSchemaRegistrySchema(schemaVersionId: UUID): Schema =
-        try {
-            cache.get(schemaVersionId)
-        } catch (e: Exception) {
-            throw AWSSchemaRegistryException(e.cause)
-        }
+    private fun retrieveSchemaRegistrySchema(schemaVersionId: UUID): Schema = try {
+        cache.get(schemaVersionId)
+    } catch (e: Exception) {
+        throw AWSSchemaRegistryException(e.cause)
+    }
 
     private fun getSchemaName(schemaArn: String): String {
         val resource = Arn.fromString(schemaArn).resourceAsString()
@@ -196,19 +193,15 @@ open class GlueSchemaRegistryDeserializationFacade : Closeable {
 
         fun properties(properties: Properties?) = apply { this.properties = properties }
 
-        fun credentialProvider(credentialProvider: AwsCredentialsProvider?) =
-            apply { this.credentialProvider = credentialProvider }
+        fun credentialProvider(credentialProvider: AwsCredentialsProvider?) = apply { this.credentialProvider = credentialProvider }
 
-        fun schemaRegistryClient(schemaRegistryClient: AWSSchemaRegistryClient?) =
-            apply { this.schemaRegistryClient = schemaRegistryClient }
+        fun schemaRegistryClient(schemaRegistryClient: AWSSchemaRegistryClient?) = apply { this.schemaRegistryClient = schemaRegistryClient }
 
-        fun build(): GlueSchemaRegistryDeserializationFacade =
-            GlueSchemaRegistryDeserializationFacade(configs, properties, credentialProvider!!, schemaRegistryClient)
+        fun build(): GlueSchemaRegistryDeserializationFacade = GlueSchemaRegistryDeserializationFacade(configs, properties, credentialProvider!!, schemaRegistryClient)
     }
 
     companion object {
         @JvmStatic
-        fun builder(): GlueSchemaRegistryDeserializationFacadeBuilder =
-            GlueSchemaRegistryDeserializationFacadeBuilder()
+        fun builder(): GlueSchemaRegistryDeserializationFacadeBuilder = GlueSchemaRegistryDeserializationFacadeBuilder()
     }
 }

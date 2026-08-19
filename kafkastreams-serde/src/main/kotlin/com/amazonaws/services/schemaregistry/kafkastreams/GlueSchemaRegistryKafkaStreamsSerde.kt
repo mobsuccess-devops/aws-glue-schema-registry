@@ -34,10 +34,10 @@ class GlueSchemaRegistryKafkaStreamsSerde : Serde<Any> {
      */
     constructor() {
         val glueSchemaRegistryKafkaSerializer = GlueSchemaRegistryKafkaSerializer()
-        glueSchemaRegistryKafkaSerializer.setUserAgentApp(UserAgents.KAFKASTREAMS)
+        glueSchemaRegistryKafkaSerializer.userAgentApp = UserAgents.KAFKASTREAMS
 
         val glueSchemaRegistryKafkaDeserializer = GlueSchemaRegistryKafkaDeserializer()
-        glueSchemaRegistryKafkaDeserializer.setUserAgentApp(UserAgents.KAFKASTREAMS)
+        glueSchemaRegistryKafkaDeserializer.userAgentApp = UserAgents.KAFKASTREAMS
 
         inner = Serdes.serdeFrom(glueSchemaRegistryKafkaSerializer, glueSchemaRegistryKafkaDeserializer)
     }
