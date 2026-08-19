@@ -33,8 +33,8 @@ class GlueSchemaRegistryUtils private constructor() {
         return map.containsKey(key)
     }
 
-    // Nullable comme en Java : initializeStrategy renvoie null quand la classe
-    // chargée n'implémente pas l'interface.
+    // Nullable as in Java: initializeStrategy returns null when the loaded class does
+    // not implement the interface.
     fun configureSchemaNamingStrategy(configs: Map<String, *>): AWSSchemaNamingStrategy? = if (isSchemaGenerationClassPresent(configs)) {
         useCustomerProvidedStrategy(
             configs[AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS].toString(),

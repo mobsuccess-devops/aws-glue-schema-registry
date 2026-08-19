@@ -48,7 +48,7 @@ public class ProtobufClassNameTest {
 
     @Test
     public void testFrom_OnNullDescriptor_ThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> ProtobufClassName.from(null));
+        assertThrows(NullPointerException.class, () -> ProtobufClassName.from(null));
     }
 
     @ParameterizedTest

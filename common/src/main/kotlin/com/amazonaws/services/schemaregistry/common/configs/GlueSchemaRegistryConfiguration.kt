@@ -45,8 +45,8 @@ class GlueSchemaRegistryConfiguration {
     var compatibilitySetting: Compatibility? = null
     var description: String? = null
 
-    // Nommées isXxx pour que les accesseurs générés restent isXxx()/setXxx(), comme
-    // ceux que produisait Lombok — c'est sous ce nom que les appelants Java les utilisent.
+    // Named isXxx so the generated accessors stay isXxx()/setXxx(), matching what Lombok
+    // produced — that is the name Java callers use.
     var isSchemaAutoRegistrationEnabled: Boolean = false
     var isJsonClassNameResolutionEnabled: Boolean = false
 
@@ -398,9 +398,9 @@ class GlueSchemaRegistryConfiguration {
         return true
     }
 
-    // @Data générait equals/hashCode/toString sur l'ensemble des champs. Deux tests de
-    // serializer-deserializer comparent deux configurations par valeur : sans ces
-    // redéfinitions, la comparaison retombe sur l'identité et échoue.
+    // @Data generated equals/hashCode/toString over every field. Two serializer-deserializer
+    // tests compare two configurations by value: without these overrides the comparison
+    // falls back to identity and fails.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is GlueSchemaRegistryConfiguration) return false

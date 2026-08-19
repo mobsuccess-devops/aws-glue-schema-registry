@@ -96,10 +96,10 @@ public class MessageIndexFinderTest {
     @MethodSource("testBasicDescriptorFileProvider")
     public void testGetByDescriptor_WhenNullsArePassed_ThrowsValidationException(Descriptors.Descriptor descriptor) {
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> messageIndexFinder.getByDescriptor(descriptor.getFile(), null));
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> messageIndexFinder.getByDescriptor(null, descriptor));
 
     }
@@ -118,10 +118,10 @@ public class MessageIndexFinderTest {
     @ParameterizedTest
     @MethodSource("testBasicDescriptorFileProvider")
     public void testGetByIndex_WhenNullsArePassed_ThrowsValidationException(Descriptors.Descriptor descriptor) {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> messageIndexFinder.getByIndex(descriptor.getFile(), null));
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> messageIndexFinder.getByIndex(null, 1));
     }
 

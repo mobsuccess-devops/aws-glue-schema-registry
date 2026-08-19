@@ -41,7 +41,7 @@ object AWSSchemaRegistryConstants {
     const val COMPATIBILITY_SETTING = "compatibility"
     const val DESCRIPTION = "description"
 
-    // Non primitive : @JvmField la conserve en champ statique côté Java.
+    // Not a primitive: @JvmField keeps it a static field on the Java side.
     @JvmField
     val DEFAULT_COMPATIBILITY_SETTING: Compatibility = Compatibility.BACKWARD
 

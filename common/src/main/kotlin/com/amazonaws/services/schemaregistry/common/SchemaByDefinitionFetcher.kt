@@ -28,13 +28,13 @@ import java.util.concurrent.TimeUnit
 /**
  * Fetches the schema version for the given schema definition optionally registering the schema if required.
  */
-// `open` : les classes Kotlin sont finales par défaut, contrairement aux classes Java,
-// et plusieurs suites de tests mockent ce type.
+// `open`: Kotlin classes are final by default, unlike their Java counterparts, and
+// several test suites mock this type.
 open class SchemaByDefinitionFetcher(
     private val awsSchemaRegistryClient: AWSSchemaRegistryClient,
     private val glueSchemaRegistryConfiguration: GlueSchemaRegistryConfiguration,
 ) {
-    // @JvmField conserve l'accès direct au champ depuis les tests Java du paquet.
+    // @JvmField preserves direct field access from the Java tests in this package.
     @JvmField
     @VisibleForTesting
     protected val schemaDefinitionToVersionCache: LoadingCache<Schema, UUID> =
@@ -64,8 +64,8 @@ open class SchemaByDefinitionFetcher(
         try {
             return schemaDefinitionToVersionCache.get(schema)
         } catch (ex: Exception) {
-            // Comme dans le code d'origine, une cause absente déclenche un
-            // NullPointerException plutôt qu'un message par défaut.
+            // As in the original code, a missing cause raises a NullPointerException
+            // rather than falling back to a default message.
             val schemaRegistryException = ex.cause!!
             val exceptionCauseMessage =
                 if (schemaRegistryException.cause != null) {

@@ -1,7 +1,7 @@
 policy:
-  # Workflows que mobsuccessbot ne doit pas proposer sur ce repo.
-  # Les noms sont ceux des actions déclarées dans github-mobsuccess-policy
-  # (app/policies/gh-actions.js), pas les noms de fichiers.
+  # Workflows mobsuccessbot must not propose on this repository.
+  # The names are those of the actions declared in github-mobsuccess-policy
+  # (app/policies/gh-actions.js), not the workflow file names.
   skip-actions:
     - linear
     - ms-testers
@@ -10,14 +10,14 @@ policy:
     - python
   repo-settings:
     - branch: master
-      # Repo piloté par des agents : pas de reviewer humain requis, et les admins
-      # (team Core) peuvent forcer un merge. Même réglage que panoramai.
+      # Agent-driven repository: no human reviewer required, and admins (team Core)
+      # can force a merge. Same settings as panoramai.
       override-settings:
         requiredApprovingReviewCount: 0
         isAdminEnforced: false
-      # La détection automatique ne connaît que les jobs des workflows modèles de la
-      # policy ; ceux de ci.yml, écrit à la main, lui sont invisibles. Sans cette
-      # liste, une CI rouge laisserait la PR mergeable.
+      # Automatic detection only knows the jobs of the policy's template workflows;
+      # those of ci.yml, written by hand, are invisible to it. Without this list, a
+      # red CI would still leave the pull request mergeable.
       additional-required-job-names:
         - Gradle Build
 linear:

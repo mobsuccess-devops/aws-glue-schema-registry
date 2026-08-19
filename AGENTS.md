@@ -1,103 +1,138 @@
 # aws-glue-schema-registry
 
-Fork Mobsuccess de [`awslabs/aws-glue-schema-registry`](https://github.com/awslabs/aws-glue-schema-registry),
-réduit à la partie Java et porté sur Gradle. La conversion du code vers Kotlin est en cours.
+Mobsuccess fork of [`awslabs/aws-glue-schema-registry`](https://github.com/awslabs/aws-glue-schema-registry),
+reduced to the Java part and ported to Gradle. The conversion of the code to Kotlin is
+in progress.
 
-## État du portage
+## Port status
 
-| Étape                            | Statut  |
-| -------------------------------- | ------- |
-| Retrait du C# et du module natif | fait    |
-| Migration Maven → Gradle         | fait    |
-| Conversion Java → Kotlin         | à faire |
+| Stage                        | Status      |
+| ---------------------------- | ----------- |
+| C# and native module removed | done        |
+| Maven → Gradle migration     | done        |
+| Java → Kotlin conversion     | in progress |
 
-Le premier commit du repo est le source `awslabs` à l'identique (`eed1506`). Tout écart se
-lit avec `git diff eed1506 -- <chemin>`. Les écarts assumés sont listés dans
+The first commit of the repository is the `awslabs` source verbatim (`eed1506`). Every
+deviation reads with `git diff eed1506 -- <path>`. Accepted deviations are listed in
 [docs/portage.md](docs/portage.md).
 
-## Règle d'or
+## The golden rule
 
-Le repo doit rester **iso au repo source au niveau du comportement Java**. La suite de
-tests héritée est le seul garde-fou : **2087 tests, zéro échec**. Une étape de conversion
-qui fait baisser ce total ou casser un test n'est pas terminée, quelle que soit la
-qualité apparente du code produit.
+The repository must stay **behaviour-identical to the source at the Java level**. The
+inherited test suite is the only guard rail: **2087 tests, zero failure**. A conversion
+step that lowers that total or breaks a test is not finished, however good the produced
+code looks.
 
 ```bash
 ./gradlew clean build     # compile + 2087 tests + jars
-./gradlew test            # tests seuls
-./gradlew assemble        # jars seuls
+./gradlew test            # tests only
+./gradlew assemble        # jars only
 ```
+
+## Conversion method
+
+Kotlin and Java compile together within a module. `main` sources are therefore converted
+**while the tests stay in Java**: the inherited suite has not moved and acts as an oracle
+for the converted code. Tests are converted in a second pass, once all of `main` is done.
+
+Work module by module, in dependency order, and run the **whole** build before committing:
+a module's own tests do not cover the modules that consume it.
 
 ## Structure
 
-Dix modules, dont les répertoires reprennent ceux du repo source et dont les noms de
-projet Gradle reprennent les `artifactId` Maven :
+Ten modules, whose directories mirror those of the source repository and whose Gradle
+project names reuse the Maven artifactIds:
 
-| Répertoire                          | Artefact                                 | Rôle                                     |
+| Directory                           | Artifact                                 | Role                                     |
 | ----------------------------------- | ---------------------------------------- | ---------------------------------------- |
-| `common`                            | `schema-registry-common`                 | client Glue, cache, exceptions           |
-| `serializer-deserializer`           | `schema-registry-serde`                  | cœur SerDe (Avro, JSON Schema, Protobuf) |
-| `serializer-deserializer-msk-iam`   | `schema-registry-serde-msk-iam`          | uber-jar SerDe + auth IAM MSK            |
-| `kafkastreams-serde`                | `schema-registry-kafkastreams-serde`     | intégration Kafka Streams                |
-| `avro-kafkaconnect-converter`       | `schema-registry-kafkaconnect-converter` | converter Connect Avro                   |
-| `avro-flink-serde`                  | `schema-registry-flink-serde`            | schémas de (dé)sérialisation Flink       |
-| `jsonschema-kafkaconnect-converter` | `jsonschema-kafkaconnect-converter`      | converter Connect JSON Schema            |
-| `protobuf-kafkaconnect-converter`   | `protobuf-kafkaconnect-converter`        | converter Connect Protobuf               |
-| `examples`                          | `schema-registry-examples`               | exemples d'intégration                   |
-| `integration-tests`                 | `schema-registry-integration-tests`      | tests exigeant de vraies ressources AWS  |
+| `common`                            | `schema-registry-common`                 | Glue client, cache, exceptions           |
+| `serializer-deserializer`           | `schema-registry-serde`                  | SerDe core (Avro, JSON Schema, Protobuf) |
+| `serializer-deserializer-msk-iam`   | `schema-registry-serde-msk-iam`          | uber-jar SerDe + MSK IAM auth            |
+| `kafkastreams-serde`                | `schema-registry-kafkastreams-serde`     | Kafka Streams integration                |
+| `avro-kafkaconnect-converter`       | `schema-registry-kafkaconnect-converter` | Connect Avro converter                   |
+| `avro-flink-serde`                  | `schema-registry-flink-serde`            | Flink (de)serialization schemas          |
+| `jsonschema-kafkaconnect-converter` | `jsonschema-kafkaconnect-converter`      | Connect JSON Schema converter            |
+| `protobuf-kafkaconnect-converter`   | `protobuf-kafkaconnect-converter`        | Connect Protobuf converter               |
+| `examples`                          | `schema-registry-examples`               | integration examples                     |
+| `integration-tests`                 | `schema-registry-integration-tests`      | tests requiring real AWS resources       |
 
-Le graphe est linéaire : `common` → `serializer-deserializer` → tous les autres. C'est
-l'ordre à suivre pour la conversion Kotlin.
+The graph is linear: `common` → `serializer-deserializer` → all the others. That is the
+order to follow for the Kotlin conversion.
 
 ## Build
 
-- Gradle 9.6.1, Kotlin DSL, toolchain **JVM 17** (consommable par Kafka Connect et Flink)
-- Versions centralisées dans `gradle/libs.versions.toml` — ne jamais écrire une version en
-  dur dans un `build.gradle.kts`
-- Conventions communes dans `buildSrc/src/main/kotlin/gsr.*.gradle.kts`, pas de
-  `subprojects {}` dans le build racine
-- Publication sur GitHub Packages, groupe `com.mobsuccess`
+- Gradle 9.6.1, Kotlin DSL, **JVM 17** toolchain (consumable by Kafka Connect and Flink)
+- Versions centralized in `gradle/libs.versions.toml` — never hard-code a version in a
+  `build.gradle.kts`
+- Shared configuration in `buildSrc/src/main/kotlin/gsr.*.gradle.kts`, no `subprojects {}`
+  in the root build
+- Published to GitHub Packages under the `com.mobsuccess` group
 
-### Pièges connus
+## Java interop traps
 
-- **Lombok** est encore actif tant que le code est en Java. Chaque classe convertie en
-  Kotlin doit perdre ses annotations Lombok au profit des équivalents natifs.
-- **`org.lz4:lz4-java` est exclu globalement** au profit de `at.yawk.lz4:lz4-java`. Les
-  deux déclarent la même _capability_ ; réintroduire le premier casse la résolution.
-- **Génération de code** : protobuf (`serializer-deserializer`,
-  `protobuf-kafkaconnect-converter`) et Avro (`avro-kafkaconnect-converter`). Les sources
-  générées ne sont pas versionnées.
-- **`serializer-deserializer` publie un jar `tests`** consommé par `integration-tests` via
-  la configuration `testArtifacts`.
-- Les dépendances Kotlin tirées par `mbknor-jackson-jsonschema` et `wire` sont figées en
-  `1.9.25` (`kotlinRuntime` dans le catalogue) : c'est distinct de la version du compilateur
-  Kotlin qu'utilisera le code converti.
+These all cost a red test at least once. They are listed in the order they bite.
+
+- **Kotlin classes and methods are final by default**, unlike their Java counterparts. Any
+  type a test mocks needs `open` on the class _and_ on every stubbed method.
+- **`@NonNull` raised an `IllegalArgumentException`**, not a `NullPointerException`, because
+  of `lombok.nonNull.exceptionType` in `lombok.config`. Converting to a non-nullable type
+  changes the exception type; update the asserting test rather than weakening the signature.
+- **Kotlin does not see Lombok-generated accessors** on the Java classes left to convert; it
+  resolves the property name to the private field instead. The Kotlin Lombok plugin, applied
+  in the conventions, fixes this and stays necessary until the migration ends.
+- **Lombok's `@Builder` has no Kotlin equivalent.** Rewrite it as a nested `Builder` class
+  plus a `@JvmStatic builder()`, so the API seen from Java stays identical.
+- **`@Data` also generated `equals`/`hashCode`/`toString`.** Omitting them silently falls
+  back to identity comparison.
+- **Boolean accessors:** Lombok generates `isXxx()` for a `boolean xxx` field; Kotlin
+  generates `getXxx()` unless the property itself is named `isXxx`.
+- **Enums cannot redeclare `name`.** Rename the backing property and expose `getName()`.
+- **Checked exceptions vanish** without `@Throws`, and Java callers catching them stop
+  compiling.
+- **A Kotlin `inner` class cannot hold a companion object.** Move its constants to the outer
+  companion.
+- **Private functions get no parameter null checks**, unlike public ones.
+- **Kotlin does not widen `int` to `long` implicitly**, nor infer generic variance the way
+  javac did.
+
+## Other build notes
+
+- **Lombok is still active** for as long as code remains in Java. Every class converted to
+  Kotlin must drop its Lombok annotations in favour of native equivalents.
+- **`org.lz4:lz4-java` is excluded globally** in favour of `at.yawk.lz4:lz4-java`. Both
+  declare the same _capability_; reintroducing the former breaks resolution.
+- **Code generation**: protobuf (`serializer-deserializer`, `protobuf-kafkaconnect-converter`)
+  and Avro (`avro-kafkaconnect-converter`). Generated sources are not versioned.
+- **`serializer-deserializer` publishes a `tests` jar** consumed by `integration-tests`
+  through the `testArtifacts` configuration.
+- The Kotlin dependencies pulled in by `mbknor-jackson-jsonschema` and `wire` are pinned at
+  `1.9.25` (`kotlinRuntime` in the catalog): that is distinct from the compiler version.
 
 ## Conventions
 
-- Lint Kotlin : ktlint 1.4.1, configuré dans `.editorconfig`, style `intellij_idea`
-- Hooks locaux : `pre-commit install` (prettier, ktlint, fins de fichier)
-- Commits et PR en français, une PR par module converti
-- **Le titre de la PR détermine le numéro de version.** Les merges sont en squash avec
-  `PR_TITLE` comme message de commit, et `scripts/version.sh` déduit le bump des commits
-  conventionnels depuis le dernier tag `v*`. Un titre sans préfixe reconnu donne un bump
-  de patch silencieux.
+- Everything that lands on GitHub is written in **English**: commit messages, pull request
+  titles and bodies, code comments, documentation.
+- Kotlin lint: ktlint 1.4.1, configured in `.editorconfig`, `intellij_idea` style
+- Local hooks: `pre-commit install` (prettier, ktlint, end-of-file)
+- **The pull request title drives the version number.** Merges are squashed with `PR_TITLE`
+  as the commit message, and `scripts/version.sh` derives the bump from conventional commits
+  since the last `v*` tag. A title with no recognized prefix silently yields a patch bump.
 
-  | Préfixe du titre                             | Bump   |
-  | -------------------------------------------- | ------ |
-  | `feat!:`, ou `BREAKING CHANGE` dans le corps | majeur |
-  | `feat:`                                      | mineur |
-  | `fix:`, `chore:`, `docs:`, tout le reste     | patch  |
+  | Title prefix                               | Bump  |
+  | ------------------------------------------ | ----- |
+  | `feat!:`, or `BREAKING CHANGE` in the body | major |
+  | `feat:`                                    | minor |
+  | `fix:`, `chore:`, `docs:`, anything else   | patch |
 
-  La conversion Kotlin doit donc être livrée sous `feat!:` pour sortir en 2.0.0.
+  The Kotlin conversion therefore ships under `feat!:` to come out as 2.0.0.
 
-- Versions : le tag git porte le préfixe `v` (`v1.0.0`), la version Maven non (`1.0.0`).
-  Le préfixe n'est pas cosmétique — `version.sh` fait `git describe --match 'v*'` puis
-  retire le `v` ; sans lui, chaque release repartirait de 1.0.0.
-- `.mobsuccess.yml` désactive les workflows `linear`, `ms-testers`, `mobsuccess`, `closed`
-  et `python` : ce repo n'exige pas de ticket Linear par PR.
+- Versions: the git tag carries the `v` prefix (`v1.0.0`), the Maven version does not
+  (`1.0.0`). The prefix is not cosmetic — `version.sh` runs `git describe --match 'v*'`
+  then strips the `v`; without it, every release would restart from 1.0.0.
+- `.mobsuccess.yml` disables the `linear`, `ms-testers`, `mobsuccess`, `closed` and `python`
+  workflows: this repository does not require a Linear ticket per pull request.
 
-## Tests d'intégration
+## Integration tests
 
-Le module `integration-tests` exige de vraies ressources AWS. Ses classes `*IntegrationTest`
-sont exclues du run unitaire par la convention de build — ne pas les réactiver en CI.
+The `integration-tests` module requires real AWS resources. Its `*IntegrationTest` classes
+are excluded from the unit run by the build convention — do not re-enable them in CI.

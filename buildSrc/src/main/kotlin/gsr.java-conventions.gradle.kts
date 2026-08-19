@@ -6,16 +6,16 @@ plugins {
     `java-library`
     jacoco
     kotlin("jvm")
-    // Sans ce plugin, Kotlin ne voit pas les accesseurs générés par Lombok sur les
-    // classes Java encore non converties et se heurte aux champs privés.
+    // Without this plugin, Kotlin cannot see the accessors Lombok generates on the
+    // Java classes still to be converted, and resolves to their private fields instead.
     kotlin("plugin.lombok")
 }
 
 val libs = the<LibrariesForLibs>()
 
-// Groupe de l'orga, comme geojson-jackson. Volontairement différent de
-// `software.amazon.glue` : un artefact de ce fork ne doit pas pouvoir se
-// substituer à celui de Maven Central chez un consommateur.
+// The organization group, as in geojson-jackson. Deliberately different from
+// `software.amazon.glue`: an artifact of this fork must never be able to substitute
+// itself for the Maven Central one in a consumer's dependency graph.
 group = "com.mobsuccess"
 version = System.getenv("PACKAGE_VERSION") ?: "0.0.0-LOCAL"
 
@@ -27,9 +27,9 @@ java {
 }
 
 configurations.configureEach {
-    // Le pom d'origine excluait org.lz4:lz4-java de chaque artefact Kafka au profit du
-    // fork at.yawk.lz4:lz4-java. Les deux déclarent la même capability `org.lz4:lz4-java` :
-    // sans cette exclusion, Gradle refuse de trancher entre les deux.
+    // The original pom excluded org.lz4:lz4-java from every Kafka artifact in favour of
+    // the at.yawk.lz4:lz4-java fork. Both declare the same `org.lz4:lz4-java` capability:
+    // without this exclusion, Gradle refuses to arbitrate between them.
     exclude(group = "org.lz4", module = "lz4-java")
 }
 
@@ -37,9 +37,9 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
 
-// Java et Kotlin cohabitent le temps de la conversion : Kotlin compile en premier,
-// puis javac voit ses classes. Les sources restées en Java valident donc le code
-// déjà converti sans qu'on ait touché aux tests.
+// Java and Kotlin coexist for the duration of the conversion: Kotlin compiles first,
+// then javac sees its classes. The sources still in Java therefore validate the code
+// already converted, without the tests having been touched.
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
@@ -66,8 +66,8 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    // Reproduit l'exclusion surefire du pom parent : les *IntegrationTest exigent
-    // des ressources AWS réelles et ne font pas partie du run unitaire.
+    // Mirrors the surefire exclusion of the parent pom: *IntegrationTest classes need
+    // real AWS resources and are not part of the unit run.
     filter {
         excludeTestsMatching("*IntegrationTest")
         isFailOnNoMatchingTests = false

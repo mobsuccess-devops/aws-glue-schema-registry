@@ -1,11 +1,10 @@
 rootProject.name = "aws-glue-schema-registry"
 
-// Les noms de projet Gradle reprennent les artifactId Maven d'origine pour que les
-// coordonnées publiées restent inchangées, tandis que les répertoires gardent
-// l'arborescence du repo source.
+// Gradle project names reuse the original Maven artifactIds so that the published
+// coordinates stay unchanged, while the directories keep the source repository layout.
 //
-// Le module Maven `build-tools` n'est pas repris : il ne portait que la configuration
-// Checkstyle du build Maven, remplacée ici par ktlint (cf. .editorconfig).
+// The Maven `build-tools` module is not carried over: it only held the Checkstyle
+// configuration of the Maven build, replaced here by ktlint (see .editorconfig).
 private val modules = mapOf(
     "schema-registry-common" to "common",
     "schema-registry-serde" to "serializer-deserializer",

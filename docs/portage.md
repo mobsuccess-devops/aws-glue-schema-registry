@@ -1,19 +1,19 @@
-# Portage Maven → Gradle → Kotlin
+# Maven → Gradle → Kotlin port
 
-Ce fork part du commit `eed1506` de `awslabs/aws-glue-schema-registry`, poussé tel quel
-comme premier commit. Tout écart est donc lisible avec :
+This fork starts from commit `eed1506` of `awslabs/aws-glue-schema-registry`, pushed
+verbatim as its first commit. Every deviation is therefore readable with:
 
 ```bash
-git diff eed1506 -- <chemin>
+git diff eed1506 -- <path>
 ```
 
-## Contrat d'iso
+## The identical-behaviour contract
 
-Le portage se fait en deux temps volontairement séparés — d'abord le système de build,
-ensuite le langage — pour qu'un test rouge n'ait jamais deux causes possibles.
+The port happens in two deliberately separate stages — the build system first, the
+language second — so that a red test never has two possible causes.
 
-La référence est la suite de tests du repo source, mesurée sous Maven avant toute
-modification (JDK 17, `mvn test -pl '!integration-tests'`) :
+The reference is the source repository's own test suite, measured under Maven before any
+modification (JDK 17, `mvn test -pl '!integration-tests'`):
 
 | Module                              | Tests    |
 | ----------------------------------- | -------- |
@@ -26,34 +26,35 @@ modification (JDK 17, `mvn test -pl '!integration-tests'`) :
 | `protobuf-kafkaconnect-converter`   | 95       |
 | **Total**                           | **1973** |
 
-Le build Gradle reproduit ces 1973 tests à l'identique, module par module, sans échec.
-Ce total est le seuil à retrouver après chaque étape de conversion Kotlin.
+The Gradle build reproduces these 1973 tests module by module, with no failure. That
+total is the floor to meet again after every Kotlin conversion step.
 
-## Écarts assumés par rapport au build Maven
+During the Kotlin conversion, `main` sources are converted while the tests stay in Java.
+The inherited suite is thus an oracle that has not moved, validating the converted code.
 
-- **C# et `multilang-schema-registry` retirés.** La partie Java du module n'existait que
-  pour exposer une bibliothèque native au binding C# ; sans consommateur, elle n'a plus
-  d'objet.
-- **`build-tools` retiré.** Ce module ne portait que la configuration Checkstyle du build
-  Maven, remplacée par ktlint.
-- **114 tests JUnit 4 réveillés.** `AvroDataTest` (105) et `AdditionalAvroDataTest` (9)
-  n'étaient exécutés par aucun moteur sous Maven, faute de `junit-vintage-engine` : ils
-  étaient silencieusement ignorés. Ils sont désormais lancés et passent tous, ce qui porte
-  `avro-kafkaconnect-converter` de 22 à 136 tests. Le code testé n'a pas changé.
-- **`avro-flink-serde` pointe vers le module local.** Le pom dépendait de
-  `schema-registry-serde` publié sur Maven Central (2.0.0 en compile, 1.0.2 en test) au
-  lieu du module voisin.
-- **`org.lz4:lz4-java` exclu globalement.** Le pom l'excluait de chaque artefact Kafka au
-  profit du fork `at.yawk.lz4:lz4-java`. Les deux déclarent la même _capability_, que
-  Gradle refuse d'arbitrer seul.
-- **`@NonNull` : `IllegalArgumentException` devient `NullPointerException`.** Le
-  `lombok.config` du dépôt fixe `lombok.nonNull.exceptionType = IllegalArgumentException`,
-  si bien que les 112 `@NonNull` levaient une `IllegalArgumentException` sur argument nul.
-  Les types non-nullables de Kotlin lèvent un `NullPointerException`. Le choix a été fait
-  de garder du Kotlin idiomatique plutôt que des paramètres nullables validés par
-  `require()`, au prix de la mise à jour des tests qui vérifiaient le type d'exception.
-  Seul le type change : une valeur nulle est toujours refusée, au même endroit.
-- **Coordonnées de publication.** Groupe `com.mobsuccess` au lieu de
-  `software.amazon.glue`, pour qu'un artefact de ce fork ne puisse pas se substituer
-  silencieusement à celui de Maven Central chez un consommateur. Les `artifactId` sont
-  inchangés.
+## Accepted deviations from the Maven build
+
+- **C# and `multilang-schema-registry` removed.** The Java part of that module existed
+  only to expose a native library to the C# binding; with no consumer, it has no purpose.
+- **`build-tools` removed.** That module only held the Checkstyle configuration of the
+  Maven build, replaced by ktlint.
+- **114 dormant JUnit 4 tests woken up.** `AvroDataTest` (105) and `AdditionalAvroDataTest`
+  (9) were run by no engine under Maven, for lack of a `junit-vintage-engine`: they were
+  silently skipped. They now run and all pass, taking `avro-kafkaconnect-converter` from
+  22 to 136 tests. The code under test did not change.
+- **`avro-flink-serde` points at the local module.** The pom depended on
+  `schema-registry-serde` published on Maven Central (2.0.0 for compile, 1.0.2 for test)
+  instead of the neighbouring module.
+- **`org.lz4:lz4-java` excluded globally.** The pom excluded it from every Kafka artifact
+  in favour of the `at.yawk.lz4:lz4-java` fork. Both declare the same _capability_, which
+  Gradle refuses to arbitrate on its own.
+- **`@NonNull`: `IllegalArgumentException` becomes `NullPointerException`.** The
+  repository's `lombok.config` sets `lombok.nonNull.exceptionType = IllegalArgumentException`,
+  so the 112 `@NonNull` annotations raised an `IllegalArgumentException` on a null argument.
+  Kotlin's non-nullable types raise a `NullPointerException`. Idiomatic Kotlin was chosen
+  over nullable parameters guarded by `require()`, at the cost of updating the tests that
+  asserted the exception type. Only the type changes: a null value is still rejected, at
+  the same point.
+- **Publication coordinates.** Group `com.mobsuccess` instead of `software.amazon.glue`,
+  so that an artifact of this fork can never silently substitute itself for the Maven
+  Central one in a consumer's dependency graph. The artifactIds are unchanged.

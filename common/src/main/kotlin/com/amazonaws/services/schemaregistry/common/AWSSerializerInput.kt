@@ -28,9 +28,9 @@ class AWSSerializerInput(
     val dataFormat: String? = dataFormat
     val transportName: String? = transportName ?: DEFAULT_TRANSPORT_NAME
 
-    // Le nom de schéma par défaut dérive du transportName **reçu**, pas de sa valeur
-    // repliée sur "default-stream" : passer un transportName nul donne donc un
-    // schemaName nul. Comportement du code d'origine, couvert par un test.
+    // The default schema name derives from the transportName **as received**, not from
+    // its value once defaulted to "default-stream": passing a null transportName therefore
+    // yields a null schemaName. Original behaviour, covered by a test.
     val schemaName: String? = schemaName ?: AWSSchemaNamingStrategyDefaultImpl().getSchemaName(transportName)
 
     override fun equals(other: Any?): Boolean {
@@ -53,7 +53,7 @@ class AWSSerializerInput(
     override fun toString(): String = "AWSSerializerInput(schemaDefinition=$schemaDefinition, schemaName=$schemaName, " +
         "dataFormat=$dataFormat, transportName=$transportName)"
 
-    /** Reprend l'API fluide que générait Lombok : appelée depuis du code Java. */
+    /** Mirrors the fluent API Lombok generated: called from Java code. */
     class Builder internal constructor() {
         private var schemaDefinition: String? = null
         private var schemaName: String? = null

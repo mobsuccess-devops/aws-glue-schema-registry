@@ -2,8 +2,8 @@ plugins {
     id("gsr.java-conventions")
 }
 
-// Module de tests d'intégration : rien à publier, et ses tests exigent des
-// ressources AWS réelles (ils sont exclus du run unitaire par la convention).
+// Integration test module: nothing to publish, and its tests require real AWS
+// resources (they are excluded from the unit run by the convention plugin).
 dependencies {
     api(project(":schema-registry-serde"))
     api(project(":schema-registry-kafkastreams-serde"))
@@ -34,7 +34,7 @@ dependencies {
     api(libs.hamcrest.all)
     api(libs.jaxb.api)
 
-    // Classes générées depuis serializer-deserializer/src/test/proto, consommées
-    // via le jar de tests comme le faisait le classifier Maven `tests`.
+    // Classes generated from serializer-deserializer/src/test/proto, consumed through
+    // the test jar just as the Maven `tests` classifier did.
     testImplementation(project(path = ":schema-registry-serde", configuration = "testArtifacts"))
 }

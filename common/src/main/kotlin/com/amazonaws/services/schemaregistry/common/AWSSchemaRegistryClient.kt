@@ -61,8 +61,8 @@ import java.util.UUID
 /**
  * Handles all the requests related to the schema management.
  *
- * `open` : plusieurs suites de tests mockent ce type, or les classes et méthodes Kotlin
- * sont finales par défaut.
+ * `open`: several test suites mock this type, and Kotlin classes and methods are final
+ * by default.
  */
 open class AWSSchemaRegistryClient {
     private val client: GlueClient
@@ -498,8 +498,8 @@ open class AWSSchemaRegistryClient {
      */
     @VisibleForTesting
     protected open inner class UserAgentRequestInterceptor : ExecutionInterceptor {
-        // executionAttributes reste nullable : la signature Java ne l'annotait pas et les
-        // tests appellent la méthode avec null.
+        // executionAttributes stays nullable: the Java signature did not annotate it and
+        // the tests call the method with null.
         override fun modifyRequest(
             context: Context.ModifyRequest,
             executionAttributes: ExecutionAttributes?,
@@ -549,8 +549,8 @@ open class AWSSchemaRegistryClient {
         private const val MAX_ATTEMPTS = 10
         private const val MAX_WAIT_INTERVAL = 3000L
 
-        // Portées par le companion de la classe externe : une classe `inner` Kotlin ne peut
-        // pas avoir de companion object.
+        // Held by the outer class companion: a Kotlin `inner` class cannot have a
+        // companion object of its own.
         private const val ONE = "1"
         private const val ZERO = "0"
     }

@@ -30,10 +30,10 @@ interface GlueSchemaRegistryCompressionHandler {
      */
     @Throws(IOException::class)
     fun compress(record: ByteArray?): ByteArray {
-        // Le paramètre reste nullable : le code Java acceptait null et laissait le
-        // NullPointerException remonter *depuis l'intérieur* du try de
-        // l'implémentation, qui l'encapsule en AWSSchemaRegistryException. Un type
-        // non-nullable ferait échouer le contrôle en amont du try.
+        // The parameter stays nullable: the Java code accepted null and let the
+        // NullPointerException surface from *inside* the implementation's try block,
+        // which wraps it into an AWSSchemaRegistryException. A non-nullable type would
+        // trip the check before the try is entered.
         val bytes = record!!
         val deflator = getDeflatorObject(bytes)
         val compressed = writeToDeflatorObject(bytes, deflator)

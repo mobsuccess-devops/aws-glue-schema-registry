@@ -4,9 +4,9 @@ plugins {
 }
 
 dependencies {
-    // Le pom d'origine pointait vers schema-registry-serde publié sur Maven Central
-    // (2.0.0 en compile, 1.0.2 en test) plutôt que vers le module local ; on rétablit
-    // la dépendance interne, seule cohérente dans un build multi-modules.
+    // The original pom pointed at schema-registry-serde published on Maven Central
+    // (2.0.0 for compile, 1.0.2 for test) rather than at the neighbouring module; the
+    // internal dependency is restored, being the only coherent one in a multi-module build.
     api(project(":schema-registry-serde"))
     api(libs.flink.avro) {
         exclude(group = "org.apache.commons", module = "commons-compress")

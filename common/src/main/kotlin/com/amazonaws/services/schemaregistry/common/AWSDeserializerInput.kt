@@ -36,7 +36,7 @@ class AWSDeserializerInput(
 
     override fun toString(): String = "AWSDeserializerInput(buffer=$buffer, transportName=$transportName)"
 
-    /** Reprend l'API fluide que générait Lombok : appelée depuis du code Java. */
+    /** Mirrors the fluent API Lombok generated: called from Java code. */
     class Builder internal constructor() {
         private var buffer: ByteBuffer? = null
         private var transportName: String? = null

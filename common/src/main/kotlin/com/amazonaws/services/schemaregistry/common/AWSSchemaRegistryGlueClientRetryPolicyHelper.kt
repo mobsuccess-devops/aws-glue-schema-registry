@@ -45,7 +45,7 @@ object AWSSchemaRegistryGlueClientRetryPolicyHelper {
 
     private fun getRetryCondition(): RetryCondition = OrRetryCondition.create(
         RetryCondition.defaultRetryCondition(),
-        // Le type doit être explicite : Java inférait la variance, pas Kotlin.
+        // The type must be explicit: Java inferred the variance, Kotlin does not.
         RetryOnExceptionsCondition.create(
             ImmutableSet.of<Class<out Exception>>(ConcurrentModificationException::class.java),
         ),

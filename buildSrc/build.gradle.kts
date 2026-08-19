@@ -8,14 +8,14 @@ repositories {
 }
 
 dependencies {
-    // Expose les accesseurs typés du catalogue (`libs.…`) aux plugins de
-    // convention précompilés, qui n'y ont pas accès autrement.
+    // Exposes the catalog's type-safe accessors (`libs.…`) to the precompiled
+    // convention plugins, which cannot reach them otherwise.
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 
-    // Nécessaire pour appliquer le plugin shadow depuis gsr.shaded-conventions.
+    // Required to apply the shadow plugin from gsr.shaded-conventions.
     implementation(libs.shadow.plugin)
 
-    // Nécessaire pour appliquer le plugin Kotlin depuis gsr.java-conventions.
+    // Required to apply the Kotlin plugin from gsr.java-conventions.
     implementation(libs.kotlin.gradlePlugin)
     implementation(libs.kotlin.lombokPlugin)
 }
