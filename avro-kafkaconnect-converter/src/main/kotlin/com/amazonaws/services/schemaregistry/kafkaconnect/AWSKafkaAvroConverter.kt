@@ -106,7 +106,7 @@ open class AWSKafkaAvroConverter(
     override fun toConnectData(
         topic: String?,
         value: ByteArray?,
-    ): SchemaAndValue {
+    ): SchemaAndValue? {
         if (value == null) {
             return SchemaAndValue.NULL
         }
