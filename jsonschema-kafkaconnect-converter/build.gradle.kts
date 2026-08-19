@@ -8,4 +8,3 @@ dependencies {
     api(libs.kafka.connectJson)
     api(libs.everit.jsonSchema)
 }
-

@@ -6,4 +6,3 @@ dependencies {
     api(project(":schema-registry-serde"))
     api(libs.aws.mskIamAuth)
 }
-
