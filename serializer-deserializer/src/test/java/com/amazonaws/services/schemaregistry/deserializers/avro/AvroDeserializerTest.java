@@ -752,7 +752,7 @@ public class AvroDeserializerTest {
         byte[] serializedData = getTestSerializedByteData();
         AvroDeserializer avroDeserializer = createAvroDeserializer(AvroRecordType.GENERIC_RECORD);
 
-        assertThrows((IllegalArgumentException.class), () -> deserialize(avroDeserializer, serializedData, null));
+        assertThrows((NullPointerException.class), () -> deserialize(avroDeserializer, serializedData, null));
     }
 
     /**
@@ -763,7 +763,7 @@ public class AvroDeserializerTest {
         ByteBuffer serializedByteBuffer = getTestSerializedByteBufferData();
         AvroDeserializer avroDeserializer = createAvroDeserializer(AvroRecordType.GENERIC_RECORD);
 
-        assertThrows((IllegalArgumentException.class), () -> deserialize(avroDeserializer, serializedByteBuffer, null));
+        assertThrows((NullPointerException.class), () -> deserialize(avroDeserializer, serializedByteBuffer, null));
     }
 
     /**
@@ -772,7 +772,7 @@ public class AvroDeserializerTest {
     @Test
     public void testDeserialize_withSchemaVersionIdWithNullBufferWithSchema_throwsException() {
         AvroDeserializer avroDeserializer = createAvroDeserializer(AvroRecordType.GENERIC_RECORD);
-        assertThrows((IllegalArgumentException.class), () -> avroDeserializer.deserialize(null,
+        assertThrows((NullPointerException.class), () -> avroDeserializer.deserialize(null,
                 new com.amazonaws.services.schemaregistry.common.Schema("Test", DataFormat.AVRO.name(), "test")));
     }
 
@@ -784,7 +784,7 @@ public class AvroDeserializerTest {
         ByteBuffer serializedByteBuffer = getTestSerializedByteBufferData();
         AvroDeserializer avroDeserializer = createAvroDeserializer(AvroRecordType.GENERIC_RECORD);
 
-        assertThrows((IllegalArgumentException.class), () -> avroDeserializer.deserialize(serializedByteBuffer, null));
+        assertThrows((NullPointerException.class), () -> avroDeserializer.deserialize(serializedByteBuffer, null));
     }
 
     /**

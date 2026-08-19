@@ -142,13 +142,17 @@ public class ProtobufDeserializerTest {
             new com.amazonaws.services.schemaregistry.common.Schema(
                 schema, DataFormat.PROTOBUF.name(), SCHEMA_NAME);
 
-        Exception ex = assertThrows(IllegalArgumentException.class,
+        Exception ex = assertThrows(NullPointerException.class,
                 () -> protobufDynamicMessageDeserializer.deserialize(null, schemaObject));
-        assertEquals("buffer is marked non-null but is null", ex.getMessage());
+        assertEquals("Parameter specified as non-null is null: method com.amazonaws.services."
+            + "schemaregistry.deserializers.protobuf.ProtobufDeserializer.deserialize, parameter data",
+            ex.getMessage());
 
-        ex = assertThrows(IllegalArgumentException.class,
+        ex = assertThrows(NullPointerException.class,
                 () -> protobufDynamicMessageDeserializer.deserialize(buffer, null));
-        assertEquals("schema is marked non-null but is null", ex.getMessage());
+        assertEquals("Parameter specified as non-null is null: method com.amazonaws.services."
+            + "schemaregistry.deserializers.protobuf.ProtobufDeserializer.deserialize, parameter schema",
+            ex.getMessage());
     }
 
     @ParameterizedTest
@@ -185,9 +189,11 @@ public class ProtobufDeserializerTest {
 
     @Test
     public void testDeserialize_DynamicMessage_ThrowsExceptionInvalidSchema() {
-        Exception ex = assertThrows(IllegalArgumentException.class,
+        Exception ex = assertThrows(NullPointerException.class,
             () -> protobufDynamicMessageDeserializer.deserialize(ANY_BUFFER, null));
-        assertEquals("schema is marked non-null but is null", ex.getMessage());
+        assertEquals("Parameter specified as non-null is null: method com.amazonaws.services."
+            + "schemaregistry.deserializers.protobuf.ProtobufDeserializer.deserialize, parameter schema",
+            ex.getMessage());
     }
 
     @Test
