@@ -173,8 +173,10 @@ public class JsonSerializer implements GlueSchemaRegistryDataFormatSerializer {
         //We might want to provide customization of this if required.
         final String payload = new String(data, StandardCharsets.UTF_8);
 
-        JsonDataWithSchema jsonDataWithSchema =
-            new JsonDataWithSchema(schemaDefinition, payload);
+        JsonDataWithSchema jsonDataWithSchema = JsonDataWithSchema.builder()
+            .schema(schemaDefinition)
+            .payload(payload)
+            .build();
 
         validate(jsonDataWithSchema);
     }
