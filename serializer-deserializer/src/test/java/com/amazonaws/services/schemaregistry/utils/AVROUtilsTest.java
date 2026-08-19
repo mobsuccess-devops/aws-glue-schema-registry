@@ -89,13 +89,13 @@ public class AVROUtilsTest {
 
     @Test
     public void testGetSchemaDefinition_nullObject_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> AVROUtils.getInstance().getSchemaDefinition(null));
     }
 
     @Test
     public void testGetSchema_nullObject_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> AVROUtils.getInstance().getSchema(null));
     }
 }

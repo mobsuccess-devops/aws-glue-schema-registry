@@ -48,12 +48,12 @@ public class ProtobufWireFormatEncoderTest {
     @Test
     public void testEncode_WhenNullsArePassed_ThrowsException() {
         assertThrows(
-            IllegalArgumentException.class,
+            NullPointerException.class,
             () -> PROTOBUF_WIRE_FORMAT.encode(null, CUSTOMER_FILE_DESCRIPTOR)
         );
 
         assertThrows(
-            IllegalArgumentException.class,
+            NullPointerException.class,
             () -> PROTOBUF_WIRE_FORMAT.encode(CUSTOMER_MESSAGE, null)
         );
     }
@@ -61,15 +61,15 @@ public class ProtobufWireFormatEncoderTest {
     @Test
     public void testPrefixMessageIndexToBytes_WhenNullsArePassed_ThrowsException() {
         assertThrows(
-            IllegalArgumentException.class,
+            NullPointerException.class,
             () -> PROTOBUF_WIRE_FORMAT.prefixMessageIndexToBytes(null, CUSTOMER_FILE_DESCRIPTOR, CUSTOMER_MESSAGE.getDescriptorForType())
         );
         assertThrows(
-            IllegalArgumentException.class,
+            NullPointerException.class,
             () -> PROTOBUF_WIRE_FORMAT.prefixMessageIndexToBytes(new byte[]{}, null, CUSTOMER_MESSAGE.getDescriptorForType())
         );
         assertThrows(
-            IllegalArgumentException.class,
+            NullPointerException.class,
             () -> PROTOBUF_WIRE_FORMAT.prefixMessageIndexToBytes(new byte[]{}, CUSTOMER_FILE_DESCRIPTOR, null)
         );
     }

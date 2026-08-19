@@ -12,20 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.amazonaws.services.schemaregistry.serializers;
 
-import com.amazonaws.services.schemaregistry.common.Schema;
+package com.amazonaws.services.schemaregistry.serializers
+
+import com.amazonaws.services.schemaregistry.common.Schema
 
 /**
  * Entry point to serialization capabilities of Glue Schema Registry client library.
  */
-public interface GlueSchemaRegistrySerializer {
+interface GlueSchemaRegistrySerializer {
     /**
      * Encodes the given byte array with Schema Registry header information.
-     * The header contains a reference to the Schema that corresponds to the data.
-     * @param schema {@link Schema} A Schema object representing the schema information.
-     * @param data Byte array consisting of customer data that needs to be encoded.
-     * @return encodedData Schema Registry Encoded byte array which can only be decoded by Schema Registry de-serializer.
      */
-    byte[] encode(String transportName, Schema schema, byte[] data);
+    fun encode(
+        transportName: String?,
+        schema: Schema,
+        data: ByteArray,
+    ): ByteArray
 }
