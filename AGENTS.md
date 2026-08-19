@@ -94,6 +94,15 @@ These all cost a red test at least once. They are listed in the order they bite.
 - **Private functions get no parameter null checks**, unlike public ones.
 - **Kotlin does not widen `int` to `long` implicitly**, nor infer generic variance the way
   javac did.
+- **A cast can be optimized away.** `(value as CharSequence).toString()` resolves `toString()`
+  on `Any`, so the checkcast is elided and a wrong-typed value is silently accepted where the
+  Java code threw `ClassCastException`. Bind the cast to a typed local when the cast itself is
+  the check.
+- **Collection ordering is observable.** `HashSet`/`HashMap` iteration order ends up in
+  rendered JSON and in schema equality; replacing them with Kotlin's order-preserving `setOf`
+  or `mapOf` changes the output.
+- **The order of `instanceof` branches matters** when the types are related — `EnumSchema`
+  extends `StringSchema`, so reordering a `when` changes which converter is selected.
 
 ## Other build notes
 

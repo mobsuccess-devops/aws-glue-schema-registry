@@ -79,12 +79,11 @@ class GlueSchemaRegistryAvroSerializationSchema<T> : RegistryAvroSerializationSc
             schema: Schema,
             transportName: String?,
             configs: Map<String, Any>,
-        ): GlueSchemaRegistryAvroSerializationSchema<GenericRecord> =
-            GlueSchemaRegistryAvroSerializationSchema(
-                GenericRecord::class.java,
-                schema,
-                GlueSchemaRegistryAvroSchemaCoderProvider(transportName, configs),
-            )
+        ): GlueSchemaRegistryAvroSerializationSchema<GenericRecord> = GlueSchemaRegistryAvroSerializationSchema(
+            GenericRecord::class.java,
+            schema,
+            GlueSchemaRegistryAvroSchemaCoderProvider(transportName, configs),
+        )
 
         /**
          * Serializes [SpecificRecord] using the provided schema.
@@ -94,11 +93,10 @@ class GlueSchemaRegistryAvroSerializationSchema<T> : RegistryAvroSerializationSc
             clazz: Class<T>,
             transportName: String?,
             configs: Map<String, Any>,
-        ): GlueSchemaRegistryAvroSerializationSchema<T> =
-            GlueSchemaRegistryAvroSerializationSchema(
-                clazz,
-                null,
-                GlueSchemaRegistryAvroSchemaCoderProvider(transportName, configs),
-            )
+        ): GlueSchemaRegistryAvroSerializationSchema<T> = GlueSchemaRegistryAvroSerializationSchema(
+            clazz,
+            null,
+            GlueSchemaRegistryAvroSchemaCoderProvider(transportName, configs),
+        )
     }
 }

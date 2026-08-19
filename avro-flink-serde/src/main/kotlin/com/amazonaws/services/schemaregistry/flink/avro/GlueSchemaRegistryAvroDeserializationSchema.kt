@@ -40,12 +40,11 @@ class GlueSchemaRegistryAvroDeserializationSchema<T> private constructor(
         fun forGeneric(
             schema: Schema,
             configs: Map<String, Any>,
-        ): GlueSchemaRegistryAvroDeserializationSchema<GenericRecord> =
-            GlueSchemaRegistryAvroDeserializationSchema(
-                GenericRecord::class.java,
-                schema,
-                GlueSchemaRegistryAvroSchemaCoderProvider(configs),
-            )
+        ): GlueSchemaRegistryAvroDeserializationSchema<GenericRecord> = GlueSchemaRegistryAvroDeserializationSchema(
+            GenericRecord::class.java,
+            schema,
+            GlueSchemaRegistryAvroSchemaCoderProvider(configs),
+        )
 
         /**
          * Produces classes that were generated from an Avro schema.
@@ -54,11 +53,10 @@ class GlueSchemaRegistryAvroDeserializationSchema<T> private constructor(
         fun <T : SpecificRecord> forSpecific(
             clazz: Class<T>,
             configs: Map<String, Any>,
-        ): GlueSchemaRegistryAvroDeserializationSchema<T> =
-            GlueSchemaRegistryAvroDeserializationSchema(
-                clazz,
-                null,
-                GlueSchemaRegistryAvroSchemaCoderProvider(configs),
-            )
+        ): GlueSchemaRegistryAvroDeserializationSchema<T> = GlueSchemaRegistryAvroDeserializationSchema(
+            clazz,
+            null,
+            GlueSchemaRegistryAvroSchemaCoderProvider(configs),
+        )
     }
 }

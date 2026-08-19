@@ -71,7 +71,6 @@ open class GlueSchemaRegistryOutputStreamSerializer(
         out.write(bytes)
     }
 
-    private fun getSchemaName(): String? =
-        GlueSchemaRegistryUtils.getInstance().getSchemaName(configs)
-            ?: GlueSchemaRegistryUtils.getInstance().configureSchemaNamingStrategy(configs)!!.getSchemaName(transportName)
+    private fun getSchemaName(): String? = GlueSchemaRegistryUtils.getInstance().getSchemaName(configs)
+        ?: GlueSchemaRegistryUtils.getInstance().configureSchemaNamingStrategy(configs)!!.getSchemaName(transportName)
 }

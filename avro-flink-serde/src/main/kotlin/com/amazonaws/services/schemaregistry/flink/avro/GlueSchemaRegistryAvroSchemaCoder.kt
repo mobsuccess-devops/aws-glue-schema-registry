@@ -50,8 +50,7 @@ class GlueSchemaRegistryAvroSchemaCoder : SchemaCoder {
     }
 
     @Throws(IOException::class)
-    override fun readSchema(inputStream: InputStream): Schema =
-        glueSchemaRegistryInputStreamDeserializer!!.getSchemaAndDeserializedStream(inputStream)
+    override fun readSchema(inputStream: InputStream): Schema = glueSchemaRegistryInputStreamDeserializer!!.getSchemaAndDeserializedStream(inputStream)
 
     @Throws(IOException::class)
     override fun writeSchema(
