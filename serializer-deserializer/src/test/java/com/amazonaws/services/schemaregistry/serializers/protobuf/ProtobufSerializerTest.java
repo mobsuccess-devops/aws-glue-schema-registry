@@ -174,8 +174,9 @@ public class ProtobufSerializerTest {
         ex = assertThrows(AWSSchemaRegistryException.class, () -> protobufSerializer.validate(num));
         assertEquals("Object is not of Message type: class java.lang.Integer", ex.getMessage());
 
-        ex = assertThrows(IllegalArgumentException.class, () -> protobufSerializer.validate(null));
-        assertEquals("object is marked non-null but is null", ex.getMessage());
+        ex = assertThrows(NullPointerException.class, () -> protobufSerializer.validate(null));
+        assertEquals("Parameter specified as non-null is null: method com.amazonaws.services.schemaregistry."
+            + "serializers.protobuf.ProtobufSerializer.validate, parameter data", ex.getMessage());
     }
 
     @Test
