@@ -65,19 +65,17 @@ open class AvroSerializer : GlueSchemaRegistryDataFormatSerializer {
         }
     }
 
-    private fun getSpecificDatumWriter(schema: Schema): DatumWriter<Any> =
-        try {
-            datumWriterCache.get(DatumWriterCacheKey(schema, AvroRecordType.SPECIFIC_RECORD))
-        } catch (e: ExecutionException) {
-            throw AWSSchemaRegistryException("Failed to get SpecificDatumWriter from cache", e.cause)
-        }
+    private fun getSpecificDatumWriter(schema: Schema): DatumWriter<Any> = try {
+        datumWriterCache.get(DatumWriterCacheKey(schema, AvroRecordType.SPECIFIC_RECORD))
+    } catch (e: ExecutionException) {
+        throw AWSSchemaRegistryException("Failed to get SpecificDatumWriter from cache", e.cause)
+    }
 
-    private fun getGenericDatumWriter(schema: Schema): DatumWriter<Any> =
-        try {
-            datumWriterCache.get(DatumWriterCacheKey(schema, AvroRecordType.GENERIC_RECORD))
-        } catch (e: ExecutionException) {
-            throw AWSSchemaRegistryException("Failed to get GenericDatumWriter from cache", e.cause)
-        }
+    private fun getGenericDatumWriter(schema: Schema): DatumWriter<Any> = try {
+        datumWriterCache.get(DatumWriterCacheKey(schema, AvroRecordType.GENERIC_RECORD))
+    } catch (e: ExecutionException) {
+        throw AWSSchemaRegistryException("Failed to get GenericDatumWriter from cache", e.cause)
+    }
 
     private fun encodeData(
         objectToWrite: Any,
@@ -97,8 +95,7 @@ open class AvroSerializer : GlueSchemaRegistryDataFormatSerializer {
     /**
      * Get the schema definition.
      */
-    override fun getSchemaDefinition(objectToSerialize: Any): String =
-        avroUtils.getSchemaDefinition(objectToSerialize)
+    override fun getSchemaDefinition(objectToSerialize: Any): String = avroUtils.getSchemaDefinition(objectToSerialize)
 
     override fun validate(data: Any) {
         // No-op.
@@ -123,8 +120,7 @@ open class AvroSerializer : GlueSchemaRegistryDataFormatSerializer {
     )
 
     private class DatumWriterCache : CacheLoader<DatumWriterCacheKey, DatumWriter<Any>>() {
-        override fun load(datumWriterCacheKey: DatumWriterCacheKey): DatumWriter<Any> =
-            DatumWriterInstance.get(datumWriterCacheKey.schema, datumWriterCacheKey.avroRecordType)
+        override fun load(datumWriterCacheKey: DatumWriterCacheKey): DatumWriter<Any> = DatumWriterInstance.get(datumWriterCacheKey.schema, datumWriterCacheKey.avroRecordType)
     }
 
     companion object {

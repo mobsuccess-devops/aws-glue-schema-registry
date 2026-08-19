@@ -266,7 +266,7 @@ public class GlueSchemaRegistrySerializationFacadeTest extends GlueSchemaRegistr
         configs.put(AWSSchemaRegistryConstants.DATA_FORMAT, dataFormat.name());
         GlueSchemaRegistrySerializationFacade glueSchemaRegistrySerializationFacade =
                 createGlueSerializationFacade(configs, mockSchemaByDefinitionFetcher);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
                      () -> glueSchemaRegistrySerializationFacade.serialize(dataFormat, record, null));
         configs.remove(AWSSchemaRegistryConstants.DATA_FORMAT, dataFormat.name());
     }
@@ -276,7 +276,7 @@ public class GlueSchemaRegistrySerializationFacadeTest extends GlueSchemaRegistr
     public void testSerialize_NullData_ThrowsException(DataFormat dataFormat) {
         GlueSchemaRegistrySerializationFacade glueSchemaRegistrySerializationFacade =
                 createGlueSerializationFacade(configs, mockSchemaByDefinitionFetcher);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
                      () -> glueSchemaRegistrySerializationFacade.serialize(dataFormat, null,
                                                                            SCHEMA_VERSION_ID_FOR_TESTING));
     }
@@ -317,7 +317,7 @@ public class GlueSchemaRegistrySerializationFacadeTest extends GlueSchemaRegistr
      */
     @Test
     public void testBuildGSRSerializationFacade_nullCredentialProvider_throwsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> GlueSchemaRegistrySerializationFacade.builder()
+        Assertions.assertThrows(NullPointerException.class, () -> GlueSchemaRegistrySerializationFacade.builder()
                 .configs(configs)
                 .credentialProvider(null)
                 .build());
@@ -356,7 +356,7 @@ public class GlueSchemaRegistrySerializationFacadeTest extends GlueSchemaRegistr
 
     @Test
     public void testInitialize_nullCredentials_ThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> GlueSchemaRegistrySerializationFacade.builder()
+        assertThrows(NullPointerException.class, () -> GlueSchemaRegistrySerializationFacade.builder()
                 .schemaByDefinitionFetcher(mockSchemaByDefinitionFetcher)
                 .glueSchemaRegistryConfiguration(new GlueSchemaRegistryConfiguration(configs))
                 .build());
@@ -734,7 +734,7 @@ public class GlueSchemaRegistrySerializationFacadeTest extends GlueSchemaRegistr
     public void testRegisterSchema_nullSerializerInput_throwsException() {
         GlueSchemaRegistrySerializationFacade glueSerializationFacade =
                 createGlueSerializationFacade(configs, mockSchemaByDefinitionFetcher);
-        Assertions.assertThrows(IllegalArgumentException.class,
+        Assertions.assertThrows(NullPointerException.class,
                                 () -> glueSerializationFacade.getOrRegisterSchemaVersion(null));
     }
 
