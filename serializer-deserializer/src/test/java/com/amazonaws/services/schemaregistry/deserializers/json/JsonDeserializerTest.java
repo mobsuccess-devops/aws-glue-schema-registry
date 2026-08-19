@@ -102,8 +102,8 @@ public class JsonDeserializerTest {
         Schema testSchema = new Schema(GEOLOCATION_SCHEMA, DataFormat.JSON.name(), "testJson");
         byte[] testBytes = GEOLOCATION_PAYLOAD.getBytes(StandardCharsets.UTF_8);
 
-        assertThrows(IllegalArgumentException.class, () -> jsonDeserializer.deserialize(null, testSchema));
-        assertThrows(IllegalArgumentException.class, () -> jsonDeserializer.deserialize(ByteBuffer.wrap(testBytes),
+        assertThrows(NullPointerException.class, () -> jsonDeserializer.deserialize(null, testSchema));
+        assertThrows(NullPointerException.class, () -> jsonDeserializer.deserialize(ByteBuffer.wrap(testBytes),
                                                                                         null));
     }
 
