@@ -78,9 +78,8 @@ object FieldBuilder {
                     buildMap(fieldSchema, mapEntryName, fileDescriptorProtoBuilder, messageDescriptorProtoBuilder),
                 )
             } else if (Schema.Type.STRUCT == fieldSchema.type()) {
-                if (fieldSchema.parameters().containsKey(PROTOBUF_TYPE) &&
-                    fieldSchema.parameters()[PROTOBUF_TYPE] == PROTOBUF_ONEOF_TYPE
-                ) {
+                val fieldParameters: Map<String, String>? = fieldSchema.parameters()
+                if (fieldParameters != null && fieldParameters[PROTOBUF_TYPE] == PROTOBUF_ONEOF_TYPE) {
                     buildOneof(
                         fieldSchema,
                         fieldName,
@@ -94,10 +93,13 @@ object FieldBuilder {
 
                 // Convert the Struct type schema to a Protobuf message schema
                 val nestedMessageDescriptorProtoBuilder = DescriptorProtos.DescriptorProto.newBuilder()
-                nestedMessageDescriptorProtoBuilder.setName(getSchemaSimpleName(fieldSchema.name()))
+                val structName: String? = fieldSchema.name()
+                nestedMessageDescriptorProtoBuilder.setName(
+                    getSchemaSimpleName(structName ?: capitalize(fieldName)),
+                )
                 build(fieldSchema, fileDescriptorProtoBuilder, nestedMessageDescriptorProtoBuilder)
                 // A parent level schema is added as a message type, a nested one as a nested type.
-                if (isParentLevel(fileDescriptorProtoBuilder.getPackage(), fieldSchema.name())) {
+                if (structName != null && isParentLevel(fileDescriptorProtoBuilder.getPackage(), structName)) {
                     fileDescriptorProtoBuilder.addMessageType(nestedMessageDescriptorProtoBuilder)
                 } else {
                     messageDescriptorProtoBuilder.addNestedType(nestedMessageDescriptorProtoBuilder)
@@ -220,7 +222,10 @@ object FieldBuilder {
                 ),
             )
         } else if (Schema.Type.STRUCT == fieldSchema.type()) {
-            fieldDescriptorProtoBuilder.setTypeName(getTypeName(fieldSchema.name()))
+            val structName = fieldSchema.name()
+            fieldDescriptorProtoBuilder.setTypeName(
+                if (structName != null) getTypeName(structName) else capitalize(fieldName),
+            )
         }
 
         fieldDescriptorProtoBuilder.setName(fieldName)
@@ -268,6 +273,8 @@ object FieldBuilder {
      *
      * @return true when the schema sits at parent level.
      */
+    private fun capitalize(fieldName: String): String = fieldName.replaceFirstChar { it.uppercase() }
+
     private fun isParentLevel(
         packageName: String,
         schemaName: String,
