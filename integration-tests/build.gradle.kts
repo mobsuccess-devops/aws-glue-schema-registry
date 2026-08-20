@@ -13,9 +13,7 @@ dependencies {
     api(libs.kinesis.client) {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
     }
-    api(libs.kinesis.producer) {
-        exclude(group = "software.amazon.ion", module = "ion-java")
-    }
+    api(libs.kinesis.producer)
     api(libs.kafka.clients)
     api(libs.kafka.streams)
     api(libs.localstack.utils)
