@@ -3,7 +3,7 @@
 # that the Gradle port stays behaviour-identical to the Maven build.
 [versions]
 awsSdkV2 = "2.32.25"
-awsSdkV1 = "1.12.782"
+awsSdkV1 = "1.12.797"
 mskIamAuth = "2.0.3"
 kafka = "3.6.1"
 kafkaScala = "2.12"
