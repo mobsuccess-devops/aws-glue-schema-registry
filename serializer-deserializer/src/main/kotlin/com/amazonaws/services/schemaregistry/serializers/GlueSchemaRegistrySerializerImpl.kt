@@ -55,7 +55,7 @@ class GlueSchemaRegistrySerializerImpl : GlueSchemaRegistrySerializer {
     }
 
     @VisibleForTesting
-    protected constructor(glueSchemaRegistrySerializationFacade: GlueSchemaRegistrySerializationFacade) {
+    internal constructor(glueSchemaRegistrySerializationFacade: GlueSchemaRegistrySerializationFacade) {
         this.glueSchemaRegistrySerializationFacade = glueSchemaRegistrySerializationFacade
     }
 
