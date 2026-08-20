@@ -26,9 +26,14 @@ public class LocalKafkaClusterHelper implements KafkaClusterHelper {
         return FAKE_CLUSTER_ARN;
     }
 
+    /**
+     * KAFKA_BOOTSTRAP lets a runner point the tests at a broker that is not on the
+     * default port, so a machine already using 9092 can still run them.
+     */
     @Override
     public String getBootstrapString() {
-        return BOOTSTRAP_STRING;
+        String override = System.getenv("KAFKA_BOOTSTRAP");
+        return override != null && !override.isEmpty() ? override : BOOTSTRAP_STRING;
     }
 
     @Override

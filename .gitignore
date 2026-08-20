@@ -26,6 +26,9 @@
 **/*.classpath
 **/*.factorypath
 
+# Logs written by the integration tests when they are run locally
+integration-tests/logs/
+
 # Local integration-test fixtures
 integration-tests/volume/cache/machine.json
 integration-tests/volume/cache/server.test.pem

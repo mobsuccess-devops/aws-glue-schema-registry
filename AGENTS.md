@@ -310,5 +310,23 @@ that surface small; none of them survive a careless rewrite, so check them befor
 
 ## Integration tests
 
-The `integration-tests` module requires real AWS resources. Its `*IntegrationTest` classes
-are excluded from the unit run by the build convention — do not re-enable them in CI.
+`*IntegrationTest` classes stay out of the unit run: `tasks.test` excludes them, `check`
+never pulls them in, and `./gradlew build` reports the same test count as before. They are
+reached through `integrationTest`, a separate task the convention plugin registers per
+module, and driven by `.github/workflows/integration.yml` — nightly and on demand, never on
+a pull request.
+
+What each of them needs:
+
+| Task                                                            | Needs                           |
+| --------------------------------------------------------------- | ------------------------------- |
+| `:schema-registry-kafkaconnect-converter:integrationTest`       | nothing                         |
+| `:schema-registry-integration-tests:integrationTestWithoutGlue` | a Kafka broker and LocalStack   |
+| `:schema-registry-integration-tests:integrationTest`            | the above, plus a Glue endpoint |
+
+The endpoints are read from the environment, so a runner can point them anywhere:
+`GLUE_ENDPOINT` for Glue and `KAFKA_BOOTSTRAP` for the broker; unset, they fall back to the
+values the upstream sources hard-coded. The region needs no override of its own — it comes
+from the AWS SDK provider chain, which reads `AWS_REGION`. The Glue-dependent job is skipped
+while the `GLUE_ENDPOINT` repository variable is empty, so the nightly stays green and
+honest rather than permanently red.
