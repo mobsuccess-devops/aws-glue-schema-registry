@@ -546,7 +546,7 @@ open class AvroData(avroDataConfig: AvroDataConfig) {
         doLogicalConversion: Boolean,
     ): Any? {
         validateSchemaValue(schema, value)
-        if (value == null) {
+        if (value == null || value === JsonProperties.NULL_VALUE) {
             return null
         }
         try {
@@ -2188,7 +2188,7 @@ open class AvroData(avroDataConfig: AvroDataConfig) {
             schema: Schema?,
             value: Any?,
         ) {
-            if (value == null && schema != null && !schema.isOptional) {
+            if ((value == null || value === JsonProperties.NULL_VALUE) && schema != null && !schema.isOptional) {
                 throw DataException("Found null value for non-optional schema")
             }
         }
