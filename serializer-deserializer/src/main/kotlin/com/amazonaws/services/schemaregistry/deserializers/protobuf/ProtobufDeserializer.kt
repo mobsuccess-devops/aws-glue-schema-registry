@@ -38,7 +38,7 @@ open class ProtobufDeserializer(
 
     @JvmField
     @VisibleForTesting
-    protected val schemaParserCache: LoadingCache<ProtobufSchemaParserCacheKey, Descriptors.FileDescriptor> =
+    internal val schemaParserCache: LoadingCache<ProtobufSchemaParserCacheKey, Descriptors.FileDescriptor> =
         CacheBuilder
             .newBuilder()
             .maximumSize(MAX_PROTOBUF_SCHEMA_PARSER_CACHE_SIZE)
