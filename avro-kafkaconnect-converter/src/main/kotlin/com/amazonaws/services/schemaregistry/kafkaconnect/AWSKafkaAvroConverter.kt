@@ -129,7 +129,7 @@ open class AWSKafkaAvroConverter(
      * the Avro object itself.
      */
     @VisibleForTesting
-    protected open fun extractAvroSchema(
+    internal open fun extractAvroSchema(
         value: ByteArray,
         deserialized: Any?,
     ): org.apache.avro.Schema {
@@ -153,7 +153,7 @@ open class AWSKafkaAvroConverter(
      * SpecificRecord.
      */
     @VisibleForTesting
-    protected open fun extractSchemaFromAvroObject(avroObject: Any?): org.apache.avro.Schema = when (avroObject) {
+    internal open fun extractSchemaFromAvroObject(avroObject: Any?): org.apache.avro.Schema = when (avroObject) {
         is org.apache.avro.generic.GenericRecord -> avroObject.schema
         is org.apache.avro.specific.SpecificRecord -> avroObject.schema
         else -> throw DataException(
@@ -163,7 +163,7 @@ open class AWSKafkaAvroConverter(
     }
 
     @VisibleForTesting
-    protected open fun getCredentialsProvider(
+    internal open fun getCredentialsProvider(
         roleArn: String,
         sessionName: String,
         region: String,

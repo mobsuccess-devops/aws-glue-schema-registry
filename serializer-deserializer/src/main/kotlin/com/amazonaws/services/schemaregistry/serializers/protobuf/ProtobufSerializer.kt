@@ -39,7 +39,7 @@ open class ProtobufSerializer(
 
     @JvmField
     @VisibleForTesting
-    protected val schemaGeneratorCache: LoadingCache<DescriptorProtos.FileDescriptorProto, String> =
+    internal val schemaGeneratorCache: LoadingCache<DescriptorProtos.FileDescriptorProto, String> =
         CacheBuilder
             .newBuilder()
             .maximumSize(MAX_SCHEMA_GENERATOR_CACHE)

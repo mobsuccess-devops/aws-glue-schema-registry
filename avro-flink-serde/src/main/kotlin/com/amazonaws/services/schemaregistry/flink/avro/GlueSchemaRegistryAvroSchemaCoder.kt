@@ -40,12 +40,12 @@ class GlueSchemaRegistryAvroSchemaCoder : SchemaCoder {
     }
 
     @VisibleForTesting
-    protected constructor(glueSchemaRegistryInputStreamDeserializer: GlueSchemaRegistryInputStreamDeserializer) {
+    internal constructor(glueSchemaRegistryInputStreamDeserializer: GlueSchemaRegistryInputStreamDeserializer) {
         this.glueSchemaRegistryInputStreamDeserializer = glueSchemaRegistryInputStreamDeserializer
     }
 
     @VisibleForTesting
-    protected constructor(glueSchemaRegistryOutputStreamSerializer: GlueSchemaRegistryOutputStreamSerializer) {
+    internal constructor(glueSchemaRegistryOutputStreamSerializer: GlueSchemaRegistryOutputStreamSerializer) {
         this.glueSchemaRegistryOutputStreamSerializer = glueSchemaRegistryOutputStreamSerializer
     }
 

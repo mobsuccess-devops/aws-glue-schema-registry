@@ -29,8 +29,12 @@ modification (JDK 17, `mvn test -pl '!integration-tests'`):
 The Gradle build reproduces these 1973 tests module by module, with no failure. That
 total is the floor to meet again after every Kotlin conversion step.
 
-During the Kotlin conversion, `main` sources are converted while the tests stay in Java.
-The inherited suite is thus an oracle that has not moved, validating the converted code.
+The `main` sources were converted first, with the tests left in Java: the inherited suite
+was then an oracle that had not moved, validating the converted code. The tests followed,
+one module at a time, against a per-class inventory — the count of tests each class runs —
+so that a class silently dropping out of the run is caught rather than hidden in a total.
+Only `integration-tests`, and the Avro classes generated into the test trees, are still
+Java.
 
 ## Accepted deviations from the Maven build
 

@@ -39,7 +39,7 @@ class GlueSchemaRegistryDeserializerImpl : GlueSchemaRegistryDeserializer {
     }
 
     @VisibleForTesting
-    protected constructor(glueSchemaRegistryDeserializationFacade: GlueSchemaRegistryDeserializationFacade) {
+    internal constructor(glueSchemaRegistryDeserializationFacade: GlueSchemaRegistryDeserializationFacade) {
         this.glueSchemaRegistryDeserializationFacade = glueSchemaRegistryDeserializationFacade
     }
 

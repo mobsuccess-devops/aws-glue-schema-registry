@@ -37,7 +37,7 @@ open class SchemaByDefinitionFetcher(
     // @JvmField preserves direct field access from the Java tests in this package.
     @JvmField
     @VisibleForTesting
-    protected val schemaDefinitionToVersionCache: LoadingCache<Schema, UUID> =
+    internal val schemaDefinitionToVersionCache: LoadingCache<Schema, UUID> =
         CacheBuilder
             .newBuilder()
             .maximumSize(glueSchemaRegistryConfiguration.cacheSize.toLong())
