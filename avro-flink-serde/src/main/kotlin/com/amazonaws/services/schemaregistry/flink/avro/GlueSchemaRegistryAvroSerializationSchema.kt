@@ -38,7 +38,7 @@ class GlueSchemaRegistryAvroSerializationSchema<T> : RegistryAvroSerializationSc
     ) : super(recordClazz, reader, schemaCoderProvider)
 
     @VisibleForTesting
-    protected constructor(
+    internal constructor(
         recordClazz: Class<T>,
         reader: Schema?,
         schemaCoder: SchemaCoder,
