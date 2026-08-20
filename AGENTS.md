@@ -111,6 +111,12 @@ These all cost a red test at least once. They are listed in the order they bite.
   entry point that wraps it rather than working around the visibility.
 - **Java's package-private and `protected` nested types have no Kotlin equivalent** when a
   public method exposes them. Make the class public with an `internal` constructor.
+- **A test cannot hand a literal `null` to a non-nullable parameter.** The tests that assert
+  a null is rejected have to route it through an erased generic — `nullOf()` in
+  `TestNulls.kt` — so the check that fires is still the callee's own, not one the test
+  performed on its behalf.
+- **`@MethodSource` resolves by JVM name.** A provider must be `@JvmStatic` in a companion
+  object and must not be `internal`: name mangling makes JUnit report the method as missing.
 
 ## Other build notes
 

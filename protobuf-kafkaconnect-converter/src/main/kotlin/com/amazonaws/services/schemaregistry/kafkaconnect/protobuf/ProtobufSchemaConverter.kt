@@ -52,10 +52,10 @@ class ProtobufSchemaConverter(
     )
 
     @VisibleForTesting
-    protected fun getFromConnectSchemaCache(): Cache<Schema, Descriptors.FileDescriptor>? = fromConnectSchemaCache
+    internal fun getFromConnectSchemaCache(): Cache<Schema, Descriptors.FileDescriptor>? = fromConnectSchemaCache
 
     @VisibleForTesting
-    protected fun getToConnectSchemaCache(): Cache<Descriptors.Descriptor, Schema>? = toConnectSchemaCache
+    internal fun getToConnectSchemaCache(): Cache<Descriptors.Descriptor, Schema>? = toConnectSchemaCache
 
     override fun configure(
         configs: Map<String, *>,
