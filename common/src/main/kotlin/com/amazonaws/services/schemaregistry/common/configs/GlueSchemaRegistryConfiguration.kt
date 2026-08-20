@@ -39,7 +39,7 @@ class GlueSchemaRegistryConfiguration {
     var region: String? = null
     var timeToLiveMillis: Long = 24 * 60 * 60 * 1000L
     var cacheSize: Int = 200
-    var avroRecordType: AvroRecordType? = null
+    var avroRecordType: AvroRecordType? = AvroRecordType.GENERIC_RECORD
     var protobufMessageType: ProtobufMessageType? = null
     var registryName: String? = null
     var compatibilitySetting: Compatibility? = null
