@@ -497,7 +497,7 @@ open class AWSSchemaRegistryClient {
      * AWS SDK Request interceptor that adds additional data to the UserAgent of Glue API requests.
      */
     @VisibleForTesting
-    protected open inner class UserAgentRequestInterceptor : ExecutionInterceptor {
+    internal open inner class UserAgentRequestInterceptor : ExecutionInterceptor {
         // executionAttributes stays nullable: the Java signature did not annotate it and
         // the tests call the method with null.
         override fun modifyRequest(
