@@ -9,7 +9,6 @@ dependencies {
     api(platform(libs.aws.bom))
     api(libs.aws.sts)
     api(libs.aws.arns)
-    api(libs.aws.v1.sts)
     api(libs.kafka.clients)
     api(libs.lz4)
     api(libs.mbknor.jsonSchema) {
