@@ -15,15 +15,6 @@
 
 package com.amazonaws.services.schemaregistry.examples.kds
 
-import com.amazonaws.services.kinesis.AmazonKinesis
-import com.amazonaws.services.kinesis.AmazonKinesisClientBuilder
-import com.amazonaws.services.kinesis.model.DescribeStreamRequest
-import com.amazonaws.services.kinesis.model.DescribeStreamResult
-import com.amazonaws.services.kinesis.model.GetRecordsRequest
-import com.amazonaws.services.kinesis.model.GetShardIteratorRequest
-import com.amazonaws.services.kinesis.model.PutRecordsRequest
-import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry
-import com.amazonaws.services.kinesis.model.Shard
 import com.amazonaws.services.schemaregistry.common.Schema
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializer
@@ -42,7 +33,18 @@ import org.apache.commons.cli.Options
 import org.joda.time.DateTime
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
+import software.amazon.awssdk.core.SdkBytes
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.glue.model.DataFormat
+import software.amazon.awssdk.services.kinesis.KinesisClient
+import software.amazon.awssdk.services.kinesis.model.DescribeStreamRequest
+import software.amazon.awssdk.services.kinesis.model.DescribeStreamResponse
+import software.amazon.awssdk.services.kinesis.model.GetRecordsRequest
+import software.amazon.awssdk.services.kinesis.model.GetShardIteratorRequest
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
+import software.amazon.awssdk.services.kinesis.model.Shard
+import software.amazon.awssdk.services.kinesis.model.ShardIteratorType
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -64,7 +66,7 @@ object PutRecordGetRecordExample {
             .builder()
             .build()
 
-    private lateinit var kinesisClient: AmazonKinesis
+    private lateinit var kinesisClient: KinesisClient
     private lateinit var glueSchemaRegistrySerializer: GlueSchemaRegistrySerializer
     private lateinit var glueSchemaRegistryDeserializer: GlueSchemaRegistryDeserializer
 
@@ -86,31 +88,40 @@ object PutRecordGetRecordExample {
         val numOfRecords = cmd.getOptionValue("numRecords", "10").toInt()
 
         // Kinesis data streams client initialization.
-        kinesisClient = AmazonKinesisClientBuilder.standard().withRegion(regionName).build()
+        KinesisClient
+            .builder()
+            .region(Region.of(regionName))
+            .build()
+            .use { client ->
+                kinesisClient = client
 
-        // Glue Schema Registry serializer initialization for the producer.
-        glueSchemaRegistrySerializer =
-            GlueSchemaRegistrySerializerImpl(
-                awsCredentialsProvider,
-                getSchemaRegistryConfiguration(regionName),
-            )
+                // Glue Schema Registry serializer initialization for the producer.
+                glueSchemaRegistrySerializer =
+                    GlueSchemaRegistrySerializerImpl(
+                        awsCredentialsProvider,
+                        getSchemaRegistryConfiguration(regionName),
+                    )
 
-        // Glue Schema Registry de-serializer initialization for the consumer.
-        glueSchemaRegistryDeserializer =
-            GlueSchemaRegistryDeserializerImpl(awsCredentialsProvider, getSchemaRegistryConfiguration(regionName))
+                // Glue Schema Registry de-serializer initialization for the consumer.
+                glueSchemaRegistryDeserializer =
+                    GlueSchemaRegistryDeserializerImpl(
+                        awsCredentialsProvider,
+                        getSchemaRegistryConfiguration(regionName),
+                    )
 
-        // Define the Glue Schema Registry schema object that will be used to encode data.
-        val gsrSchema = Schema(getAvroSchema().toString(), DataFormat.AVRO.name, schemaName)
+                // Define the Glue Schema Registry schema object that will be used to encode data.
+                val gsrSchema = Schema(getAvroSchema().toString(), DataFormat.AVRO.name, schemaName)
 
-        LOGGER.info("Client initialization complete.")
+                LOGGER.info("Client initialization complete.")
 
-        val timestamp = DateTime.now().toDate()
+                val timestamp = DateTime.now().toDate()
 
-        // Put records into Kinesis stream.
-        putRecordsWithSchema(streamName, numOfRecords, gsrSchema, timestamp)
+                // Put records into Kinesis stream.
+                putRecordsWithSchema(streamName, numOfRecords, gsrSchema, timestamp)
 
-        // Start receiving records from the stream.
-        getRecordsWithSchema(streamName, timestamp)
+                // Start receiving records from the stream.
+                getRecordsWithSchema(streamName, timestamp)
+            }
     }
 
     @Throws(IOException::class)
@@ -119,38 +130,47 @@ object PutRecordGetRecordExample {
         timestamp: Date,
     ) {
         // Standard Kinesis code to getRecords from a Kinesis Data Stream.
-        val describeStreamRequest = DescribeStreamRequest()
-        describeStreamRequest.streamName = streamName
         val shards: MutableList<Shard> = ArrayList()
+        var exclusiveStartShardId: String? = null
 
-        var streamRes: DescribeStreamResult
+        var streamRes: DescribeStreamResponse
         do {
-            streamRes = kinesisClient.describeStream(describeStreamRequest)
-            shards.addAll(streamRes.streamDescription.shards)
-
-            if (shards.size > 0) {
-                shards[shards.size - 1].shardId
+            val requestBuilder = DescribeStreamRequest.builder().streamName(streamName)
+            if (exclusiveStartShardId != null) {
+                requestBuilder.exclusiveStartShardId(exclusiveStartShardId)
             }
-        } while (streamRes.streamDescription.hasMoreShards)
+            streamRes = kinesisClient.describeStream(requestBuilder.build())
+            shards.addAll(streamRes.streamDescription().shards())
 
-        val itReq = GetShardIteratorRequest()
-        itReq.streamName = streamName
-        itReq.shardId = shards[0].shardId
-        itReq.timestamp = timestamp
-        itReq.shardIteratorType = "AT_TIMESTAMP"
+            if (shards.isNotEmpty()) {
+                exclusiveStartShardId = shards[shards.size - 1].shardId()
+            }
+        } while (streamRes.streamDescription().hasMoreShards())
+
+        val itReq =
+            GetShardIteratorRequest
+                .builder()
+                .streamName(streamName)
+                .shardId(shards[0].shardId())
+                .timestamp(timestamp.toInstant())
+                .shardIteratorType(ShardIteratorType.AT_TIMESTAMP)
+                .build()
 
         val shardIteratorResult = kinesisClient.getShardIterator(itReq)
-        val shardIterator: String = shardIteratorResult.shardIterator
+        val shardIterator: String = shardIteratorResult.shardIterator()
 
         // Create new GetRecordsRequest with existing shardIterator.
-        val recordsRequest = GetRecordsRequest()
-        recordsRequest.shardIterator = shardIterator
-        recordsRequest.limit = 1000
+        val recordsRequest =
+            GetRecordsRequest
+                .builder()
+                .shardIterator(shardIterator)
+                .limit(1000)
+                .build()
 
         val result = kinesisClient.getRecords(recordsRequest)
 
-        for (record in result.records) {
-            val recordAsByteBuffer = record.data
+        for (record in result.records()) {
+            val recordAsByteBuffer = record.data().asByteBuffer()
             val decodedRecord = decodeRecord(recordAsByteBuffer)
             LOGGER.info("Decoded Record: $decodedRecord")
         }
@@ -163,27 +183,32 @@ object PutRecordGetRecordExample {
         timestamp: Date,
     ) {
         // Standard Kinesis code to putRecords into a Kinesis Data Stream.
-        val putRecordsRequest = PutRecordsRequest()
-        putRecordsRequest.streamName = streamName
-
         val recordsRequestEntries: MutableList<PutRecordsRequestEntry> = ArrayList()
 
         LOGGER.info("Putting $numOfRecords into $streamName with schema$gsrSchema")
         for (i in 0 until numOfRecords) {
             val record = getTestRecord(i) as GenericRecord
             val recordWithSchema = encodeRecord(record, streamName, gsrSchema)
-            val entry = PutRecordsRequestEntry()
-            entry.data = ByteBuffer.wrap(recordWithSchema)
-            entry.partitionKey =
-                timestamp
-                    .toInstant()
-                    .toEpochMilli()
-                    .toString()
+            val entry =
+                PutRecordsRequestEntry
+                    .builder()
+                    .data(SdkBytes.fromByteArray(recordWithSchema))
+                    .partitionKey(
+                        timestamp
+                            .toInstant()
+                            .toEpochMilli()
+                            .toString(),
+                    ).build()
 
             recordsRequestEntries.add(entry)
         }
 
-        putRecordsRequest.setRecords(recordsRequestEntries)
+        val putRecordsRequest =
+            PutRecordsRequest
+                .builder()
+                .streamName(streamName)
+                .records(recordsRequestEntries)
+                .build()
 
         val putRecordResult = kinesisClient.putRecords(putRecordsRequest)
 
