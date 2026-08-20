@@ -15,6 +15,8 @@ dependencies {
     // Required to apply the shadow plugin from gsr.shaded-conventions.
     implementation(libs.shadow.plugin)
 
+    implementation(libs.licenseReport.plugin)
+
     // Required to apply the Kotlin plugin from gsr.java-conventions.
     implementation(libs.kotlin.gradlePlugin)
     implementation(libs.kotlin.lombokPlugin)

@@ -1,1 +1,30 @@
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+This product includes software developed at Amazon.com, Inc.
+(https://github.com/awslabs/aws-glue-schema-registry).
+
+The `avrodata` package of the Avro Kafka Connect converter derives from Confluent's
+Avro converter, Copyright 2019 Confluent Inc., also under the Apache License 2.0.
+
+--------------------------------------------------------------------------------
+
+MODIFICATIONS
+
+Copyright 2026 Mobsuccess.
+
+This distribution is a modified fork of the upstream project, maintained at
+https://github.com/mobsuccess-devops/aws-glue-schema-registry. The files it contains
+have been changed with respect to the upstream release:
+
+  - the C# binding and its native (GraalVM) layer were removed;
+  - the build was migrated from Maven to Gradle and the JVM target raised from 8 to 17;
+  - the Java sources were converted to Kotlin;
+  - artifacts are published under the `com.mobsuccess` group, never under
+    `software.amazon.glue`, so that a fork artifact can not substitute itself for the
+    Maven Central one in a consumer's dependency graph.
+
+The first commit of the fork repository is the upstream source verbatim (`eed1506`):
+the exact set of modifications is therefore `git diff eed1506` in that repository.
+
+Neither this fork nor its artifacts are endorsed by, or affiliated with, Amazon.com,
+Inc. or its affiliates.

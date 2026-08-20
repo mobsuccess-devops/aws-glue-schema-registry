@@ -36,6 +36,13 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
 
+tasks.withType<Jar>().configureEach {
+    metaInf {
+        from(rootProject.layout.projectDirectory.file("LICENSE.txt"))
+        from(rootProject.layout.projectDirectory.file("NOTICE.txt"))
+    }
+}
+
 // Java and Kotlin coexist for the duration of the conversion: Kotlin compiles first,
 // then javac sees its classes. The sources still in Java therefore validate the code
 // already converted, without the tests having been touched.
