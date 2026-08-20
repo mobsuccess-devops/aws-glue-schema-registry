@@ -36,10 +36,6 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
 
-// Apache License 2.0 §4 requires a copy of the licence and the contents of the NOTICE
-// file to travel with every redistributed copy of the work. The Maven build packaged
-// neither, so a consumer receiving only the jar from GitHub Packages got no licence and
-// no attribution. ShadowJar extends Jar and is covered by this too.
 tasks.withType<Jar>().configureEach {
     metaInf {
         from(rootProject.layout.projectDirectory.file("LICENSE.txt"))
