@@ -103,6 +103,40 @@ jobs:
           min-coverage-overall: 60
           min-coverage-changed-files: 60
 
+  test-jdk:
+    name: Tests on JDK ${{ matrix.jdk }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk: ["21", "25"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+      - name: Setup Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          # Dernier de la liste = JAVA_HOME, donc Gradle tourne sur 21. 17 reste la
+          # toolchain de compilation ; 25 n'est là que comme cible d'exécution.
+          java-version: |
+            25
+            17
+            21
+          cache: gradle
+      - name: Test on JDK ${{ matrix.jdk }}
+        run: >-
+          ./gradlew test
+          -PtestJavaVersion=${{ matrix.jdk }}
+          -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64,JAVA_HOME_21_X64,JAVA_HOME_25_X64
+          --no-daemon
+
   lint:
     name: ktlint
     runs-on: ubuntu-latest

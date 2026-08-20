@@ -113,8 +113,9 @@ class JsonSchemaConverterTest {
 
         val testSchemaVersionId = UUID.randomUUID()
 
-        val gsrKafkaSerializer = createSerializer(jsonSchema.toString(), testSchemaVersionId)
-        val gsrKafkaDeserializer = createDeserializer(jsonSchema.toString(), testSchemaVersionId)
+        val canonicalSchema = JsonSchemaConverter.canonicalize(jsonSchema.toString())
+        val gsrKafkaSerializer = createSerializer(canonicalSchema, testSchemaVersionId)
+        val gsrKafkaDeserializer = createDeserializer(canonicalSchema, testSchemaVersionId)
 
         converter = JsonSchemaConverter(gsrKafkaSerializer, gsrKafkaDeserializer)
         converter.configure(properties, false)
@@ -158,7 +159,9 @@ class JsonSchemaConverterTest {
             converter.configure(properties, false)
 
             val jsonSchemaWithData: Any =
-                JsonDataWithSchema.builder(jsonSchema.toString(), jsonValue.toString()).build()
+                JsonDataWithSchema
+                    .builder(JsonSchemaConverter.canonicalize(jsonSchema.toString()), jsonValue.toString())
+                    .build()
 
             whenever(mockGsrKafkaSerializer.serialize(TEST_TOPIC, jsonSchemaWithData))
                 .thenThrow(AWSSchemaRegistryException())
@@ -184,7 +187,8 @@ class JsonSchemaConverterTest {
 
         val testSchemaVersionId = UUID.randomUUID()
 
-        val gsrKafkaSerializer = createSerializer(jsonSchema.toString(), testSchemaVersionId)
+        val gsrKafkaSerializer =
+            createSerializer(JsonSchemaConverter.canonicalize(jsonSchema.toString()), testSchemaVersionId)
 
         converter = JsonSchemaConverter(gsrKafkaSerializer, mockGsrKafkaDeserializer)
         converter.configure(properties, false)

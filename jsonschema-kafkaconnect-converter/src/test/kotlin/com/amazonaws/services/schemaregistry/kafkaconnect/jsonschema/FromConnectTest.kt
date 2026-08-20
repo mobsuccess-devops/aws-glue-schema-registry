@@ -287,7 +287,10 @@ class FromConnectTest {
             ),
         )
 
-        assertEquals(expectedJsonSchema.toString(), actualJsonSchema.toString())
+        assertEquals(
+            JsonSchemaConverter.canonicalize(expectedJsonSchema.toString()),
+            JsonSchemaConverter.canonicalize(actualJsonSchema.toString()),
+        )
         assertEquals(expectedJsonNode.toString(), convertedJsonNode.toString())
 
         assertDoesNotThrow {
