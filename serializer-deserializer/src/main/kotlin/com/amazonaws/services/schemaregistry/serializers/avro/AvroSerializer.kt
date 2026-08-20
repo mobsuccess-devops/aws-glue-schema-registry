@@ -41,7 +41,7 @@ open class AvroSerializer : GlueSchemaRegistryDataFormatSerializer {
 
     @JvmField
     @VisibleForTesting
-    protected val datumWriterCache: LoadingCache<DatumWriterCacheKey, DatumWriter<Any>> =
+    internal val datumWriterCache: LoadingCache<DatumWriterCacheKey, DatumWriter<Any>> =
         CacheBuilder
             .newBuilder()
             .maximumSize(MAX_DATUM_WRITER_CACHE_SIZE)

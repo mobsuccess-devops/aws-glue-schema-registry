@@ -12,13 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.amazonaws.services.schemaregistry.utils;
 
-import java.nio.ByteBuffer;
-import java.util.UUID;
+package com.amazonaws.services.schemaregistry.utils
 
-public final class SerializedByteArrayGenerator {
+import java.nio.ByteBuffer
+import java.util.UUID
 
+object SerializedByteArrayGenerator {
     /**
      * Helper method to construct a serialized message from the supplied byte parameters with UUID.
      *
@@ -27,9 +27,14 @@ public final class SerializedByteArrayGenerator {
      * @param uuid              schema version id
      * @return constructed byte array of the message
      */
-    public static byte[] constructBasicSerializedData(byte headerVersionByte, byte compressionByte, UUID uuid) {
-        ByteBuffer byteBuffer = constructBasicSerializedByteBuffer(headerVersionByte, compressionByte, uuid);
-        return byteBuffer.array();
+    @JvmStatic
+    fun constructBasicSerializedData(
+        headerVersionByte: Byte,
+        compressionByte: Byte,
+        uuid: UUID,
+    ): ByteArray {
+        val byteBuffer = constructBasicSerializedByteBuffer(headerVersionByte, compressionByte, uuid)
+        return byteBuffer.array()
     }
 
     /**
@@ -40,15 +45,19 @@ public final class SerializedByteArrayGenerator {
      * @param uuid              schema version id
      * @return constructed byte buffer of the message
      */
-    public static ByteBuffer constructBasicSerializedByteBuffer(byte headerVersionByte, byte compressionByte,
-                                                                UUID uuid) {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[18]);
+    @JvmStatic
+    fun constructBasicSerializedByteBuffer(
+        headerVersionByte: Byte,
+        compressionByte: Byte,
+        uuid: UUID,
+    ): ByteBuffer {
+        val byteBuffer = ByteBuffer.wrap(ByteArray(18))
 
-        byteBuffer.put(headerVersionByte);
-        byteBuffer.put(compressionByte);
-        byteBuffer.putLong(uuid.getMostSignificantBits());
-        byteBuffer.putLong(uuid.getLeastSignificantBits());
+        byteBuffer.put(headerVersionByte)
+        byteBuffer.put(compressionByte)
+        byteBuffer.putLong(uuid.mostSignificantBits)
+        byteBuffer.putLong(uuid.leastSignificantBits)
 
-        return byteBuffer;
+        return byteBuffer
     }
 }

@@ -16,21 +16,20 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.utils.apicurio;
+package com.amazonaws.services.schemaregistry.utils.apicurio
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
 
-public class ProtobufTestCaseReader {
-    private static final String TEST_PROTO_PATH = "src/test/proto";
+object ProtobufTestCaseReader {
+    private const val TEST_PROTO_PATH = "src/test/proto"
 
-    public static String getRawSchema(String fileName) {
-        try {
-            return new String(Files.readAllBytes(Paths.get(TEST_PROTO_PATH, fileName)), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading file", e);
-        }
+    @JvmStatic
+    fun getRawSchema(fileName: String): String = try {
+        String(Files.readAllBytes(Paths.get(TEST_PROTO_PATH, fileName)), StandardCharsets.UTF_8)
+    } catch (e: IOException) {
+        throw RuntimeException("Error reading file", e)
     }
 }

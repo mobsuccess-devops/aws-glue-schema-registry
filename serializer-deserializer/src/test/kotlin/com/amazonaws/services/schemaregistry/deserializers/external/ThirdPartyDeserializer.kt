@@ -12,26 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.amazonaws.services.schemaregistry.deserializers.external;
 
-import java.util.Map;
-import org.apache.kafka.common.serialization.Deserializer;
+package com.amazonaws.services.schemaregistry.deserializers.external
 
-public class ThirdPartyDeserializer implements Deserializer<Object> {
+import org.apache.kafka.common.serialization.Deserializer
 
-    @Override
-    public void configure(Map<String, ?> configs, boolean isKey) {
-
+class ThirdPartyDeserializer : Deserializer<Any> {
+    override fun configure(
+        configs: Map<String, *>,
+        isKey: Boolean,
+    ) {
     }
 
-    @Override
-    public Object deserialize(String topic, byte[] data) {
-        return new Object();
+    override fun deserialize(
+        topic: String,
+        data: ByteArray,
+    ): Any = Any()
+
+    override fun close() {
     }
-
-    @Override
-    public void close() {
-
-    }
-
 }

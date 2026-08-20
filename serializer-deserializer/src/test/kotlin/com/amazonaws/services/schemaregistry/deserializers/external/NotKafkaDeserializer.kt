@@ -12,21 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.amazonaws.services.schemaregistry.deserializers.external;
 
-import java.util.Map;
+package com.amazonaws.services.schemaregistry.deserializers.external
 
-public class NotKafkaDeserializer {
-
-    public void configure(Map<String, ?> configs, boolean isKey) {
-
+class NotKafkaDeserializer {
+    fun configure(
+        configs: Map<String, *>,
+        isKey: Boolean,
+    ) {
     }
 
-    public Object deserialize(String topic, byte[] data) {
-        return new Object();
-    }
+    fun deserialize(
+        topic: String,
+        data: ByteArray,
+    ): Any = Any()
 
-    public void close() {
-
+    fun close() {
     }
 }
