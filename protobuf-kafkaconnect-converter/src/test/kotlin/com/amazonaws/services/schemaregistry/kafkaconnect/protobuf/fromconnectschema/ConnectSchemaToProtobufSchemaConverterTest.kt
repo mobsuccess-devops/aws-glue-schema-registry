@@ -80,6 +80,50 @@ class ConnectSchemaToProtobufSchemaConverterTest {
         }
     }
 
+    @Test
+    fun fromConnectSchema_structWithNullParametersAndName_doesNotThrowNPE() {
+        val nestedStruct =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .field("innerField", Schema.STRING_SCHEMA)
+                .build()
+        val parentSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .name("ParentMessage")
+                .field("nestedField", nestedStruct)
+                .build()
+
+        val protobufSchema = CONNECT_SCHEMA_TO_PROTOBUF_SCHEMA_CONVERTER.convert(parentSchema)
+
+        assertEquals(1, protobufSchema.messageTypes.size)
+        val parentMessage = protobufSchema.messageTypes[0]
+        assertEquals("NestedField", parentMessage.nestedTypes[0].name)
+        assertEquals(parentMessage.nestedTypes[0], parentMessage.findFieldByName("nestedField").messageType)
+    }
+
+    @Test
+    fun fromConnectSchema_unnamedStructNestedTwoLevelsDeep_resolvesItsTypeName() {
+        val innerStruct =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .field("innerField", Schema.STRING_SCHEMA)
+                .build()
+        val nestedStruct =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .field("innerStruct", innerStruct)
+                .build()
+        val parentSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .name("ParentMessage")
+                .field("nestedField", nestedStruct)
+                .build()
+
+        val protobufSchema = CONNECT_SCHEMA_TO_PROTOBUF_SCHEMA_CONVERTER.convert(parentSchema)
+
+        val nestedField = protobufSchema.messageTypes[0].nestedTypes[0]
+        val innerStructType = nestedField.nestedTypes[0]
+        assertEquals("InnerStruct", innerStructType.name)
+        assertEquals(innerStructType, nestedField.findFieldByName("innerStruct").messageType)
+    }
+
     companion object {
         private val CONNECT_SCHEMA_TO_PROTOBUF_SCHEMA_CONVERTER = ConnectSchemaToProtobufSchemaConverter()
 
