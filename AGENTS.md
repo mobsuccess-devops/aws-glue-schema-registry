@@ -117,6 +117,9 @@ These all cost a red test at least once. They are listed in the order they bite.
   performed on its behalf.
 - **`@MethodSource` resolves by JVM name.** A provider must be `@JvmStatic` in a companion
   object and must not be `internal`: name mangling makes JUnit report the method as missing.
+- **`Mockito.any(Foo.class)` returns null**, which a Kotlin non-nullable parameter rejects
+  before the mock is ever reached. Use mockito-kotlin's `any<Foo>()`, which hands back a
+  non-null stand-in; the same applies to `anyMap()` and `anyString()`.
 
 ## Other build notes
 

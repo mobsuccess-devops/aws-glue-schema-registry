@@ -47,7 +47,7 @@ open class GlueSchemaRegistryDeserializationFacade : Closeable {
 
     @JvmField
     @VisibleForTesting
-    protected var cache: LoadingCache<UUID, Schema>
+    internal var cache: LoadingCache<UUID, Schema>
 
     /**
      * Constructor accepting various dependencies.
