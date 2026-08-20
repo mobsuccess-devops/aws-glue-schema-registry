@@ -35,7 +35,6 @@ dependencies {
         exclude(group = "com.charleskorn.kaml", module = "kaml")
     }
     api(libs.protoGoogleCommon)
-    api(libs.jimfs)
 
     testImplementation(libs.truth.protoExtension)
 }
