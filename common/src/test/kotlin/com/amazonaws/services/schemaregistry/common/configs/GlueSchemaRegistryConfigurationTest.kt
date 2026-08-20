@@ -197,6 +197,7 @@ class GlueSchemaRegistryConfigurationTest {
         assertNotNull(serDeConfigs.timeToLiveMillis)
         assertNotNull(serDeConfigs.compressionType == AWSSchemaRegistryConstants.COMPRESSION.NONE)
         assertNotNull(serDeConfigs.compatibilitySetting == Compatibility.NONE)
+        assertEquals(AvroRecordType.GENERIC_RECORD, serDeConfigs.avroRecordType)
     }
 
     /**
