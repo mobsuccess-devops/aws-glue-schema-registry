@@ -58,6 +58,7 @@ dependencies {
     testImplementation(libs.junit.platformCommons)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junitJupiter)
+    testImplementation(libs.mockito.kotlin)
     testRuntimeOnly(libs.junit.jupiterEngine)
     // Gradle 9 exige le launcher de la plateforme JUnit sur le classpath de test.
     testRuntimeOnly(libs.junit.platformLauncher)
