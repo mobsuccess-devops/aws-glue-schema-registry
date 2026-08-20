@@ -128,7 +128,6 @@ object FileDescriptorUtils {
     private const val OBJC_CLASS_PREFIX_OPTION = "objc_class_prefix"
     private const val OPTIMIZE_FOR_OPTION = "optimize_for"
     private const val PHP_CLASS_PREFIX_OPTION = "php_class_prefix"
-    private const val PHP_GENERIC_SERVICES_OPTION = "php_generic_services"
     private const val PHP_METADATA_NAMESPACE_OPTION = "php_metadata_namespace"
     private const val PHP_NAMESPACE_OPTION = "php_namespace"
     private const val PY_GENERIC_SERVICES_OPTION = "py_generic_services"
@@ -329,11 +328,6 @@ object FileDescriptorUtils {
         val objcClassPrefix = findOptionString(OBJC_CLASS_PREFIX_OPTION, element.options)
         if (objcClassPrefix != null) {
             schema.mergeOptions(FileOptions.newBuilder().setObjcClassPrefix(objcClassPrefix).build())
-        }
-
-        val phpGenericServices = findOptionBoolean(PHP_GENERIC_SERVICES_OPTION, element.options)
-        if (phpGenericServices != null) {
-            schema.mergeOptions(FileOptions.newBuilder().setPhpGenericServices(phpGenericServices).build())
         }
 
         val phpClassPrefix = findOptionString(PHP_CLASS_PREFIX_OPTION, element.options)
@@ -874,11 +868,6 @@ object FileDescriptorUtils {
         }
         if (file.options.hasPhpClassPrefix()) {
             options.add(OptionElement(PHP_CLASS_PREFIX_OPTION, stringKind, file.options.phpClassPrefix, false))
-        }
-        if (file.options.hasPhpGenericServices()) {
-            options.add(
-                OptionElement(PHP_GENERIC_SERVICES_OPTION, booleanKind, file.options.phpGenericServices, false),
-            )
         }
         if (file.options.hasPhpMetadataNamespace()) {
             options.add(
