@@ -3,29 +3,67 @@ updates:
   - package-ecosystem: gradle
     directory: "/"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 100
+      interval: monthly
+    cooldown:
+      default-days: 14
+      semver-major-days: 30
+    open-pull-requests-limit: 10
     commit-message:
       prefix: chore
       include: scope
     groups:
-      # The Kotlin dependencies pulled in by mbknor-jackson-jsonschema and wire are
-      # pinned together (kotlinRuntime in the catalog): bumping them separately
-      # breaks resolution.
       kotlin:
         patterns:
           - "org.jetbrains.kotlin:*"
       aws:
         patterns:
           - "software.amazon.awssdk:*"
+          - "software.amazon.msk:*"
+          - "software.amazon.kinesis:*"
+      kafka:
+        patterns:
+          - "org.apache.kafka:*"
+      avro:
+        patterns:
+          - "org.apache.avro:*"
+      protobuf:
+        patterns:
+          - "com.google.protobuf:*"
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson*"
+      logging:
+        patterns:
+          - "org.slf4j:*"
+          - "org.apache.logging.log4j:*"
       junit:
         patterns:
           - "org.junit*"
+      mockito:
+        patterns:
+          - "org.mockito*"
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 100
+      interval: monthly
+    cooldown:
+      default-days: 14
+      semver-major-days: 30
+    open-pull-requests-limit: 5
     commit-message:
       prefix: chore
       include: scope
+    groups:
+      actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
