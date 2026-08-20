@@ -693,10 +693,12 @@ open class AvroData(avroDataConfig: AvroDataConfig) {
                             value
                         } else if (value is GenericFixed) {
                             ByteBuffer.wrap(value.bytes())
+                        } else if (value is BigDecimal && Decimal.LOGICAL_NAME == schema.name()) {
+                            ByteBuffer.wrap(Decimal.fromLogical(schema, value))
                         } else {
                             throw DataException(
-                                "Invalid class for bytes type, expecting byte[] or ByteBuffer " +
-                                    "but found " + value.javaClass,
+                                "Invalid class for bytes type, expecting byte[], ByteBuffer, GenericFixed " +
+                                    "or a BigDecimal on a decimal schema but found " + value.javaClass,
                             )
                         }
 
