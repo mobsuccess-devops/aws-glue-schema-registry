@@ -50,6 +50,7 @@ kotlin = "2.4.10"
 shadow = "9.2.2"
 protobufPlugin = "0.9.5"
 avroPlugin = "1.9.1"
+licenseReport = "2.9"
 
 [libraries]
 # --- AWS ---
@@ -116,6 +117,7 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-lombokPlugin = { module = "org.jetbrains.kotlin.plugin.lombok:org.jetbrains.kotlin.plugin.lombok.gradle.plugin", version.ref = "kotlin" }
+licenseReport-plugin = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
 
 # --- Logging ---
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }

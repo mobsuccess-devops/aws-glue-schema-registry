@@ -67,6 +67,23 @@ The inherited suite is thus an oracle that has not moved, validating the convert
   `ProtoParser` with its constructor and called `readProtoFile()`. That constructor is
   `internal` in Wire — visible from Java, not from Kotlin — so the conversion uses the
   public `ProtoParser.parse(location, data)`, which does exactly those two steps.
+- **`LICENSE.txt` and `NOTICE.txt` packaged in every jar.** Apache License 2.0 §4 asks
+  for both to accompany each redistributed copy of the work; the Maven build packaged
+  neither, so a consumer receiving only the jar got no licence and no attribution. They
+  now land in `META-INF/` of every artifact, uber-jars included.
+- **`NOTICE.txt` states the modifications.** ALv2 §4.b requires a modified distribution
+  to carry prominent notice of the change. The upstream `NOTICE.txt` held the Amazon
+  copyright line alone; the fork's modifications are now listed after it, along with the
+  disclaimer that the fork is not endorsed by Amazon.
+- **`THIRD-PARTY-LICENSES.txt` generated instead of versioned.** The inherited file
+  described the dependency graph of the Maven build, a set this fork no longer has: the
+  C# modules are gone, Kotlin, Wire and `at.yawk.lz4` came in. It is replaced by a
+  `thirdPartyLicenses` task, built on `com.github.jk1.dependency-license-report`, which
+  derives the inventory from the resolved `runtimeClasspath` and packages it into the
+  uber-jars — the only artifacts that physically embed third-party code. Generating it
+  per build is what keeps it from drifting a second time. The report's generation
+  timestamp is stripped so that two builds of the same commit produce identical jars.
+
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes
