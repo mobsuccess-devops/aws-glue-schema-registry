@@ -178,8 +178,10 @@ that surface small; none of them survive a careless rewrite, so check them befor
   plugin code and is limited to `contents: read` with `persist-credentials: false`, so a
   hostile dependency finds neither a token in `.git/config` nor one it could comment or push
   with. Keep the pull request comments in `report`, which downloads artifacts and runs no
-  repository code. `permissions: {}` at the top of the workflow means a new job starts with
-  nothing, since the repository-wide default is still `write`. The exceptions are deliberate:
+  repository code — `report` needs `contents: read` on top of its write scopes, since
+  `publish-unit-test-result-action` resolves the commit through the API. `permissions: {}` at
+  the top of the workflow means a new job starts with nothing, since the repository-wide
+  default is still `write`. The exceptions are deliberate:
   `ktlint` takes `pull-requests: read` because reviewdog reads the diff to place its
   findings, and the two `publish-*` jobs need `packages: write` to publish — plus, for
   `publish-release`, `contents: write` and the only checkout that keeps its credentials
