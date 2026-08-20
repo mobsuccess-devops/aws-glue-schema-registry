@@ -71,8 +71,25 @@ dependencies {
     testRuntimeOnly(libs.junit.platformLauncher)
 }
 
+val testJavaVersion =
+    providers.gradleProperty("testJavaVersion").orNull?.let { requested ->
+        val version =
+            requested.toIntOrNull()?.takeIf { it > 0 }
+                ?: throw GradleException(
+                    "testJavaVersion must be a positive integer, not '$requested'. " +
+                        "Pass a major version, for instance -PtestJavaVersion=21.",
+                )
+        JavaLanguageVersion.of(version)
+    } ?: JavaLanguageVersion.of(17)
+
+val testJavaLauncher =
+    extensions.getByType<JavaToolchainService>().launcherFor {
+        languageVersion.set(testJavaVersion)
+    }
+
 tasks.test {
     useJUnitPlatform()
+    javaLauncher.set(testJavaLauncher)
     // Mirrors the surefire exclusion of the parent pom: *IntegrationTest classes need
     // real AWS resources and are not part of the unit run.
     filter {
