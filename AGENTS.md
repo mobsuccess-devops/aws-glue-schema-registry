@@ -174,15 +174,22 @@ that surface small; none of them survive a careless rewrite, so check them befor
   checks the committed `gradle-wrapper.jar` against Gradle's published hashes. Both have to
   be refreshed together when the wrapper is upgraded, with the values from
   `services.gradle.org/distributions/gradle-<version>-bin.zip.sha256`.
-- **Only the `report` job holds a write token.** `Gradle Build` runs third-party plugin code
-  and is limited to `contents: read` with `persist-credentials: false`, so a hostile
-  dependency finds neither a token in `.git/config` nor one it could comment or push with.
-  Keep the pull request comments in `report`, which downloads artifacts and runs no
+- **No job that runs repository code holds a write token.** `Gradle Build` runs third-party
+  plugin code and is limited to `contents: read` with `persist-credentials: false`, so a
+  hostile dependency finds neither a token in `.git/config` nor one it could comment or push
+  with. Keep the pull request comments in `report`, which downloads artifacts and runs no
   repository code. `permissions: {}` at the top of the workflow means a new job starts with
-  nothing, since the repository-wide default is still `write`. Two jobs need more than
-  `contents: read`: `ktlint` takes `pull-requests: read` because reviewdog reads the diff to
-  place its findings, and `publish-release` is the one checkout that keeps its credentials
-  persisted — its last step pushes the release tag.
+  nothing, since the repository-wide default is still `write`. The exceptions are deliberate:
+  `ktlint` takes `pull-requests: read` because reviewdog reads the diff to place its
+  findings, and the two `publish-*` jobs need `packages: write` to publish — plus, for
+  `publish-release`, `contents: write` and the only checkout that keeps its credentials
+  persisted, since its last step pushes the release tag. Those two run on a push to `master`
+  or `prod`, never on a pull request.
+- **`report` tolerates a build that produced nothing.** Its downloads are
+  `continue-on-error`, and each publishing step is gated on its own download having
+  succeeded: a compile failure leaves `Gradle Build` red on its own rather than dragging a
+  second job down with it. The job itself runs on `!cancelled()`, so a failing test suite is
+  still reported.
 - **Dependabot proposes a release only once it has aged** (`cooldown` in
   `dependabot.yml`): a hijacked publish is usually pulled within days. The cooldown covers
   version updates only — a security update still lands the day it is published, which is
