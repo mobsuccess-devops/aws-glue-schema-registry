@@ -449,7 +449,7 @@ deserialization must set both properties to keep working; otherwise they will re
 **Kinesis Client library (KCL) / Kinesis Producer Library (KPL):** [Getting started with AWS Glue Schema Registry with AWS Kinesis Data Streams](https://docs.aws.amazon.com/glue/latest/dg/schema-registry-integrations.html#schema-registry-integrations-kds)
 
 If you cannot use KCL / KPL libraries for Kinesis Data Streams integration,
-**See [examples](examples/) and [integration-tests](integration-tests/) for working example with Kinesis SDK, KPL and
+see [examples](examples/) and [integration-tests](integration-tests/) for a working example with Kinesis SDK, KPL and
 KCL.
 
 ### Using Auto-Registration
@@ -765,3 +765,21 @@ value.converter.assumeRoleSessionName=my-custom-session
 ## Security issue notifications
 
 If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
+
+## License and attribution
+
+This library is distributed under the [Apache License 2.0](LICENSE.txt), unchanged from
+upstream. This fork is a **modified** distribution of
+[`awslabs/aws-glue-schema-registry`](https://github.com/awslabs/aws-glue-schema-registry):
+the modifications are listed in [NOTICE.txt](NOTICE.txt) and summarised in
+[How this fork differs](#how-this-fork-differs). It is neither endorsed by nor affiliated
+with Amazon.com, Inc. or its affiliates.
+
+Every published artifact carries `META-INF/LICENSE.txt` and `META-INF/NOTICE.txt`. The
+uber-jars — the Kafka Connect converters and `schema-registry-serde-msk-iam` — bundle
+their dependencies, and so also carry `META-INF/THIRD-PARTY-LICENSES.txt`, an inventory
+generated from the resolved runtime classpath at build time:
+
+```bash
+./gradlew thirdPartyLicenses
+```

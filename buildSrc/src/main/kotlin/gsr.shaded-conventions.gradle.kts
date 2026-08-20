@@ -1,16 +1,49 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.filter.ReduceDuplicateLicensesFilter
+import com.github.jk1.license.render.InventoryReportRenderer
 
 plugins {
     id("gsr.java-conventions")
     id("gsr.publish-conventions")
     id("com.gradleup.shadow")
+    id("com.github.jk1.dependency-license-report")
 }
+
+licenseReport {
+    configurations = arrayOf("runtimeClasspath")
+    renderers = arrayOf(InventoryReportRenderer("THIRD-PARTY-LICENSES.txt", project.name))
+    filters = arrayOf(LicenseBundleNormalizer(), ReduceDuplicateLicensesFilter())
+}
+
+val thirdPartyLicenses =
+    tasks.register("thirdPartyLicenses") {
+        group = "documentation"
+        description = "Builds the third-party licence inventory bundled in the uber-jar."
+
+        val report =
+            layout.buildDirectory.file("reports/dependency-license/THIRD-PARTY-LICENSES.txt")
+        val inventory = layout.buildDirectory.file("licenses/THIRD-PARTY-LICENSES.txt")
+
+        dependsOn(tasks.named("generateLicenseReport"))
+        inputs.file(report)
+        outputs.file(inventory)
+
+        doLast {
+            val lines = report.get().asFile.readLines().filterNot { it.startsWith("Generated: ") }
+            inventory.get().asFile.writeText(lines.joinToString("\n", postfix = "\n"))
+        }
+    }
 
 // The original pom had maven-shade-plugin replace the main artifact with the uber-jar:
 // these modules are dropped as-is onto a Kafka Connect plugin path, where nothing
 // resolves transitive dependencies.
 tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set("")
+    metaInf {
+        from(thirdPartyLicenses)
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.named<Jar>("jar") {
