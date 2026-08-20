@@ -110,7 +110,7 @@ are excluded from the unit run and are not executed in CI.
 
 ## Using the AWS Glue Schema Registry Library Serializer / Deserializer
 
-The recommended way to use the AWS Glue Schema Registry Library for Java is to consume it from Maven.
+The recommended way to use the AWS Glue Schema Registry Library is to consume the published artifact from GitHub Packages, as described in [Installation](#installation).
 
 **Using AWS Glue Schema Registry with Amazon MSK** &mdash; To set-up Amazon Managed Streaming for Apache Kafka see
 [Getting started with Amazon MSK.](https://docs.aws.amazon.com/msk/latest/developerguide/getting-started.html)
@@ -125,214 +125,206 @@ implementation("com.mobsuccess:schema-registry-serde:<version>")
 
 #### Producer for Kafka with AVRO format
 
-```java
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GlueSchemaRegistryKafkaSerializer.class.getName());
-        properties.put(AWSSchemaRegistryConstants.DATA_FORMAT, DataFormat.AVRO.name());
-        properties.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
-        properties.put(AWSSchemaRegistryConstants.REGISTRY_NAME, "my-registry");
-        properties.put(AWSSchemaRegistryConstants.SCHEMA_NAME, "my-schema");
+```kotlin
+properties[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaSerializer::class.java.name
+properties[AWSSchemaRegistryConstants.DATA_FORMAT] = DataFormat.AVRO.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry"
+properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "my-schema"
 
-        Schema schema_payment = null;
-        try {
-            schema_payment = parser.parse(new File("src/main/resources/avro/com/tutorial/Payment.avsc"));
-        } catch (IOException e) {
-            e.printStackTrace();
+val paymentSchema = Schema.Parser().parse(File("src/main/resources/avro/com/tutorial/Payment.avsc"))
+
+val musical = GenericData.Record(paymentSchema)
+musical.put("id", "entertainment_2")
+musical.put("amount", 105.0)
+
+val misc = listOf<GenericRecord>(musical)
+
+try {
+    KafkaProducer<String, GenericRecord>(properties).use { producer ->
+        misc.forEachIndexed { i, r ->
+            producer.send(ProducerRecord(topic, r.get("id").toString(), r))
+            println("Sent message $i")
+            Thread.sleep(1000L)
         }
-
-        GenericRecord musical = new GenericData.Record(schema_payment);
-        musical.put("id", "entertainment_2");
-        musical.put("amount", 105.0);
-
-        List<GenericRecord> misc = new ArrayList<>();
-        misc.add(musical);
-
-        try (KafkaProducer<String, GenericRecord> producer = new KafkaProducer<String, GenericRecord>(properties)) {
-            for (int i = 0; i < 4; i++) {
-                GenericRecord r = misc.get(i);
-
-                final ProducerRecord<String, GenericRecord> record;
-                record = new ProducerRecord<String, GenericRecord>(topic, r.get("id").toString(), r);
-
-                producer.send(record);
-                System.out.println("Sent message " + i);
-                Thread.sleep(1000L);
-            }
-            producer.flush();
-            System.out.println("Successfully produced 10 messages to a topic called " + topic);
-
-        } catch (final InterruptedException | SerializationException e) {
-            e.printStackTrace();
-        }
+        producer.flush()
+        println("Successfully produced ${misc.size} messages to a topic called $topic")
+    }
+} catch (e: InterruptedException) {
+    e.printStackTrace()
+} catch (e: SerializationException) {
+    e.printStackTrace()
+}
 ```
 
 #### Consumer for Kafka with AVRO format
 
-```java
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GlueSchemaRegistryKafkaDeserializer.class
-        .getName();
-        properties.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
-        properties.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
+```kotlin
+properties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
+properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaDeserializer::class.java.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+properties[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] = AvroRecordType.GENERIC_RECORD.getName()
 
-        try (final KafkaConsumer<String, GenericRecord> consumer = new KafkaConsumer<String, GenericRecord>(properties)) {
-            consumer.subscribe(Collections.singletonList(topic));
+KafkaConsumer<String, GenericRecord>(properties).use { consumer ->
+    consumer.subscribe(listOf(topic))
 
-            while (true) {
-                final ConsumerRecords<String, GenericRecord> records = consumer.poll(100);
-                for (final ConsumerRecord<String, GenericRecord> record : records) {
-                    final String key = record.key();
-                    final GenericRecord value = record.value();
-                    System.out.println("Received message: key = " + key + ", value = " + value);
-                }
-            }
+    while (true) {
+        val records = consumer.poll(Duration.ofMillis(100))
+        for (record in records) {
+            val key = record.key()
+            val value = record.value()
+            println("Received message: key = $key, value = $value")
         }
-
+    }
+}
 ```
 
 #### Producer for Kafka with JSON format
 
-```java
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GlueSchemaRegistryKafkaSerializer.class.getName());
-        properties.put(AWSSchemaRegistryConstants.DATA_FORMAT, DataFormat.JSON.name());
-        properties.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
-        properties.put(AWSSchemaRegistryConstants.REGISTRY_NAME, "my-registry");
-        properties.put(AWSSchemaRegistryConstants.SCHEMA_NAME, "my-schema");
+```kotlin
+properties[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaSerializer::class.java.name
+properties[AWSSchemaRegistryConstants.DATA_FORMAT] = DataFormat.JSON.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry"
+properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "my-schema"
 
-        String jsonSchema = "{\n" + "        \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n"
-                                                + "        \"type\": \"object\",\n" + "        \"properties\": {\n" + "          \"employee\": {\n"
-                                                + "            \"type\": \"object\",\n" + "            \"properties\": {\n"
-                                                + "              \"name\": {\n" + "                \"type\": \"string\"\n" + "              },\n"
-                                                + "              \"age\": {\n" + "                \"type\": \"integer\"\n" + "              },\n"
-                                                + "              \"city\": {\n" + "                \"type\": \"string\"\n" + "              }\n"
-                                                + "            },\n" + "            \"required\": [\n" + "              \"name\",\n"
-                                                + "              \"age\",\n" + "              \"city\"\n" + "            ]\n" + "          }\n"
-                                                + "        },\n" + "        \"required\": [\n" + "          \"employee\"\n" + "        ]\n"
-                                                + "      }";
-        String jsonPayload = "{\n" + "        \"employee\": {\n" + "          \"name\": \"John\",\n" + "          \"age\": 30,\n"
-                                                 + "          \"city\": \"New York\"\n" + "        }\n" + "      }";
-
-        JsonDataWithSchema jsonSchemaWithData = JsonDataWithSchema.builder(jsonSchema, jsonPayload).build();
-
-        List<JsonDataWithSchema> genericJsonRecords = new ArrayList<>();
-        genericJsonRecords.add(jsonSchemaWithData);
-
-        try (KafkaProducer<String, JsonDataWithSchema> producer = new KafkaProducer<String, JsonDataWithSchema>(properties)) {
-            for (int i = 0; i < genericJsonRecords.size(); i++) {
-                JsonDataWithSchema r = genericJsonRecords.get(i);
-
-                final ProducerRecord<String, JsonDataWithSchema> record;
-                record = new ProducerRecord<String, JsonDataWithSchema>(topic, "message-" + i, r);
-
-                producer.send(record);
-                System.out.println("Sent message " + i);
-                Thread.sleep(1000L);
-            }
-            producer.flush();
-            System.out.println("Successfully produced 10 messages to a topic called " + topic);
-
-        } catch (final InterruptedException | SerializationException e) {
-            e.printStackTrace();
+val jsonSchema =
+    """
+    {
+      "${'$'}schema": "http://json-schema.org/draft-04/schema#",
+      "type": "object",
+      "properties": {
+        "employee": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "age": { "type": "integer" },
+            "city": { "type": "string" }
+          },
+          "required": ["name", "age", "city"]
         }
+      },
+      "required": ["employee"]
+    }
+    """.trimIndent()
+
+val jsonPayload =
+    """
+    {
+      "employee": {
+        "name": "John",
+        "age": 30,
+        "city": "New York"
+      }
+    }
+    """.trimIndent()
+
+val jsonSchemaWithData = JsonDataWithSchema.builder(jsonSchema, jsonPayload).build()
+
+val genericJsonRecords = listOf(jsonSchemaWithData)
+
+try {
+    KafkaProducer<String, JsonDataWithSchema>(properties).use { producer ->
+        genericJsonRecords.forEachIndexed { i, r ->
+            producer.send(ProducerRecord(topic, "message-$i", r))
+            println("Sent message $i")
+            Thread.sleep(1000L)
+        }
+        producer.flush()
+        println("Successfully produced ${genericJsonRecords.size} messages to a topic called $topic")
+    }
+} catch (e: InterruptedException) {
+    e.printStackTrace()
+} catch (e: SerializationException) {
+    e.printStackTrace()
+}
 ```
 
 #### Consumer for Kafka with JSON format
 
-```java
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GlueSchemaRegistryKafkaDeserializer.class
-        .getName();
-        properties.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
+```kotlin
+properties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
+properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaDeserializer::class.java.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
 
-        try (final KafkaConsumer<String, JsonDataWithSchema> consumer = new KafkaConsumer<String, JsonDataWithSchema>(properties)) {
-            consumer.subscribe(Collections.singletonList(topic));
+KafkaConsumer<String, JsonDataWithSchema>(properties).use { consumer ->
+    consumer.subscribe(listOf(topic))
 
-            while (true) {
-                final ConsumerRecords<String, JsonDataWithSchema> records = consumer.poll(100);
-                for (final ConsumerRecord<String, JsonDataWithSchema> record : records) {
-                    final String key = record.key();
-                    final JsonDataWithSchema value = record.value();
-                    System.out.println("Received message: key = " + key + ", value = " + value);
-                }
-            }
+    while (true) {
+        val records = consumer.poll(Duration.ofMillis(100))
+        for (record in records) {
+            val key = record.key()
+            val value = record.value()
+            println("Received message: key = $key, value = $value")
         }
-
+    }
+}
 ```
 
 #### Producer for Kafka with PROTOBUF format
 
-```java
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GlueSchemaRegistryKafkaSerializer.class.getName());
-        properties.put(AWSSchemaRegistryConstants.DATA_FORMAT, DataFormat.PROTOBUF.name());
-        properties.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
-        properties.put(AWSSchemaRegistryConstants.REGISTRY_NAME, "my-registry");
-        properties.put(AWSSchemaRegistryConstants.SCHEMA_NAME, "protobuf-file-name.proto")
+```kotlin
+properties[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaSerializer::class.java.name
+properties[AWSSchemaRegistryConstants.DATA_FORMAT] = DataFormat.PROTOBUF.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry"
+properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "protobuf-file-name.proto"
 
-        // POJO production
+// POJO production
 
-        // CustomerAddress is the generated Protocol Buffers class based on the given Protobuf schema definition
-        CustomerAddress customerAddress = CustomerAddress.newBuilder().build();
+// CustomerAddress is the generated Protocol Buffers class based on the given Protobuf schema definition
+val customerAddress = CustomerAddress.newBuilder().build()
 
-        KafkaProducer<String, CustomerAddress> producer =
-             new KafkaProducer<String, CustomerAddress>(properties);
+val pojoProducer = KafkaProducer<String, CustomerAddress>(properties)
 
-        producer.send(customerAddress);
+pojoProducer.send(ProducerRecord(topic, customerAddress))
 
-        // DynamicMessage production
+// DynamicMessage production
 
-        DynamicMesssage customerDynamicMessage =
-             DynamicMessage.newBuilder(CustomerAddress.getDescriptor()).build();
+val customerDynamicMessage = DynamicMessage.newBuilder(CustomerAddress.getDescriptor()).build()
 
-        KafkaProducer<String, DynamicMesssage> producer =
-             new KafkaProducer<String, DynamicMesssage>(properties);
+val dynamicMessageProducer = KafkaProducer<String, DynamicMessage>(properties)
 
-        producer.send(customerDynamicMessage);
-
+dynamicMessageProducer.send(ProducerRecord(topic, customerDynamicMessage))
 ```
 
 #### Consumer for Kafka with PROTOBUF format
 
-```java
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GlueSchemaRegistryKafkaDeserializer.class.getName());
-        properties.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
+```kotlin
+properties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
+properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaDeserializer::class.java.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
 
-        // POJO consumption
+// POJO consumption
 
-        properties.put(AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE, ProtobufMessageType.POJO.getName());
+properties[AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE] = ProtobufMessageType.POJO.getName()
 
-        KafkaConsumer<String, CustomerAddress> consumer =
-             new KafkaConsumer<String, CustomerAddress>(properties)
+val pojoConsumer = KafkaConsumer<String, CustomerAddress>(properties)
 
-        consumer.subscribe(Collections.singletonList(topic));
+pojoConsumer.subscribe(listOf(topic))
 
-        final ConsumerRecords<String, CustomerAddress> records = consumer.poll(10);
-        records
-            .stream()
-            .forEach(record -> processRecord(record))
+val pojoRecords = pojoConsumer.poll(Duration.ofMillis(10))
+pojoRecords.forEach { record -> processRecord(record) }
 
-        // DynamicMessage consumption
+// DynamicMessage consumption
 
-        // This is optional. By default AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE is set as ProtobufMessageType.DYNAMIC_MESSAGE.getName()
-        properties.put(AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE, ProtobufMessageType.DYNAMIC_MESSAGE.getName());
+// This is optional. By default AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE is set as ProtobufMessageType.DYNAMIC_MESSAGE.getName()
+properties[AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE] = ProtobufMessageType.DYNAMIC_MESSAGE.getName()
 
-        KafkaConsumer<String, DynamicMessage> consumer =
-             new KafkaConsumer<String, DynamicMesssage>(properties)
+val dynamicMessageConsumer = KafkaConsumer<String, DynamicMessage>(properties)
 
-        consumer.subscribe(Collections.singletonList(topic));
+dynamicMessageConsumer.subscribe(listOf(topic))
 
-        final ConsumerRecords<String, DynamicMessage> records = consumer.poll(10);
-        records
-            .stream()
-            .forEach(record -> processRecord(record))
-
+val dynamicMessageRecords = dynamicMessageConsumer.poll(Duration.ofMillis(10))
+dynamicMessageRecords.forEach { record -> processRecord(record) }
 ```
 
 ### Dealing with Specific Record (JAVA POJO) for JSON
 
-You could use a Java POJO and pass the object as a record.
+You could use a POJO and pass the object as a record.
 We use [mbknor-jackson-jsonschema](https://github.com/mbknor/mbknor-jackson-jsonSchema) to generate a JSON Schema for
 the POJO passed. This library can also inject additional information in the JSON Schema.
 
@@ -343,59 +335,48 @@ Until you enable it, the deserializer returns a `JsonDataWithSchema` even when t
 
 Example class :
 
-```java
-
+```kotlin
+// List of annotations to help infer JSON Schema are defined by https://github.com/mbknor/mbknor-jackson-jsonSchema
 @JsonSchemaDescription("This is a car")
 @JsonSchemaTitle("Simple Car Schema")
-@Builder
-@AllArgsConstructor
-@EqualsAndHashCode
 // Fully qualified class name to be added to an additionally injected property
 // called className for deserializer to determine which class to deserialize
 // the bytes into
 @JsonSchemaInject(
-        strings = {@JsonSchemaString(path = "className",
-                value = "com.amazonaws.services.schemaregistry.integrationtests.generators.Car")}
+    strings = [
+        JsonSchemaString(
+            path = "className",
+            value = "com.amazonaws.services.schemaregistry.integrationtests.generators.Car",
+        ),
+    ],
 )
-// List of annotations to help infer JSON Schema are defined by https://github.com/mbknor/mbknor-jackson-jsonSchema
-public class Car {
+// A default on every property makes Kotlin emit the no-arg constructor Jackson
+// needs to deserialize bytes into an object of this class
+class Car(
     @JsonProperty(required = true)
-    private String make;
-
+    val make: String? = null,
     @JsonProperty(required = true)
-    private String model;
-
+    val model: String? = null,
     @JsonSchemaDefault("true")
     @JsonProperty
-    public boolean used;
-
-    @JsonSchemaInject(ints = {@JsonSchemaInt(path = "multipleOf", value = 1000)})
+    val used: Boolean = false,
+    @JsonSchemaInject(ints = [JsonSchemaInt(path = "multipleOf", value = 1000)])
     @Max(200000)
     @JsonProperty
-    private int miles;
-
+    val miles: Int = 0,
     @Min(2000)
     @JsonProperty
-    private int year;
-
+    val year: Int = 0,
     @JsonProperty
-    private Date purchaseDate;
-
+    val purchaseDate: Date? = null,
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    private Date listedDate;
-
+    val listedDate: Date? = null,
     @JsonProperty
-    private String[] owners;
-
+    val owners: Array<String>? = null,
     @JsonProperty
-    private Collection<Float> serviceChecks;
-
-    // Empty constructor is required by Jackson to deserialize bytes
-    // into an Object of this class
-    public Car() {}
-}
-
+    val serviceChecks: Collection<Float>? = null,
+)
 ```
 
 ### Deserializing JSON into a Java POJO (className resolution)
@@ -406,21 +387,20 @@ deserializer instantiates via reflection, so it must be opted into explicitly.
 
 To deserialize into your POJO, set **both** properties on the consumer:
 
-```java
-    // Opt in to reading the schema's "className" property. Defaults to false.
-    properties.put(AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED, true);
+```kotlin
+// Opt in to reading the schema's "className" property. Defaults to false.
+properties[AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED] = true
 
-    // Comma-separated list of fully qualified class names the deserializer may instantiate.
-    // Defaults to empty, so this must be set for the flag above to have any effect.
-    properties.put(AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST,
-                   "com.example.Car,com.example.Truck");
+// Comma-separated list of fully qualified class names the deserializer may instantiate.
+// Defaults to empty, so this must be set for the flag above to have any effect.
+properties[AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST] = "com.example.Car,com.example.Truck"
 ```
 
 An entry ending in `.*` allows every class directly in that package, which avoids listing each POJO
 individually:
 
-```java
-    properties.put(AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST, "com.example.pojos.*");
+```kotlin
+properties[AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST] = "com.example.pojos.*"
 ```
 
 Notes:
@@ -462,31 +442,31 @@ If the Schema already exists, but the schema version is new, the new schema vers
 Auto-Registration is disabled by default. To enable Auto-Registration, enable setting by passing the configuration to
 the Producer as below :
 
-```java
-    properties.put(AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING, true); // If not passed, defaults to false
+```kotlin
+properties[AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING] = true // If not passed, defaults to false
 ```
 
 ### Providing Registry Name
 
 Registry Name can be provided by setting this property -
 
-```java
-    properties.put(AWSSchemaRegistryConstants.REGISTRY_NAME, "my-registry"); // If not passed, uses "default-registry"
+```kotlin
+properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry" // If not passed, uses "default-registry"
 ```
 
 ### Providing Schema Name
 
 Schema Name can be provided by setting this property -
 
-```java
-    properties.put(AWSSchemaRegistryConstants.SCHEMA_NAME, "my-schema"); // If not passed, uses transport name (topic name in case of Kafka)
+```kotlin
+properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "my-schema" // If not passed, uses transport name (topic name in case of Kafka)
 ```
 
 Alternatively, a schema registry naming strategy implementation can be provided.
 
-```java
-    properties.put(AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS,
-                    "com.amazonaws.services.schemaregistry.serializers.avro.CustomerProvidedSchemaNamingStrategy");
+```kotlin
+properties[AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS] =
+    "com.amazonaws.services.schemaregistry.serializers.avro.CustomerProvidedSchemaNamingStrategy"
 ```
 
 An example test implementation class is [here](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/serializer-deserializer/src/test/java/com/amazonaws/services/schemaregistry/serializers/avro/CustomerProvidedSchemaNamingStrategy.java).
@@ -495,16 +475,16 @@ An example test implementation class is [here](https://github.com/mobsuccess-dev
 
 Registry Description can be provided by setting this property -
 
-```java
-    properties.put(AWSSchemaRegistryConstants.DESCRIPTION, "This registry is used for several purposes."); // If not passed, constructs a description
+```kotlin
+properties[AWSSchemaRegistryConstants.DESCRIPTION] = "This registry is used for several purposes." // If not passed, constructs a description
 ```
 
 ### Providing Compatibility Setting for Schema
 
 Registry Description can be provided by setting this property -
 
-```java
-    properties.put(AWSSchemaRegistryConstants.COMPATIBILITY_SETTING, Compatibility.FULL); // Pass a compatibility mode. If not passed, uses Compatibility.BACKWARD
+```kotlin
+properties[AWSSchemaRegistryConstants.COMPATIBILITY_SETTING] = Compatibility.FULL // Pass a compatibility mode. If not passed, uses Compatibility.BACKWARD
 ```
 
 ### Using Compression
@@ -513,9 +493,9 @@ Deserialized byte array can be compressed to save on data usage over the network
 Consumer side using AWS Glue Schema Registry Deserializer would be able to decompress and deserialize the byte array.
 By default, compression is disabled. Customers can choose ZLIB as compressionType by setting up below property.
 
-```java
-    // If not passed, defaults to no compression
-    properties.put(AWSSchemaRegistryConstants.COMPRESSION_TYPE, AWSSchemaRegistryConstants.COMPRESSION.ZLIB.name());
+```kotlin
+// If not passed, defaults to no compression
+properties[AWSSchemaRegistryConstants.COMPRESSION_TYPE] = AWSSchemaRegistryConstants.COMPRESSION.ZLIB.name
 ```
 
 ### In-Memory Cache settings
@@ -526,9 +506,9 @@ Registry.
 
 The cache is available by default. However, it can be fine-tuned by providing cache specific properties.
 
-```java
-    properties.put(AWSSchemaRegistryConstants.CACHE_TIME_TO_LIVE_MILLIS, "60000"); // If not passed, defaults to 24 Hours
-    properties.put(AWSSchemaRegistryConstants.CACHE_SIZE, "100"); // Maximum number of elements in a cache - If not passed, defaults to 200
+```kotlin
+properties[AWSSchemaRegistryConstants.CACHE_TIME_TO_LIVE_MILLIS] = "60000" // If not passed, defaults to 24 Hours
+properties[AWSSchemaRegistryConstants.CACHE_SIZE] = "100" // Maximum number of elements in a cache - If not passed, defaults to 200
 ```
 
 ### Migrating from a third party Schema Registry
@@ -536,8 +516,8 @@ The cache is available by default. However, it can be fine-tuned by providing ca
 To migrate to AWS Glue Schema Registry from a third party schema registry for AVRO data types for Kafka, add this
 property for value class along with the third party jar.
 
-```java
-    properties.put(AWSSchemaRegistryConstants.SECONDARY_DESERAILIZER, <ThirdPartyKafkaDeserializer>);
+```kotlin
+properties[AWSSchemaRegistryConstants.SECONDARY_DESERIALIZER] = ThirdPartyKafkaDeserializer::class.java.name
 ```
 
 ### Using Kafka Connect with AWS Glue Schema Registry
@@ -557,24 +537,24 @@ dependency, so there is no separate dependency-copy step.
 
 When configuring Kafka Connect workers or connectors, use the value of the string constant properties in the [AWSSchemaRegistryConstants](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/common/src/main/java/com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants.java#L20) class to configure the AWSKafkaAvroConverter.
 
-```java
-    key.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
-    value.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
-    key.converter.region=ca-central-1
-    value.converter.region=ca-central-1
-    key.converter.schemaAutoRegistrationEnabled=true
-    value.converter.schemaAutoRegistrationEnabled=true
-    key.converter.avroRecordType=GENERIC_RECORD
-    value.converter.avroRecordType=GENERIC_RECORD
-    key.converter.schemaName=KeySchema
-    value.converter.schemaName=ValueSchema
+```properties
+key.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
+value.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
+key.converter.region=ca-central-1
+value.converter.region=ca-central-1
+key.converter.schemaAutoRegistrationEnabled=true
+value.converter.schemaAutoRegistrationEnabled=true
+key.converter.avroRecordType=GENERIC_RECORD
+value.converter.avroRecordType=GENERIC_RECORD
+key.converter.schemaName=KeySchema
+value.converter.schemaName=ValueSchema
 ```
 
 As Glue Schema Registry is a fully managed service by AWS, there is no notion of schema registry URLs. Name of the registry (within the same AWS account) can be optionally configured using following options. If not specified, default-registry is used.
 
-```java
-    key.converter.registry.name=my-registry
-    value.converter.registry.name=my-registry
+```properties
+key.converter.registry.name=my-registry
+value.converter.registry.name=my-registry
 ```
 
 - Add command below to _Launch mode_ section under _kafka-run-class.sh_
@@ -657,28 +637,29 @@ It should look like this
 implementation("com.mobsuccess:schema-registry-kafkastreams-serde:<version>")
 ```
 
-```java
-    final Properties props = new Properties();
-    props.put(StreamsConfig.APPLICATION_ID_CONFIG, "avro-streams");
-    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
-    props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-    props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, AWSKafkaAvroSerDe.class.getName());
-    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+```kotlin
+val props = Properties()
+props[StreamsConfig.APPLICATION_ID_CONFIG] = "avro-streams"
+props[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
+props[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
+props[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = Serdes.String().javaClass.name
+props[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = AWSKafkaAvroSerDe::class.java.name
+props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
 
-    props.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
-    props.put(AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING, true);
-    props.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
+props[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+props[AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING] = true
+props[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] = AvroRecordType.GENERIC_RECORD.getName()
 
-    StreamsBuilder builder = new StreamsBuilder();
-    final KStream<String, GenericRecord> source = builder.stream("avro-input");
-    final KStream<String, GenericRecord> result = source
-        .filter((key, value) -> !"pink".equals(String.valueOf(value.get("favorite_color"))));
-        .filter((key, value) -> !"15.0".equals(String.valueOf(value.get("amount"))));
-    result.to("avro-output");
+val builder = StreamsBuilder()
+val source: KStream<String, GenericRecord> = builder.stream("avro-input")
+val result =
+    source
+        .filter { _, value -> "pink" != value.get("favorite_color").toString() }
+        .filter { _, value -> "15.0" != value.get("amount").toString() }
+result.to("avro-output")
 
-    KafkaStreams streams = new KafkaStreams(builder.build(), props);
-    streams.start();
+val streams = KafkaStreams(builder.build(), props)
+streams.start()
 ```
 
 ## Using the AWS Glue Schema Registry Flink Connector
@@ -696,46 +677,52 @@ implementation("com.mobsuccess:schema-registry-flink-serde:<version>")
 
 #### Flink Kafka Producer with AVRO format
 
-```java
-    String topic = "topic";
-    Properties properties = new Properties();
-    properties.setProperty("bootstrap.servers", "localhost:9092");
-    properties.setProperty("group.id", "test");
+```kotlin
+val topic = "topic"
+val properties = Properties()
+properties.setProperty("bootstrap.servers", "localhost:9092")
+properties.setProperty("group.id", "test")
 
-    Map<String, Object> configs = new HashMap<>();
-    configs.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
-    configs.put(AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING, true);
+val configs =
+    mapOf<String, Any>(
+        AWSSchemaRegistryConstants.AWS_REGION to "us-east-1",
+        AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING to true,
+    )
 
-    Schema.Parser parser = new Schema.Parser();
-    Schema schema = parser.parse(new File("path/to/avro/file"));
+val schema = Schema.Parser().parse(File("path/to/avro/file"))
 
-    FlinkKafkaProducer<GenericRecord> producer = new FlinkKafkaProducer<>(
-            topic,
-            GlueSchemaRegistryAvroSerializationSchema.forGeneric(schema, topic, configs),
-            properties);
-    stream.addSink(producer);
+val producer =
+    FlinkKafkaProducer(
+        topic,
+        GlueSchemaRegistryAvroSerializationSchema.forGeneric(schema, topic, configs),
+        properties,
+    )
+stream.addSink(producer)
 ```
 
 #### Flink Kafka Consumer with AVRO format
 
-```java
-    String topic = "topic";
-    Properties properties = new Properties();
-    properties.setProperty("bootstrap.servers", "localhost:9092");
-    properties.setProperty("group.id", "test");
+```kotlin
+val topic = "topic"
+val properties = Properties()
+properties.setProperty("bootstrap.servers", "localhost:9092")
+properties.setProperty("group.id", "test")
 
-    Map<String, Object> configs = new HashMap<>();
-    configs.put(AWSSchemaRegistryConstants.AWS_REGION, "us-east-1");
-    configs.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
+val configs =
+    mapOf<String, Any>(
+        AWSSchemaRegistryConstants.AWS_REGION to "us-east-1",
+        AWSSchemaRegistryConstants.AVRO_RECORD_TYPE to AvroRecordType.GENERIC_RECORD.getName(),
+    )
 
-    Schema.Parser parser = new Schema.Parser();
-    Schema schema = parser.parse(new File("path/to/avro/file"));
+val schema = Schema.Parser().parse(File("path/to/avro/file"))
 
-    FlinkKafkaConsumer<GenericRecord> consumer = new FlinkKafkaConsumer<>(
-            topic,
-            GlueSchemaRegistryAvroDeserializationSchema.forGeneric(schema, configs),
-            properties);
-    DataStream<GenericRecord> stream = env.addSource(consumer);
+val consumer =
+    FlinkKafkaConsumer(
+        topic,
+        GlueSchemaRegistryAvroDeserializationSchema.forGeneric(schema, configs),
+        properties,
+    )
+val stream: DataStream<GenericRecord> = env.addSource(consumer)
 ```
 
 ## Cross-Account Avro Converter Support
