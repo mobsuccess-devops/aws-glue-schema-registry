@@ -73,9 +73,9 @@ start.
     cd kafka-connect-fs/
 ```
 
-Under source connector configuration(config/kafka-connect-fs.properties), edit the data format to Avro, file reader
-to AvroFileReader and update an
-example Avro object from the file path you are reading from. For example:
+In the source connector configuration, `config/kafka-connect-fs.properties`, set the data
+format to Avro and the file reader to `AvroFileReader`, and point it at an example Avro object
+from the path you are reading from:
 
 ```
     fs.uris=<path to a sample avro object>
@@ -100,13 +100,13 @@ file=<output file full path>
 topics=<my topic>
 ```
 
-Start Source Connector (In this example it is file source connector)
+Start the source connector (here, the file source connector):
 
 ```
 $KAFKA_HOME/bin/connect-standalone.sh $KAFKA_HOME/config/connect-standalone.properties config/kafka-connect-fs.properties
 ```
 
-Run Sink Connector (In this example it is file sink connector))
+Run the sink connector (here, the file sink connector):
 
 ```
 $KAFKA_HOME/bin/connect-standalone.sh $KAFKA_HOME/config/connect-standalone.properties $KAFKA_HOME/config/connect-file-sink.properties
@@ -119,7 +119,7 @@ For more examples of running Kafka Connect with Avro, JSON and Protobuf, see
 
 The `AWSKafkaAvroConverter` Avro converter is able to assume an IAM role in a different AWS account before accessing Glue Schema Registry. You can configure the role ARN and an optional session name.
 
-If `assumeRoleArn` is not provided, the converter will fallback to using the default credentials associated to the host.
+If `assumeRoleArn` is not provided, the converter falls back to the default credentials associated with the host.
 
 ### Connector configuration
 

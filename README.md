@@ -127,7 +127,9 @@ properties[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] = AvroRecordType.GENERIC
 
 KafkaConsumer<String, GenericRecord>(properties).use { consumer ->
     consumer.subscribe(listOf(topic))
-    consumer.poll(Duration.ofMillis(100)).forEach { record -> process(record.value()) }
+    while (true) {
+        consumer.poll(Duration.ofMillis(100)).forEach { record -> process(record.value()) }
+    }
 }
 ```
 

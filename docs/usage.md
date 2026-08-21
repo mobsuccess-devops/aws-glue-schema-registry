@@ -414,7 +414,8 @@ properties[AWSSchemaRegistryConstants.DESCRIPTION] = "This registry is used for 
 
 ## Providing Compatibility Setting for Schema
 
-Registry Description can be provided by setting this property -
+The compatibility mode used when auto-registration creates the schema can be provided by
+setting this property -
 
 ```kotlin
 properties[AWSSchemaRegistryConstants.COMPATIBILITY_SETTING] = Compatibility.FULL // Pass a compatibility mode. If not passed, uses Compatibility.BACKWARD
