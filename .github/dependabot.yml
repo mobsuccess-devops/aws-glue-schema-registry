@@ -7,7 +7,7 @@ updates:
     cooldown:
       default-days: 14
       semver-major-days: 30
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 100
     commit-message:
       prefix: chore
       include: scope
@@ -55,8 +55,7 @@ updates:
       interval: monthly
     cooldown:
       default-days: 14
-      semver-major-days: 30
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 100
     commit-message:
       prefix: chore
       include: scope
