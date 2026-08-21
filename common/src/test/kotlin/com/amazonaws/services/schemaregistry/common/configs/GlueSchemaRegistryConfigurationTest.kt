@@ -494,6 +494,32 @@ class GlueSchemaRegistryConfigurationTest {
         assertFalse(glueSchemaRegistryConfiguration.isJsonClassNameResolutionEnabled)
     }
 
+    @Test
+    fun testJsonSchemaNullable_withoutConfig_defaultsToDisabled() {
+        val props = createTestProperties()
+        val glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(props)
+
+        assertFalse(glueSchemaRegistryConfiguration.isJsonSchemaNullableEnabled)
+    }
+
+    @Test
+    fun testJsonSchemaNullable_setToTrue_isEnabled() {
+        val props = createTestProperties()
+        props[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = "true"
+        val glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(props)
+
+        assertTrue(glueSchemaRegistryConfiguration.isJsonSchemaNullableEnabled)
+    }
+
+    @Test
+    fun testJsonSchemaNullable_setToFalse_isDisabled() {
+        val props = createTestProperties()
+        props[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = "false"
+        val glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(props)
+
+        assertFalse(glueSchemaRegistryConfiguration.isJsonSchemaNullableEnabled)
+    }
+
     /**
      * Tests that the JSON class name allowlist is parsed correctly from a comma-separated string.
      */

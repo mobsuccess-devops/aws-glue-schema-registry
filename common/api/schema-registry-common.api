@@ -197,6 +197,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public fun hashCode ()I
 	public final fun isClassNameAllowed (Ljava/lang/String;)Z
 	public final fun isJsonClassNameResolutionEnabled ()Z
+	public final fun isJsonSchemaNullableEnabled ()Z
 	public final fun isSchemaAutoRegistrationEnabled ()Z
 	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
 	public final fun setCacheSize (I)V
@@ -208,6 +209,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun setJacksonSerializationFeatures (Ljava/util/List;)V
 	public final fun setJsonClassNameAllowlist (Ljava/util/Set;)V
 	public final fun setJsonClassNameResolutionEnabled (Z)V
+	public final fun setJsonSchemaNullableEnabled (Z)V
 	public final fun setMetadata (Ljava/util/Map;)V
 	public final fun setProtobufMessageType (Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;)V
 	public final fun setProxyUrl (Ljava/net/URI;)V
@@ -284,6 +286,7 @@ public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistry
 	public static final field JACKSON_SERIALIZATION_FEATURES Ljava/lang/String;
 	public static final field JSON_CLASS_NAME_ALLOWLIST Ljava/lang/String;
 	public static final field JSON_CLASS_NAME_RESOLUTION_ENABLED Ljava/lang/String;
+	public static final field JSON_SCHEMA_NULLABLE_ENABLED Ljava/lang/String;
 	public static final field METADATA Ljava/lang/String;
 	public static final field PROTOBUF_MESSAGE_TYPE Ljava/lang/String;
 	public static final field PROXY_URL Ljava/lang/String;

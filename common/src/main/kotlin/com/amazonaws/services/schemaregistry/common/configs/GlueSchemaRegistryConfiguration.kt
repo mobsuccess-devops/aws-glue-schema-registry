@@ -49,6 +49,7 @@ class GlueSchemaRegistryConfiguration {
     // produced — that is the name Java callers use.
     var isSchemaAutoRegistrationEnabled: Boolean = false
     var isJsonClassNameResolutionEnabled: Boolean = false
+    var isJsonSchemaNullableEnabled: Boolean = false
 
     var jsonClassNameAllowlist: Set<String>? = emptySet()
     var tags: Map<String, String> = HashMap()
@@ -95,6 +96,7 @@ class GlueSchemaRegistryConfiguration {
         validateAndSetCompressionType(configs)
         validateAndSetSchemaAutoRegistrationSetting(configs)
         validateAndSetJsonClassNameResolutionSetting(configs)
+        validateAndSetJsonSchemaNullableSetting(configs)
         validateAndSetJacksonSerializationFeatures(configs)
         validateAndSetJacksonDeserializationFeatures(configs)
         validateAndSetTags(configs)
@@ -269,18 +271,8 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetJsonClassNameResolutionSetting(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED)) {
-            val value = configs[AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED].toString()
-            // toBoolean maps anything that is not "true" to false, so a typo such as "ture" would
-            // silently leave resolution off. Call that out rather than letting the user believe
-            // they opted in.
-            if (!value.equals("true", ignoreCase = true) && !value.equals("false", ignoreCase = true)) {
-                log.warn(
-                    "Unrecognized value '{}' for {}; interpreting it as false.",
-                    value,
-                    AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED,
-                )
-            }
-            isJsonClassNameResolutionEnabled = value.toBoolean()
+            isJsonClassNameResolutionEnabled =
+                booleanConfig(configs, AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED)
         } else {
             log.info(
                 "jsonClassNameResolutionEnabled is not defined in the properties. Using the default value {}",
@@ -364,6 +356,24 @@ class GlueSchemaRegistryConfiguration {
                 throw AWSSchemaRegistryException("The metadata instance is not a hash map")
             }
         }
+    }
+
+    private fun validateAndSetJsonSchemaNullableSetting(configs: Map<String, *>) {
+        if (isPresent(configs, AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED)) {
+            isJsonSchemaNullableEnabled =
+                booleanConfig(configs, AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED)
+        }
+    }
+
+    private fun booleanConfig(
+        configs: Map<String, *>,
+        key: String,
+    ): Boolean {
+        val value = configs[key].toString()
+        if (!value.equals("true", ignoreCase = true) && !value.equals("false", ignoreCase = true)) {
+            log.warn("Unrecognized value '{}' for {}; interpreting it as false.", value, key)
+        }
+        return value.toBoolean()
     }
 
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
@@ -457,6 +467,7 @@ class GlueSchemaRegistryConfiguration {
             description == other.description &&
             isSchemaAutoRegistrationEnabled == other.isSchemaAutoRegistrationEnabled &&
             isJsonClassNameResolutionEnabled == other.isJsonClassNameResolutionEnabled &&
+            isJsonSchemaNullableEnabled == other.isJsonSchemaNullableEnabled &&
             jsonClassNameAllowlist == other.jsonClassNameAllowlist &&
             tags == other.tags &&
             metadata == other.metadata &&
@@ -470,7 +481,8 @@ class GlueSchemaRegistryConfiguration {
     override fun hashCode(): Int = listOf(
         compressionType, endPoint, region, timeToLiveMillis, cacheSize, avroRecordType,
         protobufMessageType, registryName, compatibilitySetting, description,
-        isSchemaAutoRegistrationEnabled, isJsonClassNameResolutionEnabled, jsonClassNameAllowlist,
+        isSchemaAutoRegistrationEnabled, isJsonClassNameResolutionEnabled, isJsonSchemaNullableEnabled,
+        jsonClassNameAllowlist,
         tags, metadata, secondaryDeserializer, proxyUrl, userAgentApp,
         jacksonSerializationFeatures, jacksonDeserializationFeatures,
     ).fold(1) { acc, value -> 31 * acc + (value?.hashCode() ?: 0) }
@@ -481,6 +493,7 @@ class GlueSchemaRegistryConfiguration {
         "registryName=$registryName, compatibilitySetting=$compatibilitySetting, " +
         "description=$description, schemaAutoRegistrationEnabled=$isSchemaAutoRegistrationEnabled, " +
         "jsonClassNameResolutionEnabled=$isJsonClassNameResolutionEnabled, " +
+        "jsonSchemaNullableEnabled=$isJsonSchemaNullableEnabled, " +
         "jsonClassNameAllowlist=$jsonClassNameAllowlist, tags=$tags, metadata=$metadata, " +
         "secondaryDeserializer=$secondaryDeserializer, proxyUrl=$proxyUrl, userAgentApp=$userAgentApp, " +
         "jacksonSerializationFeatures=$jacksonSerializationFeatures, " +
