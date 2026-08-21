@@ -94,6 +94,21 @@ Java.
   schema carrying no Avro object. Kotlin forbids a nullable return type on `toString()`, so the
   null is rendered instead of propagated. Every caller that interpolated or concatenated the
   schema already observed `"null"`; only a direct `toString()` call differs.
+- **The parsed Avro schema is memoized on the two record-rate paths.** Upstream calls
+  `new Schema.Parser().parse(schemaDefinition)` once per record in
+  `AWSKafkaAvroConverter.toConnectData` and in
+  `GlueSchemaRegistryInputStreamDeserializer.getSchemaAndDeserializedStream`, re-parsing the
+  same JSON for every message of a topic. Both now keep a bounded, thread-safe
+  `Cache<String, Schema>` keyed on the schema definition, holding 100 entries — the size the
+  other caches in this codebase already use. The registry lookup that produces the
+  definition is untouched, so nothing about what is fetched changes; only the parse is
+  skipped when the definition has been seen before. The parsed `Schema` is read-only for
+  both callers, and it is returned as the same instance rather than an equal copy, which is
+  what a consumer of a schema registry expects. This is a backport of
+  [awslabs/aws-glue-schema-registry#528](https://github.com/awslabs/aws-glue-schema-registry/issues/528).
+  A `LoadingCache` was deliberately not used: it wraps a loader failure in an
+  `ExecutionException`, which would change the cause chain of the `DataException` and
+  `AWSSchemaRegistryException` those two methods raise on a malformed schema.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes
