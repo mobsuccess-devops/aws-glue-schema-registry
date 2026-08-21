@@ -61,6 +61,12 @@ order to work in.
   signature change is deliberate, then run `apiDump`.
 - **Everything that lands on GitHub is in English**: commit messages, pull request titles
   and bodies, code comments, documentation.
+- **A licence header names who wrote the file, not what it is about.** A file converted
+  from, or derived from, the upstream Java keeps the header it came with — Amazon's, or
+  Confluent's for the `avrodata` package: the attribution is required by Apache-2.0 and
+  those files are derivative works. A file this fork wrote from scratch carries
+  `Copyright 2026 Mobsuccess.` above the same Apache-2.0 notice. The headers in a given
+  directory are therefore deliberately not uniform; each one tracks provenance.
 - **The pull request title drives the released version.** `feat!:` (or a
   `BREAKING CHANGE:` footer) is major, `feat:` is minor, anything else is a patch bump.
 - Kotlin lint is ktlint 1.4.1, configured in `.editorconfig`. Local hooks:
