@@ -64,10 +64,9 @@ new code — anything added from now on is flagged the moment it is written.
   metadata is verified by building a native image of a consumer and comparing the
   `registered for reflection` and `resources` counts of the build output, not by any test in
   this repository.
-- **Lombok is confined to `integration-tests`**, the one module still entirely in Java. It is
-  declared there, on the test configurations only. The root `lombok.config` is what keeps
-  `lombok.nonNull.exceptionType = IllegalArgumentException` in force for it, so it stays as
-  long as that module does; the per-module copies are gone.
+- **Lombok is gone.** It survived only in `integration-tests`, the last module in Java, and
+  went with it: the dependency, the root `lombok.config`, and the `lombok` entry in
+  `libs.versions.toml`. Nothing in the build declares an annotation processor any more.
 - **Root `gradle.properties`** turns on parallel execution and the build cache, and raises
   the daemon heap: the 512m default is inherited by the Kotlin compiler daemon and is not
   enough to compile the test sources of `serializer-deserializer`.
@@ -114,3 +113,37 @@ the suite runs whole without an AWS account. LocalStack is not an option for thi
 Glue only in its top paid tier, and the Schema Registry it offers there is AVRO-only, while
 these tests cover Avro, JSON Schema and Protobuf alike. Setting the `GLUE_ENDPOINT`
 repository variable overrides the emulator and points the same tests at a real endpoint.
+
+### Running the suite locally
+
+The same three containers the workflow starts, with ports free to move — `KAFKA_BOOTSTRAP`
+and `GLUE_ENDPOINT` are what the tests read. LocalStack has to stay on 4566: the Kinesis
+test hard-codes that port, as the upstream source did.
+
+```bash
+docker run -d --name kafka -p 9092:9092 \
+  -e KAFKA_NODE_ID=1 -e KAFKA_PROCESS_ROLES=broker,controller \
+  -e KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093 \
+  -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092 \
+  -e KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER \
+  -e KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT \
+  -e KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093 \
+  -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+  -e KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1 \
+  -e KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1 \
+  -e KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0 apache/kafka:3.9.1
+docker run -d --name localstack -p 4566:4566 \
+  -e SERVICES=kinesis,dynamodb,cloudwatch,sts -e EAGER_SERVICE_LOADING=1 localstack/localstack:3.8
+docker run -d --name moto -p 5000:5000 motoserver/moto:5.2.2
+```
+
+```bash
+AWS_REGION=us-east-2 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+  GLUE_ENDPOINT=http://localhost:5000 \
+  ./gradlew :schema-registry-integration-tests:integrationTest
+```
+
+A whole run takes about twenty minutes and is **73 tests, none failing** — 45 in
+`GlueSchemaRegistryKafkaIntegrationTest`, 28 in `GlueSchemaRegistryKinesisIntegrationTest`.
+That is the number to match: the suite is invisible to `build`, so nothing else catches a
+class that stops running.

@@ -53,18 +53,19 @@ The dangerous half: the build stays green and the output moves.
   `TestNulls.kt` — so the check that fires is still the callee's own, not one the test
   performed on its behalf.
 
-## What is left: `integration-tests`
+## The Java that remains
 
-Every module is Kotlin except `integration-tests`, which is still Java and is the only
-place Lombok survives. Converting it runs into three things the other modules no longer do.
+Every module is Kotlin. The only Java left is the Avro classes generated into the test
+trees — `Person` in `integration-tests`, `User` in three others — which are regenerated
+from their `.avsc` rather than edited, and Kotlin compiles alongside them without trouble.
 
-- **Kotlin does not see Lombok-generated accessors** on a Java class it compiles alongside;
-  it resolves the property name to the private field instead. The Kotlin Lombok plugin used
-  to cover that in the conventions and has been removed — bring it back the day Lombok and
-  Kotlin share a module again.
-- **`@NonNull` raises an `IllegalArgumentException`**, not a `NullPointerException`, because
-  of `lombok.nonNull.exceptionType` in the root `lombok.config`. Converting to a
-  non-nullable type changes the exception type; update the asserting test rather than
-  weakening the signature.
-- **Private functions get no parameter null checks**, unlike public ones — so a private
-  Java method whose `@NonNull` argument was checked stops rejecting null once converted.
+Lombok is gone with the last hand-written Java. Two of its behaviours had to be reproduced
+by hand when `integration-tests` was converted, and are worth knowing if any of it comes
+back:
+
+- **`@Builder` has no Kotlin equivalent**, as above: `Car`, `ConsumerProperties` and
+  `ProducerProperties` carry a hand-written nested `Builder` plus a `@JvmStatic builder()`.
+- **`@EqualsAndHashCode` compares arrays deeply.** `Car` holds a `String[]`, and the JSON
+  specific-record tests compare a produced record against the one read back. A Kotlin
+  `equals` that compares that array by identity turns those tests red; `Car.equals` uses
+  `Arrays.deepEquals`, as Lombok did.
