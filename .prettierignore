@@ -1,10 +1,9 @@
-# Sources générées ou dont le format est imposé par un outil tiers
+# Generated sources, and sources whose format a third-party tool imposes
 gradlew
 gradlew.bat
 gradle/wrapper/
 **/build/
-# Fixtures de test : leur contenu exact fait partie des assertions
+# Test fixtures: their exact content is part of the assertions
 **/src/**
 LICENSE.txt
 NOTICE.txt
-CHANGELOG.md
