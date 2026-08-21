@@ -25,11 +25,13 @@ Build the module.
 ```
 
 Run the sample. `runExample` is a `JavaExec` task declared in
-[`build.gradle.kts`](build.gradle.kts); everything after `--args` is passed to the program.
+[`build.gradle.kts`](build.gradle.kts); it runs from this module's directory, which is what the
+sample's relative path to `src/main/resources/user.avsc` needs. Everything after `--args` is
+passed to the program.
 
 ```bash
 ./gradlew :schema-registry-examples:runExample --args="--region us-west-2 --stream testStream --numRecords 5 --schema testGsrSchema"
 ```
 
-The sample uses the default AWS credentials chain, so the usual `AWS_PROFILE`,
-`AWS_REGION` and SSO environment applies.
+The sample resolves credentials through the default AWS provider chain, so the usual
+`AWS_PROFILE` and `AWS_REGION` environment variables and any active SSO session apply.
