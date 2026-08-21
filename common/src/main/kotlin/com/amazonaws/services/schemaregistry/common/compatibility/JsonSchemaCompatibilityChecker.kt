@@ -87,23 +87,29 @@ public class JsonSchemaCompatibilityChecker {
                     }
             }
 
-        return errors + checkDefinitions(newSchema, previousSchema, direction)
+        return errors + checkDefinitions(newSchema, previousSchema, direction, path)
     }
 
     private fun checkDefinitions(
         newSchema: JsonNode,
         previousSchema: JsonNode,
         direction: Direction,
+        path: String,
     ): List<String> {
         val newDefinitions = definitions(newSchema) ?: return emptyList()
         val previousDefinitions = definitions(previousSchema) ?: return emptyList()
 
-        return previousDefinitions
+        return previousDefinitions.node
             .fields()
             .asSequence()
             .mapNotNull { (name, previousDefinition) ->
-                newDefinitions.get(name)?.let { newDefinition ->
-                    check(newDefinition, previousDefinition, direction, "definitions.$name")
+                newDefinitions.node.get(name)?.let { newDefinition ->
+                    check(
+                        newDefinition,
+                        previousDefinition,
+                        direction,
+                        qualify(qualify(path, newDefinitions.keyword), name),
+                    )
                 }
             }.flatten()
             .toList()
@@ -117,10 +123,16 @@ public class JsonSchemaCompatibilityChecker {
         return required.map { it.asText() }.toSet()
     }
 
-    private fun definitions(schema: JsonNode): JsonNode? {
+    private fun definitions(schema: JsonNode): Definitions? {
         val schemaNode = unwrap(schema)
-        return schemaNode.get(DEFINITIONS) ?: schemaNode.get(DEFS)
+        schemaNode.get(DEFINITIONS)?.let { return Definitions(DEFINITIONS, it) }
+        return schemaNode.get(DEFS)?.let { Definitions(DEFS, it) }
     }
+
+    private class Definitions(
+        val keyword: String,
+        val node: JsonNode,
+    )
 
     private fun unwrap(schema: JsonNode): JsonNode {
         if (schema.has(TYPE) || schema.has(SCHEMA_KEYWORD) || schema.has(PROPERTIES)) {

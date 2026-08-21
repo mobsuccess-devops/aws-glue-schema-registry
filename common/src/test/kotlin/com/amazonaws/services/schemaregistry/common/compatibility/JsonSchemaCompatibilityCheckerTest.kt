@@ -115,7 +115,18 @@ class JsonSchemaCompatibilityCheckerTest {
         val errors = checker.checkCompatibility(current, previous, Compatibility.BACKWARD)
 
         assertEquals(1, errors.size)
-        assertTrue(errors[0].contains("'definitions.Person.age'"))
+        assertTrue(errors[0].contains("'$keyword.Person.age'"), errors[0])
+    }
+
+    @Test
+    fun testCheckCompatibility_namesTheWholePathOfANestedDefinition() {
+        val previous = nestedDefinitionSchema(""""required":["name"]""")
+        val current = nestedDefinitionSchema(""""required":["name","age"]""")
+
+        val errors = checker.checkCompatibility(current, previous, Compatibility.BACKWARD)
+
+        assertEquals(1, errors.size)
+        assertTrue(errors[0].contains("'definitions.Outer.\u0024defs.Inner.age'"), errors[0])
     }
 
     @Test
@@ -146,6 +157,10 @@ class JsonSchemaCompatibilityCheckerTest {
         assertEquals(1, errors.size)
         assertTrue(errors[0].startsWith("Failed to parse schema"))
     }
+
+    private fun nestedDefinitionSchema(required: String): String = """{"definitions":{"Outer":{"type":"object",""" +
+        """"${'$'}defs":{"Inner":{"type":"object",""" +
+        """"properties":{"name":{"type":"string"},"age":{"type":"integer"}},$required}}}}}"""
 
     private fun definitionSchema(
         keyword: String,
