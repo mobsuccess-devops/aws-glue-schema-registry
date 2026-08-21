@@ -34,7 +34,7 @@ deviations, not silent ones**. A change in observable behaviour needs an entry i
 [docs/portage.md](docs/portage.md) saying what changed and why, and a line in
 [CHANGELOG.md](CHANGELOG.md) if a consumer could notice it.
 
-The inherited test suite is the oracle: **2097 tests, zero failures**. A change that lowers
+The inherited test suite is the oracle: **2099 tests, zero failures**. A change that lowers
 that total or breaks a test is not finished, however good the code looks. If a test has to
 change, the pull request has to explain why the old assertion was wrong.
 
@@ -43,7 +43,7 @@ change, the pull request has to explain why the old assertion was wrong.
 JVM 17 or later; Gradle resolves its own toolchain.
 
 ```bash
-./gradlew clean build     # compile, run the 2097 tests, produce the jars
+./gradlew clean build     # compile, run the 2099 tests, produce the jars
 ./gradlew test            # tests only
 ./gradlew assemble        # jars only
 ```
