@@ -10,7 +10,7 @@ package com.amazonaws.services.schemaregistry.kafkaconnect.avrodata
  *
  * What makes one schema compatible with another is not defined by the contract.
  */
-interface SchemaValidationStrategy {
+fun interface SchemaValidationStrategy {
     /**
      * Validates that one schema is compatible with another.
      *

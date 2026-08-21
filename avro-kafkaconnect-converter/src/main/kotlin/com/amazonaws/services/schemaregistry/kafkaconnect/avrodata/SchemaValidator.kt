@@ -10,7 +10,7 @@ package com.amazonaws.services.schemaregistry.kafkaconnect.avrodata
  * the other schemas provided. What makes one schema compatible with another is not part of the
  * interface contract.
  */
-interface SchemaValidator {
+fun interface SchemaValidator {
     /**
      * Validate one schema against others, ordered from most recent to oldest where a natural
      * chronological order exists, so that a validator may choose to check only the most recent.

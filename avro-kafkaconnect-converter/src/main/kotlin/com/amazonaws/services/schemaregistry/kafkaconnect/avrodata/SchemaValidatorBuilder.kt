@@ -16,13 +16,7 @@ class SchemaValidatorBuilder {
      * to the JSON default schema resolution.
      */
     fun canReadStrategy(): SchemaValidatorBuilder = apply {
-        strategy =
-            object : SchemaValidationStrategy {
-                override fun validate(
-                    toValidate: ParsedSchema,
-                    existing: ParsedSchema,
-                ): List<String> = toValidate.isBackwardCompatible(existing)
-            }
+        strategy = SchemaValidationStrategy { toValidate, existing -> toValidate.isBackwardCompatible(existing) }
     }
 
     /**
@@ -30,13 +24,7 @@ class SchemaValidatorBuilder {
      * JSON default schema resolution.
      */
     fun canBeReadStrategy(): SchemaValidatorBuilder = apply {
-        strategy =
-            object : SchemaValidationStrategy {
-                override fun validate(
-                    toValidate: ParsedSchema,
-                    existing: ParsedSchema,
-                ): List<String> = existing.isBackwardCompatible(toValidate)
-            }
+        strategy = SchemaValidationStrategy { toValidate, existing -> existing.isBackwardCompatible(toValidate) }
     }
 
     /**
@@ -45,50 +33,26 @@ class SchemaValidatorBuilder {
      */
     fun mutualReadStrategy(): SchemaValidatorBuilder = apply {
         strategy =
-            object : SchemaValidationStrategy {
-                override fun validate(
-                    toValidate: ParsedSchema,
-                    existing: ParsedSchema,
-                ): List<String> {
-                    val result = ArrayList<String>()
-                    result.addAll(existing.isBackwardCompatible(toValidate))
-                    result.addAll(toValidate.isBackwardCompatible(existing))
-                    return result
-                }
+            SchemaValidationStrategy { toValidate, existing ->
+                existing.isBackwardCompatible(toValidate) + toValidate.isBackwardCompatible(existing)
             }
     }
 
     fun validateLatest(): SchemaValidator {
         valid()
-        return object : SchemaValidator {
-            override fun validate(
-                toValidate: ParsedSchema,
-                existing: Iterable<ParsedSchema>,
-            ): List<String> {
-                val schemas = existing.iterator()
-                if (schemas.hasNext()) {
-                    return strategy!!.validate(toValidate, schemas.next())
-                }
-                return emptyList()
-            }
+        return SchemaValidator { toValidate, existing ->
+            existing.firstOrNull()?.let { strategy!!.validate(toValidate, it) } ?: emptyList()
         }
     }
 
     fun validateAll(): SchemaValidator {
         valid()
-        return object : SchemaValidator {
-            override fun validate(
-                toValidate: ParsedSchema,
-                existing: Iterable<ParsedSchema>,
-            ): List<String> {
-                for (schema in existing) {
-                    val errorMessages = strategy!!.validate(toValidate, schema)
-                    if (errorMessages.isNotEmpty()) {
-                        return errorMessages
-                    }
-                }
-                return emptyList()
-            }
+        return SchemaValidator { toValidate, existing ->
+            existing
+                .asSequence()
+                .map { strategy!!.validate(toValidate, it) }
+                .firstOrNull { it.isNotEmpty() }
+                ?: emptyList()
         }
     }
 
