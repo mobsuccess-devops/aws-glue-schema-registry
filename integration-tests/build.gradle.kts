@@ -17,6 +17,7 @@ dependencies {
     testImplementation(libs.kinesis.producer) {
         // The exclusion the original pom carried on this dependency.
         exclude(group = "software.amazon.ion", module = "ion-java")
+        exclude(group = "software.amazon.glue")
     }
     testImplementation(libs.kafka.clients)
     testImplementation(libs.kafka.streams)

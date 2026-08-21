@@ -20,6 +20,7 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectsc
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterConstants.PROTOBUF_ONEOF_TYPE
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterConstants.PROTOBUF_TYPE
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.hasOptionalKeyword
 import com.google.protobuf.ByteString
 import com.google.protobuf.Descriptors
 import com.google.protobuf.InvalidProtocolBufferException

@@ -114,3 +114,10 @@ the suite runs whole without an AWS account. LocalStack is not an option for thi
 Glue only in its top paid tier, and the Schema Registry it offers there is AVRO-only, while
 these tests cover Avro, JSON Schema and Protobuf alike. Setting the `GLUE_ENDPOINT`
 repository variable overrides the emulator and points the same tests at a real endpoint.
+
+`GlueSchemaRegistryKinesisIntegrationTest` creates a Kinesis stream per test — 28 of them,
+each with its own KCL lease table — and deletes none of them. The workflow gets a fresh
+LocalStack container every run, so it never notices; a container reused locally hits
+LocalStack's 100-shard account limit after the fourth run and every later test fails with
+`LimitExceededException`. Delete the streams and the DynamoDB tables between runs, or
+restart the container.

@@ -27,6 +27,7 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectsc
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterConstants.PROTOBUF_PACKAGE
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterConstants.PROTOBUF_TAG
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterConstants.PROTOBUF_TYPE
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.hasOptionalKeyword
 import com.google.common.collect.ImmutableSet
 import com.google.protobuf.Descriptors
 import com.google.protobuf.Descriptors.FieldDescriptor.Type.ENUM
