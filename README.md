@@ -795,7 +795,7 @@ value.converter.assumeRoleSessionName=my-custom-session
 ## Reporting a security issue
 
 Vulnerabilities in this fork are **not** reported to AWS: the build, the dependency set and
-part of the code are specific to it. Use GitHub's private vulnerability reporting on this
+the Kotlin conversion are specific to it, and upstream is dormant. Use GitHub's private vulnerability reporting on this
 repository — [Report a vulnerability](https://github.com/mobsuccess-devops/aws-glue-schema-registry/security/advisories/new)
 — and please do not open a public issue. The full policy is in [SECURITY.md](SECURITY.md).
 

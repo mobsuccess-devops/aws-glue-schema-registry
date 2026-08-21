@@ -1,10 +1,11 @@
 # Security Policy
 
 This repository is a fork of [`awslabs/aws-glue-schema-registry`](https://github.com/awslabs/aws-glue-schema-registry),
-maintained by Mobsuccess. **Do not report vulnerabilities found here to AWS.** The fork
-carries its own build, its own dependency set and its own code — the JSON `className`
-allowlist and the cross-account `assumeRole` path, among others, exist only here — so a
-report routed to Amazon reaches people who cannot act on it.
+maintained by Mobsuccess. **Do not report vulnerabilities found here to AWS.** The fork has
+its own build, its own dependency set, and a codebase converted to Kotlin; it also ships
+code upstream has written but never released, such as the JSON `className` allowlist. None
+of that is Amazon's to fix, and upstream has been dormant since 2026-08-13, so a report
+routed to `aws-security@amazon.com` reaches people who cannot act on it.
 
 ## Supported versions
 
