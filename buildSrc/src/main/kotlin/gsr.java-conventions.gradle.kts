@@ -113,6 +113,10 @@ val integrationTest by tasks.registering(Test::class) {
     testClassesDirs = testSourceSet.output.classesDirs
     classpath = testSourceSet.runtimeClasspath
     useJUnitPlatform()
+    // KPL and KCL write megabytes to stdout, and Gradle embeds that in the JUnit XML as one
+    // enormous CDATA section, which the results publisher refuses to parse - reporting a
+    // failure on a suite that passed. The HTML report keeps the output for diagnosis.
+    reports.junitXml.includeSystemOutLog = false
     filter {
         includeTestsMatching("*IntegrationTest")
         isFailOnNoMatchingTests = false

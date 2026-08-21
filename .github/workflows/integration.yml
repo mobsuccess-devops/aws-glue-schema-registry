@@ -87,6 +87,13 @@ jobs:
             **/build/test-results/integrationTestWithoutGlue/*.xml
           comment_mode: "off"
           check_name: "Integration Tests (without a Glue account)"
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: integration-test-report-without-glue
+          path: "**/build/reports/tests/integrationTest*/"
+          retention-days: 14
 
   with-glue:
     name: Against Glue
@@ -175,5 +182,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: integration-test-report
-          path: "**/build/reports/tests/integrationTest/"
+          path: "**/build/reports/tests/integrationTest*/"
           retention-days: 14
