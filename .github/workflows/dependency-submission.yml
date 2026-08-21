@@ -26,7 +26,7 @@ jobs:
             17
             21
       - name: Resolve and upload the dependency graph
-        uses: gradle/actions/dependency-submission@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
           validate-wrappers: true
           cache-read-only: true
@@ -40,6 +40,6 @@ jobs:
       contents: write
     steps:
       - name: Submit the dependency graph
-        uses: gradle/actions/dependency-submission@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
           dependency-graph: download-and-submit
