@@ -244,6 +244,7 @@ ignored.
 | `avroRecordType`                 | string (enum)                  | `GENERIC_RECORD`                          | deserializer           | `GENERIC_RECORD` or `SPECIFIC_RECORD`. Case-sensitive.                                                                                                                                                                                             |
 | `protobufMessageType`            | string (enum)                  | none                                      | deserializer           | `DYNAMIC_MESSAGE` or `POJO`. Case-sensitive.                                                                                                                                                                                                       |
 | `jsonSchemaNullableEnabled`      | boolean                        | `false`                                   | serializer             | Generates `oneOf [null, type]` for an optional field when a schema is **derived from a POJO**. No effect through the Kafka Connect converter, which supplies its own schema. Off by default: it changes the schema text, hence the schema version. |
+| `jsonSchemaCompatibilityCheckEnabled` | boolean | `false` | serializer | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only. Costs one `GetSchemaVersion` call per newly registered definition. |
 | `jsonClassNameResolutionEnabled` | boolean                        | `false`                                   | deserializer           | Opt-in: it turns a registry field into a class name to load. See the className section above.                                                                                                                                                      |
 | `jsonClassNameAllowlist`         | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected.                                                                                                                                        |
 | `jacksonSerializationFeatures`   | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries to enable.                                                                                                                                                                           |
@@ -603,6 +604,30 @@ properties[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = true
 
 It is off by default because it changes the schema text, and therefore registers a new schema
 version for a POJO that was already in the registry.
+### Checking JSON Schema compatibility on the client
+
+Glue enforces the compatibility mode of a schema for Avro and Protobuf, but **not for JSON**: a
+JSON schema version that breaks its declared mode is accepted by `RegisterSchemaVersion`, and the
+breakage surfaces in a consumer instead of in the producer that caused it.
+
+Set this property on the producer to have the library check before it registers:
+
+```kotlin
+// Defaults to false.
+properties[AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED] = true
+```
+
+When it is on, registering a new JSON schema version first reads the latest version of that
+schema and compares the two against the configured `compatibility`. An incompatibility raises an
+`AWSSchemaRegistryException` naming the field, and nothing is registered. A schema with no
+previous version is registered without a check.
+
+What is compared is the **`required` contract**, at the top level and inside each named entry of
+`definitions` or `$defs`: under `BACKWARD` a field may not become required, under `FORWARD` a
+required field may not stop being required, and `FULL` applies both. Types, formats, enumerations
+and `additionalProperties` are _not_ compared — a clean result means "no broken `required`
+contract", not "compatible". It is off by default for that reason, and because it costs one extra
+`GetSchemaVersion` call per newly registered schema definition.
 
 ### Deserializing JSON into a Java POJO (className resolution)
 

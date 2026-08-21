@@ -296,6 +296,18 @@ public object GlueSchemaRegistryConfigDef {
             ConfigDef.Width.SHORT,
             "Resolve class names",
         ).define(
+            AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED,
+            ConfigDef.Type.BOOLEAN,
+            false,
+            ConfigDef.Importance.MEDIUM,
+            "Whether a new schema version is compared against the latest one before it is registered. " +
+                "Glue does not enforce the compatibility mode for JSON, so without this an incompatible " +
+                "version is accepted and breaks a consumer instead. Compares the required contract only.",
+            GROUP_JSON,
+            5,
+            ConfigDef.Width.SHORT,
+            "Check compatibility",
+        ).define(
             AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST,
             ConfigDef.Type.LIST,
             null,
