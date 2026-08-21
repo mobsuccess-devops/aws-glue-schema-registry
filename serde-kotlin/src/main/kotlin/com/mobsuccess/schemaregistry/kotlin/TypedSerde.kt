@@ -20,17 +20,23 @@ import org.apache.kafka.common.header.Headers
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
+import kotlin.jvm.javaObjectType
 
 /**
  * A `Serde<T>` over a `Serde<Any>`, checking that what the delegate reads really is a [T].
+ *
+ * A primitive [type] is read as its wrapper: a deserializer hands back an `Integer`, never an
+ * `int`, so checking against `int.class` would reject every record.
  *
  * @param type the type every record of the topic is expected to deserialize to
  * @param delegate the serde doing the work
  */
 public class TypedSerde<T : Any>(
-    private val type: Class<T>,
+    type: Class<T>,
     private val delegate: Serde<Any>,
 ) : Serde<T> {
+    private val type: Class<T> = type.kotlin.javaObjectType
+
     override fun serializer(): Serializer<T> = TypedSerializer(delegate.serializer())
 
     override fun deserializer(): Deserializer<T> = TypedDeserializer(type, delegate.deserializer())

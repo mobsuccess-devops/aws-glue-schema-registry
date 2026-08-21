@@ -17,6 +17,7 @@ implementation("com.mobsuccess:schema-registry-serde-kotlin:<version>")
 ## Configuration
 
 ```kotlin
+import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.mobsuccess.schemaregistry.kotlin.glueSchemaRegistryConfig
 import software.amazon.awssdk.services.glue.model.DataFormat
 
@@ -54,6 +55,11 @@ property(AWSSchemaRegistryConstants.ASSUME_ROLE_ARN, "arn:aws:iam::123456789012:
 ## Serializers and deserializers
 
 ```kotlin
+import com.amazonaws.services.schemaregistry.utils.AvroRecordType
+import com.mobsuccess.schemaregistry.kotlin.glueSchemaRegistryDeserializer
+import com.mobsuccess.schemaregistry.kotlin.glueSchemaRegistrySerializer
+import software.amazon.awssdk.services.glue.model.DataFormat
+
 val serializer = glueSchemaRegistrySerializer {
     region = "eu-west-1"
     dataFormat = DataFormat.AVRO
@@ -75,6 +81,12 @@ Both are the ordinary `GlueSchemaRegistryKafkaSerializer` and
 `Any` and every operator needs a cast:
 
 ```kotlin
+import com.amazonaws.services.schemaregistry.utils.AvroRecordType
+import com.mobsuccess.schemaregistry.kotlin.glueSchemaRegistrySerde
+import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.streams.kstream.Consumed
+import software.amazon.awssdk.services.glue.model.DataFormat
+
 val serde = glueSchemaRegistrySerde<User> {
     region = "eu-west-1"
     dataFormat = DataFormat.AVRO
@@ -88,11 +100,16 @@ builder.stream("users", Consumed.with(Serdes.String(), serde))
 The registry decides at runtime what a record deserializes to, so `T` is a claim about the topic
 rather than something the compiler can check. It is checked on **every record** instead: a value
 of another type raises a `SerializationException` naming both types, at the point the record is
-read, rather than a `ClassCastException` somewhere further down the topology.
+read, rather than a `ClassCastException` somewhere further down the topology. A primitive type
+argument is checked against its wrapper, since a deserializer hands back an `Integer`, never an
+`int`.
 
 An existing `Serde<Any>` can be viewed the same way:
 
 ```kotlin
+import com.amazonaws.services.schemaregistry.kafkastreams.GlueSchemaRegistryKafkaStreamsSerde
+import com.mobsuccess.schemaregistry.kotlin.typed
+
 val typed: Serde<User> = GlueSchemaRegistryKafkaStreamsSerde().typed()
 ```
 

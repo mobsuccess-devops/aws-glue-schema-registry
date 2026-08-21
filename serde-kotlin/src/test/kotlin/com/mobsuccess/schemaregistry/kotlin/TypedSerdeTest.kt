@@ -73,6 +73,29 @@ class TypedSerdeTest {
     }
 
     @Test
+    fun testDeserialize_readsAPrimitiveTypeAsItsWrapper() {
+        val serde: Serde<Int> = FakeSerde(42).typed()
+
+        assertEquals(42, serde.deserializer().deserialize(TOPIC, BYTES))
+    }
+
+    @Test
+    fun testDeserialize_readsAPrimitiveClassAsItsWrapper() {
+        val serde = TypedSerde(Int::class.java, FakeSerde(42))
+
+        assertEquals(42, serde.deserializer().deserialize(TOPIC, BYTES))
+    }
+
+    @Test
+    fun testDeserialize_stillRejectsAnotherTypeForAPrimitiveClass() {
+        val serde = TypedSerde(Int::class.java, FakeSerde("42"))
+
+        assertThrows(SerializationException::class.java) {
+            serde.deserializer().deserialize(TOPIC, BYTES)
+        }
+    }
+
+    @Test
     fun testSerialize_passesTheValueThrough() {
         val delegate = FakeSerde("hello")
         val serde: Serde<String> = delegate.typed()
