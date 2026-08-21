@@ -18,8 +18,16 @@ policy:
       # Automatic detection only knows the jobs of the policy's template workflows;
       # those of ci.yml, written by hand, are invisible to it. Without this list, a
       # red CI would still leave the pull request mergeable.
+      #
+      # The two matrix jobs carry the guarantee that #80 was written for: the JSON
+      # Schema output must not depend on the JDK that produced it. `Gradle Build`
+      # runs on 17 only, so without them a regression that only shows on 21 or 25
+      # merges green. Their names are the resolved ones, `Tests on JDK ${{ matrix.jdk }}`
+      # expanded, since that is what a required check matches on.
       additional-required-job-names:
         - Gradle Build
+        - Tests on JDK 21
+        - Tests on JDK 25
 linear:
   team_identifier: FTTECH
   team_label_identifier: Core
