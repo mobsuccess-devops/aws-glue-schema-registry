@@ -72,7 +72,7 @@ end-of-file fixer.
 - **Versions live in `gradle/libs.versions.toml`.** Never hard-code one in a
   `build.gradle.kts`.
 - **Kotlin, for new code.** The Java → Kotlin conversion is done except for
-  `integration-tests`. [AGENTS.md](AGENTS.md) lists the Java interop traps that have each
+  `integration-tests`. [docs/kotlin-interop.md](docs/kotlin-interop.md) lists the Java interop traps that have each
   cost a red test at least once; it is worth reading before converting anything.
 
 ## Pull requests
