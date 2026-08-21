@@ -297,7 +297,10 @@ public class KafkaHelper {
 
         int numberOfThreads = 4;
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        List<ProducerRecord<String, T>> producerRecords = new ArrayList<>();
+        // Every thread below appends to this list, so it cannot be a bare ArrayList: the lost
+        // updates made the returned count smaller than what was actually produced, and it is
+        // that count the test compares against the records it reads back.
+        List<ProducerRecord<String, T>> producerRecords = Collections.synchronizedList(new ArrayList<>());
 
         for (int i = 0; i < numberOfThreads; i++) {
             futures.add(CompletableFuture.runAsync(() -> {
