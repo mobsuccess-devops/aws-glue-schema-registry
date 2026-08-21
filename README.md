@@ -93,6 +93,53 @@ Available artifacts:
 The four Kafka Connect / MSK IAM artifacts are shaded uber-jars, meant to be dropped onto a
 Connect plugin path.
 
+## Compatibility
+
+The versions the artifacts are built and tested against. Everything except the JVM row comes
+from `gradle/libs.versions.toml`, which is the single source of truth for the build.
+
+| Component           | Version            | Notes                                                                                                                             |
+| ------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| JVM                 | 17 or later        | Bytecode target is 17, so a JVM 8 or 11 runtime cannot load these artifacts.                                                      |
+| Apache Kafka        | 3.9.x              | `kafka-clients`, `kafka-streams`, `connect-api`, `connect-json`. Shaded into the uber-jars: a consumer cannot override that copy. |
+| Apache Avro         | 1.11.4             |                                                                                                                                   |
+| Protocol Buffers    | 3.25.5             | `protobuf-java`; syntax 2 and 3.                                                                                                  |
+| AWS SDK for Java v2 | 2.53.1             | Imported as a BOM, so the whole SDK moves together.                                                                               |
+| MSK IAM auth        | 2.3.7              | `schema-registry-serde-msk-iam` only.                                                                                             |
+| Apache Flink        | 1.12.2, Scala 2.11 | **Not recommended** — see below.                                                                                                  |
+
+The Flink connector is carried over from upstream unchanged and is pinned to Flink 1.12.2 with
+`flink-streaming-java_2.11`, a Scala 2.11 coordinate that Flink stopped publishing after 1.14.
+It is kept so the fork stays behaviour-identical to its source, not because it is a reasonable
+dependency to take today. New Flink work should use the Glue Schema Registry formats that ship
+with [Apache Flink itself](https://github.com/apache/flink/tree/master/flink-formats).
+
+## Migrating from the AWS artifact
+
+Coming from `software.amazon.glue` on Maven Central, the swap is a coordinate change: the
+artifactIds, the package names and the class names are all unchanged.
+
+```diff
+- implementation("software.amazon.glue:schema-registry-serde:1.1.x")
++ implementation("com.mobsuccess:schema-registry-serde:<version>")
+```
+
+Three things to check on the way:
+
+1. **The repository.** GitHub Packages requires authentication even to read; add the
+   repository block from [Installation](#installation) and a token carrying `read:packages`.
+2. **The JVM.** Upstream targeted 8, this fork targets 17.
+3. **Two behaviour deltas**, both deliberate:
+   - A `@NonNull` violation raises a `NullPointerException` rather than the
+     `IllegalArgumentException` upstream's `lombok.config` produced. A null argument is still
+     rejected, at the same point; only the exception type differs. See
+     [docs/portage.md](docs/portage.md).
+   - Since **2.0.0**, the JSON deserializer no longer resolves a schema's `className` into a
+     POJO by default and returns `JsonDataWithSchema` instead. Restoring the old behaviour
+     takes both `jsonClassNameResolutionEnabled=true` and an explicit
+     `jsonClassNameAllowlist`. See the [CHANGELOG](CHANGELOG.md) and
+     [Deserializing JSON into a Java POJO](#deserializing-json-into-a-java-pojo-classname-resolution).
+
 ## Building from source
 
 ```bash
@@ -469,7 +516,7 @@ properties[AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS] =
     "com.amazonaws.services.schemaregistry.serializers.avro.CustomerProvidedSchemaNamingStrategy"
 ```
 
-An example test implementation class is [here](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/serializer-deserializer/src/test/java/com/amazonaws/services/schemaregistry/serializers/avro/CustomerProvidedSchemaNamingStrategy.java).
+An example test implementation class is [here](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/serializer-deserializer/src/test/kotlin/com/amazonaws/services/schemaregistry/serializers/avro/CustomerProvidedSchemaNamingStrategy.kt).
 
 ### Providing Registry Description
 
@@ -535,7 +582,7 @@ dependency, so there is no separate dependency-copy step.
 
 - Configure Kafka Connectors with following properties
 
-When configuring Kafka Connect workers or connectors, use the value of the string constant properties in the [AWSSchemaRegistryConstants](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/common/src/main/java/com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants.java#L20) class to configure the AWSKafkaAvroConverter.
+When configuring Kafka Connect workers or connectors, use the value of the string constant properties in the [AWSSchemaRegistryConstants](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/common/src/main/kotlin/com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants.kt) class to configure the AWSKafkaAvroConverter.
 
 ```properties
 key.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
@@ -557,31 +604,25 @@ key.converter.registry.name=my-registry
 value.converter.registry.name=my-registry
 ```
 
-- Add command below to _Launch mode_ section under _kafka-run-class.sh_
+- Make the converter visible to the workers
 
-```
--cp $CLASSPATH:"<your aws glue schema registry base directory>/target/dependency/*"
-```
+  The uber-jar is self-contained, so it only has to be on the worker's classpath. Either drop
+  it into a directory listed in the worker's `plugin.path`:
 
-It should look like this
-
-```
-    # Launch mode
-    if [ "x$DAEMON_MODE" = "xtrue" ]; then
-      nohup "$JAVA" $KAFKA_HEAP_OPTS $KAFKA_JVM_PERFORMANCE_OPTS $KAFKA_GC_LOG_OPTS $KAFKA_JMX_OPTS $KAFKA_LOG4J_OPTS -cp $CLASSPATH:"/Users/johndoe/aws-glue-schema-registry/target/dependency/*" $KAFKA_OPTS "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
-    else
-      exec "$JAVA" $KAFKA_HEAP_OPTS $KAFKA_JVM_PERFORMANCE_OPTS $KAFKA_GC_LOG_OPTS $KAFKA_JMX_OPTS $KAFKA_LOG4J_OPTS -cp $CLASSPATH:"/Users/johndoe/aws-glue-schema-registry/target/dependency/*" $KAFKA_OPTS "$@"
-    fi
-```
-
-- If using bash, run the below commands to set-up your CLASSPATH in your bash_profile. (For any other shell, update the environment accordingly.)
-  ```bash
-      echo 'export GSR_LIB_BASE_DIR=<>' >>~/.bash_profile
-      echo 'export GSR_LIB_VERSION=2.0.0' >>~/.bash_profile
-      echo 'export KAFKA_HOME=<your kafka installation directory>' >>~/.bash_profile
-      echo 'export CLASSPATH=$CLASSPATH:$GSR_LIB_BASE_DIR/avro-kafkaconnect-converter/target/schema-registry-kafkaconnect-converter-$GSR_LIB_VERSION.jar:$GSR_LIB_BASE_DIR/common/target/schema-registry-common-$GSR_LIB_VERSION.jar:$GSR_LIB_BASE_DIR/avro-serializer-deserializer/target/schema-registry-serde-$GSR_LIB_VERSION.jar' >>~/.bash_profile
-      source ~/.bash_profile
+  ```properties
+  plugin.path=/opt/kafka/connect-plugins
   ```
+
+  or, for a standalone worker started through `kafka-run-class.sh`, put it on `CLASSPATH`:
+
+  ```bash
+  export CLASSPATH="$CLASSPATH:/path/to/schema-registry-kafkaconnect-converter-<version>.jar"
+  ```
+
+  Do not add `schema-registry-common` or `schema-registry-serde` alongside it: the uber-jar
+  already bundles them, and a second copy on the classpath is how duplicate-class failures
+  start.
+
 - (Optional) If you wish to test with a simple file source then clone the file source connector.
 
   ```bash
@@ -599,13 +640,15 @@ It should look like this
       file_reader.class=com.github.mmolimar.kafka.connect.fs.file.reader.AvroFileReader
   ```
 
-  Install source connector
+  Install the source connector. `kafka-connect-fs` is a third-party project and builds with
+  its own Maven build:
 
+  ```bash
+  mvn clean package
+  export CLASSPATH="$CLASSPATH:$(find target/ -type f -name '*.jar' | grep -- '-package' | tr '\n' ':')"
   ```
-      mvn clean package
-      echo "export CLASSPATH=\$CLASSPATH:\"\$(find target/ -type f -name '*.jar'| grep '\-package' | tr '\n' ':')\"" >>~/.bash_profile
-      source ~/.bash_profile
-  ```
+
+  The commands below assume `KAFKA_HOME` points at your Apache Kafka installation.
 
   Update the sink properties under _<your Apache Kafka installation directory>/config/connect-file-sink.properties_
 
