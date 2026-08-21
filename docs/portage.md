@@ -351,3 +351,31 @@ Java.
   checks. The `!!` on values a caller passes in — a null `credentialProvider`, a null record — is
   left alone: those are argument errors, not lifecycle errors, and they keep raising
   `NullPointerException` as the Java source did.
+
+- **The `@Data` classes lost `equals`, `hashCode`, `toString` and some setters.** Six types
+  carried Lombok `@Data` upstream — `JsonSchemaConverter`, `ConnectSchemaToJsonSchemaConverter`,
+  `JsonSchemaToConnectSchemaConverter`, `AWSKafkaAvroConverter`,
+  `GlueSchemaRegistryKafkaSerializer` and `AWSKafkaAvroSerializer` — so every field of theirs had
+  a public getter _and_ a public setter, and each class had value `equals`, `hashCode` and
+  `toString`. The conversion kept the getters and the setters a caller plausibly uses, and
+  dropped the rest: the setters for collaborators supplied through the constructor
+  (`setSerializer`, `setDeserializer`, `setCredentialProvider`, `setSchemaVersionId`,
+  `setObjectMapper`, the `TypeConverterFactory` and `JsonSchemaDataConfig` accessors) and the
+  three `Object` overrides.
+
+  That is not restored, deliberately. `equals` and `hashCode` over the mutable collaborators of a
+  stateful converter are not a value contract anyone can rely on: `configure()` replaces those
+  collaborators, so a converter added to a `HashSet` beforehand hashes to one bucket and is then
+  looked for in another, and the set can neither find it nor report it as present. Swapping a
+  serializer out from under a running converter is not an operation this library should keep
+  offering either. The narrowing is real, and is recorded here rather than reverted. `Schema`,
+  the one `@Value` type among them, is a Kotlin `data class` and keeps all three overrides.
+
+  The audit that prompted this entry also reported the opposite defect — that the JSON Schema
+  converter caches, described there as private in Java, had become public `val`s by accident.
+  They had not: `ConnectSchemaToJsonSchemaConverter` and `JsonSchemaToConnectSchemaConverter` carry
+  `@Data`, so `getFromConnectSchemaCache()` and `getToConnectSchemaCache()` were already public,
+  with setters. Making them `internal` would have narrowed the surface away from the source, not
+  towards it. A sweep of every converted class for a field that is public in Kotlin and had no
+  public accessor in Java — Lombok annotations accounted for — finds **no** accidental widening
+  anywhere in the port.
