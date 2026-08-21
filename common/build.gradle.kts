@@ -16,8 +16,6 @@ dependencies {
     runtimeOnly(libs.aws.jsonProtocol)
 }
 
-// Remplace le templating-maven-plugin : injecte la version du projet dans
-// MavenPackaging.VERSION, lue par l'intercepteur de User-Agent des appels Glue.
 val generateVersionSource by tasks.registering(Copy::class) {
     inputs.property("version", project.version)
     from("src/main/java-templates")
