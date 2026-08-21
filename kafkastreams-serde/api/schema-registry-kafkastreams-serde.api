@@ -1,0 +1,18 @@
+public final class com/amazonaws/services/schemaregistry/kafkastreams/AWSKafkaAvroSerDe : org/apache/kafka/common/serialization/Serde {
+	public fun <init> ()V
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer;Lcom/amazonaws/services/schemaregistry/deserializers/avro/AWSKafkaAvroDeserializer;)V
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun deserializer ()Lorg/apache/kafka/common/serialization/Deserializer;
+	public fun serializer ()Lorg/apache/kafka/common/serialization/Serializer;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkastreams/GlueSchemaRegistryKafkaStreamsSerde : org/apache/kafka/common/serialization/Serde {
+	public fun <init> ()V
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer;Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer;)V
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun deserializer ()Lorg/apache/kafka/common/serialization/Deserializer;
+	public fun serializer ()Lorg/apache/kafka/common/serialization/Serializer;
+}
+

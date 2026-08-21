@@ -1,0 +1,274 @@
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectSchemaToJsonSchemaConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectSchemaToJsonSchemaConverter$Companion;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)V
+	public final fun fromConnectSchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/everit/json/schema/Schema;
+	public final fun fromConnectSchema (Lorg/apache/kafka/connect/data/Schema;Z)Lorg/everit/json/schema/Schema;
+	public final fun fromConnectSchema (Lorg/apache/kafka/connect/data/Schema;ZI)Lorg/everit/json/schema/Schema;
+	public static synthetic fun fromConnectSchema$default (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectSchemaToJsonSchemaConverter;Lorg/apache/kafka/connect/data/Schema;ZIILjava/lang/Object;)Lorg/everit/json/schema/Schema;
+	public final fun getFromConnectSchemaCache ()Lorg/apache/kafka/common/cache/Cache;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectSchemaToJsonSchemaConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectValueToJsonNodeConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectValueToJsonNodeConverter$Companion;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)V
+	public final fun convertToJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)Lcom/fasterxml/jackson/databind/JsonNode;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectValueToJsonNodeConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonNodeToConnectValueConverter {
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)V
+	public final fun toConnectValue (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;)Ljava/lang/Object;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverter : org/apache/kafka/connect/storage/Converter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverter$Companion;
+	public fun <init> ()V
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer;Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer;)V
+	public static final fun canonicalize (Ljava/lang/String;)Ljava/lang/String;
+	public fun configure (Ljava/util/Map;Z)V
+	public fun fromConnectData (Ljava/lang/String;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)[B
+	public final fun getConnectSchemaToJsonSchemaConverter ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectSchemaToJsonSchemaConverter;
+	public final fun getConnectValueToJsonNodeConverter ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectValueToJsonNodeConverter;
+	public final fun getDeserializer ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer;
+	public final fun getJsonNodeToConnectValueConverter ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonNodeToConnectValueConverter;
+	public final fun getJsonSchemaToConnectSchemaConverter ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaToConnectSchemaConverter;
+	public final fun getSerializer ()Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer;
+	public final fun isKey ()Z
+	public final fun setConnectSchemaToJsonSchemaConverter (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectSchemaToJsonSchemaConverter;)V
+	public final fun setConnectValueToJsonNodeConverter (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectValueToJsonNodeConverter;)V
+	public final fun setJsonNodeToConnectValueConverter (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonNodeToConnectValueConverter;)V
+	public final fun setJsonSchemaToConnectSchemaConverter (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaToConnectSchemaConverter;)V
+	public final fun setKey (Z)V
+	public fun toConnectData (Ljava/lang/String;[B)Lorg/apache/kafka/connect/data/SchemaAndValue;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverter$Companion {
+	public final fun canonicalize (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverterConfig : org/apache/kafka/common/config/AbstractConfig {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverterConfig$Companion;
+	public fun <init> (Ljava/util/Map;)V
+	public static final fun configDef ()Lorg/apache/kafka/common/config/ConfigDef;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverterConfig$Companion {
+	public final fun configDef ()Lorg/apache/kafka/common/config/ConfigDef;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverterConstants {
+	public static final field CONNECT_DOC_PROP Ljava/lang/String;
+	public static final field CONNECT_INDEX_PROP Ljava/lang/String;
+	public static final field CONNECT_NAME_PROP Ljava/lang/String;
+	public static final field CONNECT_PARAMETERS_PROP Ljava/lang/String;
+	public static final field CONNECT_TYPE_PROP Ljava/lang/String;
+	public static final field CONNECT_VERSION_PROP Ljava/lang/String;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaConverterConstants;
+	public static final field JSON_FIELD_DEFAULT_FLAG_PROP Ljava/lang/String;
+	public static final field JSON_SCHEMA_TYPE_ENUM Ljava/lang/String;
+	public static final field JSON_SCHEMA_TYPE_ONEOF Ljava/lang/String;
+	public static final field KEY_FIELD Ljava/lang/String;
+	public static final field NAMESPACE Ljava/lang/String;
+	public static final field VALUE_FIELD Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig : org/apache/kafka/common/config/AbstractConfig {
+	public static final field CONNECT_META_DATA_CONFIG Ljava/lang/String;
+	public static final field CONNECT_META_DATA_DEFAULT Z
+	public static final field CONNECT_META_DATA_DOC Ljava/lang/String;
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig$Companion;
+	public static final field DECIMAL_FORMAT_CONFIG Ljava/lang/String;
+	public static final field DECIMAL_FORMAT_DEFAULT Ljava/lang/String;
+	public static final field SCHEMAS_CACHE_SIZE_CONFIG Ljava/lang/String;
+	public static final field SCHEMAS_CACHE_SIZE_DEFAULT I
+	public static final field SCHEMAS_CACHE_SIZE_DOC Ljava/lang/String;
+	public fun <init> (Ljava/util/Map;)V
+	public static final fun baseConfigDef ()Lorg/apache/kafka/common/config/ConfigDef;
+	public final fun getDecimalFormat ()Lorg/apache/kafka/connect/json/DecimalFormat;
+	public final fun getSchemasCacheSize ()I
+	public final fun isConnectMetaData ()Z
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig$Builder {
+	public fun <init> ()V
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;
+	public final fun with (Ljava/lang/String;Ljava/lang/Object;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig$Companion {
+	public final fun baseConfigDef ()Lorg/apache/kafka/common/config/ConfigDef;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaToConnectSchemaConverter {
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)V
+	public final fun getToConnectSchemaCache ()Lorg/apache/kafka/common/cache/Cache;
+	public final fun toConnectSchema (Lorg/everit/json/schema/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public final fun toConnectSchema (Lorg/everit/json/schema/Schema;Z)Lorg/apache/kafka/connect/data/Schema;
+	public static synthetic fun toConnectSchema$default (Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaToConnectSchemaConverter;Lorg/everit/json/schema/Schema;ZILjava/lang/Object;)Lorg/apache/kafka/connect/data/Schema;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/ArrayTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/BooleanTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/BytesTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/DateLogicalTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/DecimalLogicalTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/Float32TypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/Float64TypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/Int16TypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/Int32TypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/Int64TypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/Int8TypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/MapTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/StringTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/StructTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/StructTypeConverter$Companion;
+	public fun <init> ()V
+	public static final fun fields (Lorg/apache/kafka/connect/data/Schema;)Ljava/util/List;
+	public static final fun keySchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public static final fun nonOptional (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+	public static final fun valueSchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/StructTypeConverter$Companion {
+	public final fun fields (Lorg/apache/kafka/connect/data/Schema;)Ljava/util/List;
+	public final fun keySchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public final fun nonOptional (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public final fun valueSchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TimeLogicalTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TimestampLogicalTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public fun <init> ()V
+	public fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter$Companion;
+	public static final field JSON_NODE_FACTORY Lcom/fasterxml/jackson/databind/node/JsonNodeFactory;
+	public abstract fun toConnect (Lorg/apache/kafka/connect/data/Schema;Lcom/fasterxml/jackson/databind/JsonNode;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Ljava/lang/Object;
+	public abstract fun toConnectSchema (Lorg/everit/json/schema/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/apache/kafka/connect/data/SchemaBuilder;
+	public abstract fun toJson (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lcom/fasterxml/jackson/databind/JsonNode;
+	public abstract fun toJsonSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/JsonSchemaDataConfig;)Lorg/everit/json/schema/Schema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverterFactory {
+	public fun <init> ()V
+	public final fun get (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter;
+	public final fun get (Lorg/apache/kafka/connect/data/Schema$Type;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter;
+	public final fun get (Lorg/apache/kafka/connect/data/Schema;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter;
+	public final fun get (Lorg/everit/json/schema/Schema;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/typeconverters/TypeConverter;
+}
+

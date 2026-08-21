@@ -1,0 +1,50 @@
+public final class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroDeserializationSchema : org/apache/flink/formats/avro/RegistryAvroDeserializationSchema {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroDeserializationSchema$Companion;
+	public synthetic fun <init> (Ljava/lang/Class;Lorg/apache/avro/Schema;Lorg/apache/flink/formats/avro/SchemaCoder$SchemaCoderProvider;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun forGeneric (Lorg/apache/avro/Schema;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroDeserializationSchema;
+	public static final fun forSpecific (Ljava/lang/Class;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroDeserializationSchema;
+}
+
+public final class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroDeserializationSchema$Companion {
+	public final fun forGeneric (Lorg/apache/avro/Schema;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroDeserializationSchema;
+	public final fun forSpecific (Ljava/lang/Class;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroDeserializationSchema;
+}
+
+public final class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSchemaCoder : org/apache/flink/formats/avro/SchemaCoder {
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;)V
+	public fun readSchema (Ljava/io/InputStream;)Lorg/apache/avro/Schema;
+	public fun writeSchema (Lorg/apache/avro/Schema;Ljava/io/OutputStream;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSchemaCoderProvider : org/apache/flink/formats/avro/SchemaCoder$SchemaCoderProvider {
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;)V
+	public fun <init> (Ljava/util/Map;)V
+	public fun get ()Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSchemaCoder;
+	public synthetic fun get ()Lorg/apache/flink/formats/avro/SchemaCoder;
+}
+
+public final class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSerializationSchema : org/apache/flink/formats/avro/RegistryAvroSerializationSchema {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSerializationSchema$Companion;
+	public synthetic fun <init> (Ljava/lang/Class;Lorg/apache/avro/Schema;Lorg/apache/flink/formats/avro/SchemaCoder$SchemaCoderProvider;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun forGeneric (Lorg/apache/avro/Schema;Ljava/lang/String;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSerializationSchema;
+	public static final fun forSpecific (Ljava/lang/Class;Ljava/lang/String;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSerializationSchema;
+	public fun serialize (Ljava/lang/Object;)[B
+}
+
+public final class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSerializationSchema$Companion {
+	public final fun forGeneric (Lorg/apache/avro/Schema;Ljava/lang/String;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSerializationSchema;
+	public final fun forSpecific (Ljava/lang/Class;Ljava/lang/String;Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryAvroSerializationSchema;
+}
+
+public class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryInputStreamDeserializer {
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade;)V
+	public fun <init> (Ljava/util/Map;)V
+	public fun getSchemaAndDeserializedStream (Ljava/io/InputStream;)Lorg/apache/avro/Schema;
+}
+
+public class com/amazonaws/services/schemaregistry/flink/avro/GlueSchemaRegistryOutputStreamSerializer {
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade;)V
+	public fun registerSchemaAndSerializeStream (Lorg/apache/avro/Schema;Ljava/io/OutputStream;[B)V
+}
+

@@ -50,6 +50,7 @@ shadow = "9.6.1"
 protobufPlugin = "0.10.0"
 avroPlugin = "1.9.1"
 licenseReport = "2.9"
+binaryCompatibilityValidator = "0.18.1"
 
 [libraries]
 # --- AWS ---
@@ -146,3 +147,4 @@ podam = { module = "uk.co.jemos.podam:podam", version.ref = "podam" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 avro = { id = "com.github.davidmc24.gradle.plugin.avro", version.ref = "avroPlugin" }
+binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }

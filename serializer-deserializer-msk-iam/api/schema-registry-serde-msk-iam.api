@@ -1,0 +1,4 @@
+public final class com/amazonaws/services/schemaregistry/Dummy {
+	public fun <init> ()V
+}
+

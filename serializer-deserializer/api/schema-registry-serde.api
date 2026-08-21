@@ -1,0 +1,751 @@
+public final class additionalTypes/Decimals {
+	public static fun getDescriptor ()Lcom/google/protobuf/Descriptors$FileDescriptor;
+	public static fun registerAllExtensions (Lcom/google/protobuf/ExtensionRegistry;)V
+	public static fun registerAllExtensions (Lcom/google/protobuf/ExtensionRegistryLite;)V
+}
+
+public final class additionalTypes/Decimals$Decimal : com/google/protobuf/GeneratedMessageV3, additionalTypes/Decimals$DecimalOrBuilder {
+	public static final field FRACTION_FIELD_NUMBER I
+	public static final field PRECISION_FIELD_NUMBER I
+	public static final field SCALE_FIELD_NUMBER I
+	public static final field UNITS_FIELD_NUMBER I
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun getDefaultInstance ()LadditionalTypes/Decimals$Decimal;
+	public fun getDefaultInstanceForType ()LadditionalTypes/Decimals$Decimal;
+	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/Message;
+	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/MessageLite;
+	public static final fun getDescriptor ()Lcom/google/protobuf/Descriptors$Descriptor;
+	public fun getFraction ()I
+	public fun getParserForType ()Lcom/google/protobuf/Parser;
+	public fun getPrecision ()I
+	public fun getScale ()I
+	public fun getSerializedSize ()I
+	public fun getUnits ()J
+	public fun hashCode ()I
+	public final fun isInitialized ()Z
+	public static fun newBuilder ()LadditionalTypes/Decimals$Decimal$Builder;
+	public static fun newBuilder (LadditionalTypes/Decimals$Decimal;)LadditionalTypes/Decimals$Decimal$Builder;
+	public fun newBuilderForType ()LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun newBuilderForType ()Lcom/google/protobuf/Message$Builder;
+	public synthetic fun newBuilderForType ()Lcom/google/protobuf/MessageLite$Builder;
+	public static fun parseDelimitedFrom (Ljava/io/InputStream;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseDelimitedFrom (Ljava/io/InputStream;Lcom/google/protobuf/ExtensionRegistryLite;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Lcom/google/protobuf/ByteString;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Lcom/google/protobuf/ByteString;Lcom/google/protobuf/ExtensionRegistryLite;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Lcom/google/protobuf/CodedInputStream;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Lcom/google/protobuf/CodedInputStream;Lcom/google/protobuf/ExtensionRegistryLite;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Ljava/io/InputStream;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Ljava/io/InputStream;Lcom/google/protobuf/ExtensionRegistryLite;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Ljava/nio/ByteBuffer;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom (Ljava/nio/ByteBuffer;Lcom/google/protobuf/ExtensionRegistryLite;)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom ([B)LadditionalTypes/Decimals$Decimal;
+	public static fun parseFrom ([BLcom/google/protobuf/ExtensionRegistryLite;)LadditionalTypes/Decimals$Decimal;
+	public static fun parser ()Lcom/google/protobuf/Parser;
+	public fun toBuilder ()LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun toBuilder ()Lcom/google/protobuf/Message$Builder;
+	public synthetic fun toBuilder ()Lcom/google/protobuf/MessageLite$Builder;
+	public fun writeTo (Lcom/google/protobuf/CodedOutputStream;)V
+}
+
+public final class additionalTypes/Decimals$Decimal$Builder : com/google/protobuf/GeneratedMessageV3$Builder, additionalTypes/Decimals$DecimalOrBuilder {
+	public fun addRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun addRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun addRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/Message$Builder;
+	public fun build ()LadditionalTypes/Decimals$Decimal;
+	public synthetic fun build ()Lcom/google/protobuf/Message;
+	public synthetic fun build ()Lcom/google/protobuf/MessageLite;
+	public fun buildPartial ()LadditionalTypes/Decimals$Decimal;
+	public synthetic fun buildPartial ()Lcom/google/protobuf/Message;
+	public synthetic fun buildPartial ()Lcom/google/protobuf/MessageLite;
+	public fun clear ()LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun clear ()Lcom/google/protobuf/AbstractMessage$Builder;
+	public synthetic fun clear ()Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun clear ()Lcom/google/protobuf/Message$Builder;
+	public synthetic fun clear ()Lcom/google/protobuf/MessageLite$Builder;
+	public fun clearField (Lcom/google/protobuf/Descriptors$FieldDescriptor;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun clearField (Lcom/google/protobuf/Descriptors$FieldDescriptor;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun clearField (Lcom/google/protobuf/Descriptors$FieldDescriptor;)Lcom/google/protobuf/Message$Builder;
+	public fun clearFraction ()LadditionalTypes/Decimals$Decimal$Builder;
+	public fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)Lcom/google/protobuf/AbstractMessage$Builder;
+	public synthetic fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)Lcom/google/protobuf/Message$Builder;
+	public fun clearPrecision ()LadditionalTypes/Decimals$Decimal$Builder;
+	public fun clearScale ()LadditionalTypes/Decimals$Decimal$Builder;
+	public fun clearUnits ()LadditionalTypes/Decimals$Decimal$Builder;
+	public fun clone ()LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun clone ()Lcom/google/protobuf/AbstractMessage$Builder;
+	public synthetic fun clone ()Lcom/google/protobuf/AbstractMessageLite$Builder;
+	public synthetic fun clone ()Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun clone ()Lcom/google/protobuf/Message$Builder;
+	public synthetic fun clone ()Lcom/google/protobuf/MessageLite$Builder;
+	public synthetic fun clone ()Ljava/lang/Object;
+	public fun getDefaultInstanceForType ()LadditionalTypes/Decimals$Decimal;
+	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/Message;
+	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/MessageLite;
+	public static final fun getDescriptor ()Lcom/google/protobuf/Descriptors$Descriptor;
+	public fun getDescriptorForType ()Lcom/google/protobuf/Descriptors$Descriptor;
+	public fun getFraction ()I
+	public fun getPrecision ()I
+	public fun getScale ()I
+	public fun getUnits ()J
+	public final fun isInitialized ()Z
+	public fun mergeFrom (LadditionalTypes/Decimals$Decimal;)LadditionalTypes/Decimals$Decimal$Builder;
+	public fun mergeFrom (Lcom/google/protobuf/CodedInputStream;Lcom/google/protobuf/ExtensionRegistryLite;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun mergeFrom (Lcom/google/protobuf/CodedInputStream;Lcom/google/protobuf/ExtensionRegistryLite;)Lcom/google/protobuf/AbstractMessage$Builder;
+	public synthetic fun mergeFrom (Lcom/google/protobuf/CodedInputStream;Lcom/google/protobuf/ExtensionRegistryLite;)Lcom/google/protobuf/AbstractMessageLite$Builder;
+	public synthetic fun mergeFrom (Lcom/google/protobuf/CodedInputStream;Lcom/google/protobuf/ExtensionRegistryLite;)Lcom/google/protobuf/Message$Builder;
+	public synthetic fun mergeFrom (Lcom/google/protobuf/CodedInputStream;Lcom/google/protobuf/ExtensionRegistryLite;)Lcom/google/protobuf/MessageLite$Builder;
+	public fun mergeFrom (Lcom/google/protobuf/Message;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun mergeFrom (Lcom/google/protobuf/Message;)Lcom/google/protobuf/AbstractMessage$Builder;
+	public synthetic fun mergeFrom (Lcom/google/protobuf/Message;)Lcom/google/protobuf/Message$Builder;
+	public final fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/AbstractMessage$Builder;
+	public synthetic fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/Message$Builder;
+	public fun setField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun setField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun setField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/Message$Builder;
+	public fun setFraction (I)LadditionalTypes/Decimals$Decimal$Builder;
+	public fun setPrecision (I)LadditionalTypes/Decimals$Decimal$Builder;
+	public fun setRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;ILjava/lang/Object;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun setRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;ILjava/lang/Object;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun setRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;ILjava/lang/Object;)Lcom/google/protobuf/Message$Builder;
+	public fun setScale (I)LadditionalTypes/Decimals$Decimal$Builder;
+	public fun setUnits (J)LadditionalTypes/Decimals$Decimal$Builder;
+	public final fun setUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)LadditionalTypes/Decimals$Decimal$Builder;
+	public synthetic fun setUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun setUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/Message$Builder;
+}
+
+public abstract interface class additionalTypes/Decimals$DecimalOrBuilder : com/google/protobuf/MessageOrBuilder {
+	public abstract fun getFraction ()I
+	public abstract fun getPrecision ()I
+	public abstract fun getScale ()I
+	public abstract fun getUnits ()J
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade : java/io/Closeable {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$Companion;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;)V
+	public fun <init> (Ljava/util/Map;Ljava/util/Properties;Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Lcom/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$GlueSchemaRegistryDeserializationFacadeBuilder;
+	public fun canDeserialize ([B)Z
+	public fun close ()V
+	public fun deserialize (Lcom/amazonaws/services/schemaregistry/common/AWSDeserializerInput;)Ljava/lang/Object;
+	public fun getActualData ([B)[B
+	public final fun getCredentialsProvider ()Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;
+	public final fun getDeserializerFactory ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerFactory;
+	public final fun getGlueSchemaRegistryConfiguration ()Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;
+	public fun getSchema ([B)Lcom/amazonaws/services/schemaregistry/common/Schema;
+	public fun getSchemaDefinition (Ljava/nio/ByteBuffer;)Ljava/lang/String;
+	public fun getSchemaDefinition ([B)Ljava/lang/String;
+	public final fun getSchemaRegistryClient ()Lcom/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient;
+	public fun overrideUserAgentApp (Ljava/lang/String;)V
+	public final fun setDeserializerFactory (Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerFactory;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$GlueSchemaRegistryDeserializationFacadeBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$GlueSchemaRegistryDeserializationFacadeBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade;
+	public final fun configs (Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$GlueSchemaRegistryDeserializationFacadeBuilder;
+	public final fun credentialProvider (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;)Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$GlueSchemaRegistryDeserializationFacadeBuilder;
+	public final fun properties (Ljava/util/Properties;)Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$GlueSchemaRegistryDeserializationFacadeBuilder;
+	public final fun schemaRegistryClient (Lcom/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient;)Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade$GlueSchemaRegistryDeserializationFacadeBuilder;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializer {
+	public abstract fun canDeserialize ([B)Z
+	public abstract fun getData ([B)[B
+	public abstract fun getSchema ([B)Lcom/amazonaws/services/schemaregistry/common/Schema;
+	public abstract fun overrideUserAgentApp (Ljava/lang/String;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser$Companion;
+	public final fun getCompressionByte (Ljava/nio/ByteBuffer;)B
+	public final fun getHeaderVersionByte (Ljava/nio/ByteBuffer;)B
+	public static final fun getInstance ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser;
+	public final fun getPlainData (Ljava/nio/ByteBuffer;)[B
+	public final fun getSchemaVersionId (Ljava/nio/ByteBuffer;)Ljava/util/UUID;
+	public final fun isCompressionEnabled (Ljava/nio/ByteBuffer;)Z
+	public final fun isDataCompatible (Ljava/nio/ByteBuffer;Ljava/lang/StringBuilder;)Z
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser$Companion {
+	public final fun getInstance ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser;
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerFactory {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerFactory$Companion;
+	public fun <init> ()V
+	public fun getInstance (Lsoftware/amazon/awssdk/services/glue/model/DataFormat;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatDeserializer;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerFactory$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerImpl : com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializer {
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public fun canDeserialize ([B)Z
+	public fun getData ([B)[B
+	public fun getSchema ([B)Lcom/amazonaws/services/schemaregistry/common/Schema;
+	public fun overrideUserAgentApp (Ljava/lang/String;)V
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer : org/apache/kafka/common/serialization/Deserializer {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Ljava/util/Map;)V
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun deserialize (Ljava/lang/String;[B)Ljava/lang/Object;
+	public final fun getCredentialProvider ()Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;
+	public fun getGlueSchemaRegistryDeserializationFacade ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade;
+	public fun getUserAgentApp ()Ljava/lang/String;
+	public fun setGlueSchemaRegistryDeserializationFacade (Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade;)V
+	public fun setUserAgentApp (Ljava/lang/String;)V
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/SecondaryDeserializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/SecondaryDeserializer$Companion;
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun deserialize (Ljava/lang/String;[B)Ljava/lang/Object;
+	public static final fun newInstance ()Lcom/amazonaws/services/schemaregistry/deserializers/SecondaryDeserializer;
+	public fun validate (Ljava/util/Map;)Z
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/SecondaryDeserializer$Companion {
+	public final fun newInstance ()Lcom/amazonaws/services/schemaregistry/deserializers/SecondaryDeserializer;
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/avro/AWSKafkaAvroDeserializer : org/apache/kafka/common/serialization/Deserializer {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Ljava/util/Map;)V
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun deserialize (Ljava/lang/String;[B)Ljava/lang/Object;
+	public final fun getCredentialProvider ()Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;
+	public fun getGlueSchemaRegistryDeserializationFacade ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade;
+	public fun getUserAgentApp ()Ljava/lang/String;
+	public fun setGlueSchemaRegistryDeserializationFacade (Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializationFacade;)V
+	public fun setUserAgentApp (Ljava/lang/String;)V
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatDeserializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer$Companion;
+	protected final field datumReaderCache Lcom/google/common/cache/LoadingCache;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer$AvroDeserializerBuilder;
+	public fun deserialize (Ljava/nio/ByteBuffer;Lcom/amazonaws/services/schemaregistry/common/Schema;)Ljava/lang/Object;
+	public final fun getAvroRecordType ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public final fun getDatumReaderCache ()Lcom/google/common/cache/LoadingCache;
+	public final fun getSchemaRegistrySerDeConfigs ()Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;
+	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
+	public final fun setSchemaRegistrySerDeConfigs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer$AvroDeserializerBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer;
+	public final fun configs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer$AvroDeserializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/avro/AvroDeserializer$AvroDeserializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/avro/DatumReaderInstance {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/deserializers/avro/DatumReaderInstance;
+	public static final fun from (Ljava/lang/String;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)Lorg/apache/avro/io/DatumReader;
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatDeserializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer$Companion;
+	public static final field MAX_WARNED_CLASS_NAMES I
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer$JsonDeserializerBuilder;
+	public fun deserialize (Ljava/nio/ByteBuffer;Lcom/amazonaws/services/schemaregistry/common/Schema;)Ljava/lang/Object;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getSchemaRegistrySerDeConfigs ()Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;
+	public final fun getWarnCapNoticeEmitted ()Ljava/util/concurrent/atomic/AtomicBoolean;
+	public final fun getWarnedClassNames ()Ljava/util/Set;
+	public fun hashCode ()I
+	public final fun setSchemaRegistrySerDeConfigs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer$JsonDeserializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer$JsonDeserializerBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer;
+	public final fun configs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer$JsonDeserializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufClassName {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufClassName;
+	public static final fun from (Lcom/google/protobuf/Descriptors$Descriptor;)Ljava/lang/String;
+	public static final fun normalize (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatDeserializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$Companion;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufDeserializerBuilder;
+	public fun deserialize (Ljava/nio/ByteBuffer;Lcom/amazonaws/services/schemaregistry/common/Schema;)Ljava/lang/Object;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufDeserializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufDeserializerBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer;
+	public final fun configs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufDeserializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufSchemaParserCacheKey {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufSchemaParserCacheKey;
+	public static synthetic fun copy$default (Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufSchemaParserCacheKey;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufDeserializer$ProtobufSchemaParserCacheKey;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getProtoFileName ()Ljava/lang/String;
+	public final fun getSchemaDefinition ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufSchemaParser {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufSchemaParser;
+	public static final fun parse (Ljava/lang/String;Ljava/lang/String;)Lcom/google/protobuf/Descriptors$FileDescriptor;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufWireFormatDecoder {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufWireFormatDecoder$Companion;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/protobuf/MessageIndexFinder;)V
+	public final fun decode ([BLcom/google/protobuf/Descriptors$FileDescriptor;Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;)Ljava/lang/Object;
+	public static final fun getAndRemoveMessageIndex ([B)Lorg/apache/commons/lang3/tuple/Pair;
+}
+
+public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/ProtobufWireFormatDecoder$Companion {
+	public final fun getAndRemoveMessageIndex ([B)Lorg/apache/commons/lang3/tuple/Pair;
+}
+
+public class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer : org/apache/kafka/common/serialization/Serializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;)V
+	public fun <init> (Ljava/util/Map;Ljava/util/UUID;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Ljava/util/Map;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Ljava/util/UUID;Ljava/util/Map;)V
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public final fun getCredentialProvider ()Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;
+	public fun getDataFormat ()Ljava/lang/String;
+	public fun getGlueSchemaRegistrySerializationFacade ()Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade;
+	public fun getSchemaName ()Ljava/lang/String;
+	public fun getSchemaNamingStrategy ()Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;
+	public final fun getSchemaVersionId ()Ljava/util/UUID;
+	public fun getUserAgentApp ()Ljava/lang/String;
+	public fun isKey ()Z
+	public fun serialize (Ljava/lang/String;Ljava/lang/Object;)[B
+	public fun setDataFormat (Ljava/lang/String;)V
+	public fun setGlueSchemaRegistrySerializationFacade (Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade;)V
+	public fun setKey (Z)V
+	public fun setSchemaName (Ljava/lang/String;)V
+	public fun setSchemaNamingStrategy (Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;)V
+	public fun setUserAgentApp (Ljava/lang/String;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer$Companion {
+}
+
+public class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$Companion;
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Lcom/amazonaws/services/schemaregistry/common/SchemaByDefinitionFetcher;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;Ljava/util/Map;Ljava/util/Properties;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder;
+	public fun encode (Ljava/lang/String;Lcom/amazonaws/services/schemaregistry/common/Schema;[B)[B
+	public fun getOrRegisterSchemaVersion (Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput;)Ljava/util/UUID;
+	public fun getSchemaDefinition (Lsoftware/amazon/awssdk/services/glue/model/DataFormat;Ljava/lang/Object;)Ljava/lang/String;
+	public fun serialize (Lsoftware/amazon/awssdk/services/glue/model/DataFormat;Ljava/lang/Object;Ljava/util/UUID;)[B
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade;
+	public final fun configs (Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder;
+	public final fun credentialProvider (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;)Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder;
+	public final fun glueSchemaRegistryConfiguration (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder;
+	public final fun properties (Ljava/util/Properties;)Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder;
+	public final fun schemaByDefinitionFetcher (Lcom/amazonaws/services/schemaregistry/common/SchemaByDefinitionFetcher;)Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade$GlueSchemaRegistrySerializationFacadeBuilder;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializer {
+	public abstract fun encode (Ljava/lang/String;Lcom/amazonaws/services/schemaregistry/common/Schema;[B)[B
+}
+
+public class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializerFactory {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializerFactory$Companion;
+	public fun <init> ()V
+	public fun getInstance (Lsoftware/amazon/awssdk/services/glue/model/DataFormat;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatSerializer;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializerFactory$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializerImpl : com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializer {
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Ljava/lang/String;)V
+	public fun encode (Ljava/lang/String;Lcom/amazonaws/services/schemaregistry/common/Schema;[B)[B
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/SerializationDataEncoder {
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public final fun write ([BLjava/util/UUID;)[B
+}
+
+public class com/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer : org/apache/kafka/common/serialization/Serializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;)V
+	public fun <init> (Ljava/util/Map;Ljava/util/UUID;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Ljava/util/Map;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Ljava/util/UUID;Ljava/util/Map;)V
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public final fun getCredentialProvider ()Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;
+	public fun getGlueSchemaRegistrySerializationFacade ()Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade;
+	public fun getSchemaName ()Ljava/lang/String;
+	public fun getSchemaNamingStrategy ()Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;
+	public final fun getSchemaVersionId ()Ljava/util/UUID;
+	public fun getUserAgentApp ()Ljava/lang/String;
+	public fun isKey ()Z
+	public fun serialize (Ljava/lang/String;Ljava/lang/Object;)[B
+	public fun setGlueSchemaRegistrySerializationFacade (Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistrySerializationFacade;)V
+	public fun setKey (Z)V
+	public fun setSchemaName (Ljava/lang/String;)V
+	public fun setSchemaNamingStrategy (Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;)V
+	public fun setUserAgentApp (Ljava/lang/String;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer$Companion {
+}
+
+public class com/amazonaws/services/schemaregistry/serializers/avro/AvroSerializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatSerializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/avro/AvroSerializer$Companion;
+	public fun <init> ()V
+	public fun getSchemaDefinition (Ljava/lang/Object;)Ljava/lang/String;
+	public fun serialize (Ljava/lang/Object;)[B
+	public fun validate (Ljava/lang/Object;)V
+	public fun validate (Ljava/lang/String;[B)V
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/avro/AvroSerializer$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/avro/AvroSerializer$DatumWriterCacheKey {
+	public fun <init> (Lorg/apache/avro/Schema;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
+	public final fun component1 ()Lorg/apache/avro/Schema;
+	public final fun component2 ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public final fun copy (Lorg/apache/avro/Schema;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)Lcom/amazonaws/services/schemaregistry/serializers/avro/AvroSerializer$DatumWriterCacheKey;
+	public static synthetic fun copy$default (Lcom/amazonaws/services/schemaregistry/serializers/avro/AvroSerializer$DatumWriterCacheKey;Lorg/apache/avro/Schema;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;ILjava/lang/Object;)Lcom/amazonaws/services/schemaregistry/serializers/avro/AvroSerializer$DatumWriterCacheKey;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAvroRecordType ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public final fun getSchema ()Lorg/apache/avro/Schema;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/avro/DatumWriterInstance {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/serializers/avro/DatumWriterInstance;
+	public static final fun get (Lorg/apache/avro/Schema;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)Lorg/apache/avro/io/DatumWriter;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder;
+	public static final fun builder (Ljava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPayload ()Ljava/lang/String;
+	public final fun getSchema ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder;
+	public final fun builder (Ljava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema;
+	public final fun payload (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder;
+	public final fun schema (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder;
+}
+
+public class com/amazonaws/services/schemaregistry/serializers/json/JsonSerializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatSerializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/json/JsonSerializer$Companion;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/json/JsonSerializer$JsonSerializerBuilder;
+	public fun getSchemaDefinition (Ljava/lang/Object;)Ljava/lang/String;
+	public final fun getSchemaRegistrySerDeConfigs ()Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;
+	public fun serialize (Ljava/lang/Object;)[B
+	public final fun setSchemaRegistrySerDeConfigs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public fun validate (Ljava/lang/Object;)V
+	public fun validate (Ljava/lang/String;[B)V
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/json/JsonSerializer$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/json/JsonSerializer$JsonSerializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/json/JsonSerializer$JsonSerializerBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/serializers/json/JsonSerializer;
+	public final fun configs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/serializers/json/JsonSerializer$JsonSerializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/json/JsonValidator {
+	public fun <init> ()V
+	public final fun validateDataWithSchema (Lcom/fasterxml/jackson/databind/JsonNode;Lcom/fasterxml/jackson/databind/JsonNode;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/json/JsonValidator$ReferenceDisabledSchemaClient : org/everit/json/schema/loader/SchemaClient {
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/json/JsonValidator;)V
+	public fun get (Ljava/lang/String;)Ljava/io/InputStream;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/protobuf/MessageIndexFinder {
+	public fun <init> ()V
+	public final fun getAll (Lcom/google/protobuf/Descriptors$FileDescriptor;)Lcom/google/common/collect/BiMap;
+	public final fun getByDescriptor (Lcom/google/protobuf/Descriptors$FileDescriptor;Lcom/google/protobuf/Descriptors$Descriptor;)I
+	public final fun getByIndex (Lcom/google/protobuf/Descriptors$FileDescriptor;Ljava/lang/Integer;)Lcom/google/protobuf/Descriptors$Descriptor;
+}
+
+public class com/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatSerializer {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer$Companion;
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer$ProtobufSerializerBuilder;
+	public fun getSchemaDefinition (Ljava/lang/Object;)Ljava/lang/String;
+	public fun serialize (Ljava/lang/Object;)[B
+	public fun validate (Ljava/lang/Object;)V
+	public fun validate (Ljava/lang/String;[B)V
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer$ProtobufSerializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer$ProtobufSerializerBuilder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer;
+	public final fun configs (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)Lcom/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufSerializer$ProtobufSerializerBuilder;
+}
+
+public final class com/amazonaws/services/schemaregistry/serializers/protobuf/ProtobufWireFormatEncoder {
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/protobuf/MessageIndexFinder;)V
+	public final fun encode (Lcom/google/protobuf/Message;Lcom/google/protobuf/Descriptors$FileDescriptor;)[B
+	public final fun prefixMessageIndexToBytes ([BLcom/google/protobuf/Descriptors$FileDescriptor;Lcom/google/protobuf/Descriptors$Descriptor;)[B
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/AVROUtils {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/AVROUtils$Companion;
+	public static final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/AVROUtils;
+	public final fun getSchema (Ljava/lang/Object;)Lorg/apache/avro/Schema;
+	public final fun getSchemaDefinition (Ljava/lang/Object;)Ljava/lang/String;
+	public final fun parseSchema (Ljava/lang/String;)Lorg/apache/avro/Schema;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/AVROUtils$Companion {
+	public final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/AVROUtils;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/ProtobufSchemaParser {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/utils/ProtobufSchemaParser;
+	public static final fun getProtobufSchemaStringFromFileDescriptorProto (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto;)Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Companion;
+	public synthetic fun <init> (Lcom/google/protobuf/DescriptorProtos$FileDescriptorSet;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEnumDescriptor (Ljava/lang/String;)Lcom/google/protobuf/Descriptors$EnumDescriptor;
+	public final fun getEnumTypes ()Ljava/util/Set;
+	public final fun getEnumValue (Ljava/lang/String;I)Lcom/google/protobuf/Descriptors$EnumValueDescriptor;
+	public final fun getEnumValue (Ljava/lang/String;Ljava/lang/String;)Lcom/google/protobuf/Descriptors$EnumValueDescriptor;
+	public final fun getFileDescriptorProto ()Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto;
+	public final fun getMessageDescriptor (Ljava/lang/String;)Lcom/google/protobuf/Descriptors$Descriptor;
+	public final fun getMessageTypes ()Ljava/util/Set;
+	public static final fun newBuilder ()Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun newMessageBuilder (Ljava/lang/String;)Lcom/google/protobuf/DynamicMessage$Builder;
+	public static final fun parseFrom (Ljava/io/InputStream;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema;
+	public static final fun parseFrom ([B)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema;
+	public final fun toByteArray ()[B
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder {
+	public final fun addDependency (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun addEnumDefinition (Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun addMessageDefinition (Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun addPublicDependency (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun addSchema (Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema;
+	public final fun setJavaMultipleFiles (Z)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun setJavaOuterClassname (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun setJavaPackage (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun setName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun setPackage (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun setSyntax (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Companion {
+	public final fun newBuilder ()Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema$Builder;
+	public final fun parseFrom (Ljava/io/InputStream;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema;
+	public final fun parseFrom ([B)Lcom/amazonaws/services/schemaregistry/utils/apicurio/DynamicSchema;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Companion;
+	public synthetic fun <init> (Lcom/google/protobuf/DescriptorProtos$EnumDescriptorProto;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun newBuilder (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Builder;
+	public static final fun newBuilder (Ljava/lang/String;Ljava/lang/Boolean;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Builder;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Builder {
+	public final fun addValue (Ljava/lang/String;I)Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Builder;
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Companion {
+	public final fun newBuilder (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Builder;
+	public final fun newBuilder (Ljava/lang/String;Ljava/lang/Boolean;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/FileDescriptorUtils {
+	public static final field DEFAULT_LOCATION Lcom/squareup/wire/schema/Location;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/utils/apicurio/FileDescriptorUtils;
+	public static final fun baseDependencies ()[Lcom/google/protobuf/Descriptors$FileDescriptor;
+	public static final fun fileDescriptorToProtoFile (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto;)Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;
+	public static final fun fileDescriptorWithDepsToProtoFile (Lcom/google/protobuf/Descriptors$FileDescriptor;Ljava/util/Map;)Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;
+	public static final fun findOption (Ljava/lang/String;Ljava/util/List;)Ljava/util/Optional;
+	public static final fun firstMessage (Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;)Lcom/squareup/wire/schema/internal/parser/MessageElement;
+	public static final fun protoFileToFileDescriptor (Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;)Lcom/google/protobuf/Descriptors$FileDescriptor;
+	public static final fun protoFileToFileDescriptor (Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;Ljava/lang/String;)Lcom/google/protobuf/Descriptors$FileDescriptor;
+	public static final fun protoFileToFileDescriptor (Ljava/lang/String;Ljava/lang/String;Ljava/util/Optional;)Lcom/google/protobuf/Descriptors$FileDescriptor;
+	public static final fun toDescriptor (Ljava/lang/String;Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;Ljava/util/Map;)Lcom/google/protobuf/Descriptors$Descriptor;
+	public static final fun toMapField (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Companion;
+	public synthetic fun <init> (Lcom/google/protobuf/DescriptorProtos$DescriptorProto;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun newBuilder (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder {
+	public final fun addEnumDefinition (Lcom/amazonaws/services/schemaregistry/utils/apicurio/EnumDefinition;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public final fun addField (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public final fun addField (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public final fun addField (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public static synthetic fun addField$default (Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;ILjava/lang/Object;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public final fun addMessageDefinition (Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public final fun addOneof (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$OneofBuilder;
+	public final fun addReservedName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public final fun addReservedRange (II)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition;
+	public final fun setMapEntry (Z)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Companion {
+	public final fun newBuilder (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$OneofBuilder {
+	public final fun addField (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$OneofBuilder;
+	public final fun addField (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$OneofBuilder;
+	public static synthetic fun addField$default (Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$OneofBuilder;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$OneofBuilder;
+	public final fun getIdx ()I
+	public final fun msgDefBuilder ()Lcom/amazonaws/services/schemaregistry/utils/apicurio/MessageDefinition$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufFile {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/apicurio/ProtobufFile$Companion;
+	public fun <init> (Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;)V
+	public fun <init> (Ljava/io/File;)V
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getEnumFieldMap ()Ljava/util/Map;
+	public final fun getEnumFieldsById ()Ljava/util/Map;
+	public final fun getFieldMap ()Ljava/util/Map;
+	public final fun getFieldsById ()Ljava/util/Map;
+	public final fun getMapMap ()Ljava/util/Map;
+	public final fun getNonReservedEnumFields ()Ljava/util/Map;
+	public final fun getNonReservedFields ()Ljava/util/Map;
+	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getReservedFields ()Ljava/util/Map;
+	public final fun getServiceRPCSignatures ()Ljava/util/Map;
+	public final fun getServiceRPCnames ()Ljava/util/Map;
+	public final fun getSyntax ()Lcom/squareup/wire/Syntax;
+	public static final fun toProtoFileElement (Ljava/lang/String;)Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufFile$Companion {
+	public final fun toProtoFileElement (Ljava/lang/String;)Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufMessage {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/apicurio/ProtobufMessage$Companion;
+	public fun <init> ()V
+	public final fun addField (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Lcom/google/protobuf/DescriptorProtos$FieldOptions$CType;Lcom/google/protobuf/DescriptorProtos$FieldOptions$JSType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Boolean;)V
+	public final fun build ()Lcom/google/protobuf/DescriptorProtos$DescriptorProto;
+	public static final fun buildFieldDescriptorProto (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Lcom/google/protobuf/DescriptorProtos$FieldOptions$CType;Lcom/google/protobuf/DescriptorProtos$FieldOptions$JSType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Boolean;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto;
+	public final fun protoBuilder ()Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufMessage$Companion {
+	public final fun buildFieldDescriptorProto (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Lcom/google/protobuf/DescriptorProtos$FieldOptions$CType;Lcom/google/protobuf/DescriptorProtos$FieldOptions$JSType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Boolean;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufSchema {
+	public fun <init> (Lcom/google/protobuf/Descriptors$FileDescriptor;Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;)V
+	public final fun getFileDescriptor ()Lcom/google/protobuf/Descriptors$FileDescriptor;
+	public final fun getProtoFileElement ()Lcom/squareup/wire/schema/internal/parser/ProtoFileElement;
+	public final fun getProtobufFile ()Lcom/amazonaws/services/schemaregistry/utils/apicurio/ProtobufFile;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufSchemaLoader {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/apicurio/ProtobufSchemaLoader$Companion;
+	public fun <init> ()V
+	public static final fun loadSchema (Ljava/util/Optional;Ljava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/ProtobufSchemaLoader$ProtobufSchemaLoaderContext;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufSchemaLoader$Companion {
+	public final fun loadSchema (Ljava/util/Optional;Ljava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/apicurio/ProtobufSchemaLoader$ProtobufSchemaLoaderContext;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/apicurio/ProtobufSchemaLoader$ProtobufSchemaLoaderContext {
+	public final fun getProtoFile ()Lcom/squareup/wire/schema/ProtoFile;
+	public final fun getSchema ()Lcom/squareup/wire/schema/Schema;
+}
+
+public final class metadata/ProtobufSchemaMetadata {
+	public static final field METADATA_KEY_FIELD_NUMBER I
+	public static final field METADATA_VALUE_FIELD_NUMBER I
+	public static final field metadataKey Lcom/google/protobuf/GeneratedMessage$GeneratedExtension;
+	public static final field metadataValue Lcom/google/protobuf/GeneratedMessage$GeneratedExtension;
+	public static fun getDescriptor ()Lcom/google/protobuf/Descriptors$FileDescriptor;
+	public static fun registerAllExtensions (Lcom/google/protobuf/ExtensionRegistry;)V
+	public static fun registerAllExtensions (Lcom/google/protobuf/ExtensionRegistryLite;)V
+}
+
