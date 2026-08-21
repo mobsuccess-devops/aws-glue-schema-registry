@@ -165,7 +165,7 @@ public abstract interface class com/amazonaws/services/schemaregistry/deserializ
 }
 
 public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser {
-	public static final field Companion Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser$Companion;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser;
 	public final fun getCompressionByte (Ljava/nio/ByteBuffer;)B
 	public final fun getHeaderVersionByte (Ljava/nio/ByteBuffer;)B
 	public static final fun getInstance ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser;
@@ -173,10 +173,6 @@ public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchem
 	public final fun getSchemaVersionId (Ljava/nio/ByteBuffer;)Ljava/util/UUID;
 	public final fun isCompressionEnabled (Ljava/nio/ByteBuffer;)Z
 	public final fun isDataCompatible (Ljava/nio/ByteBuffer;Ljava/lang/StringBuilder;)Z
-}
-
-public final class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser$Companion {
-	public final fun getInstance ()Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerDataParser;
 }
 
 public class com/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryDeserializerFactory {
@@ -576,15 +572,11 @@ public final class com/amazonaws/services/schemaregistry/serializers/protobuf/Pr
 }
 
 public final class com/amazonaws/services/schemaregistry/utils/AVROUtils {
-	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/AVROUtils$Companion;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/utils/AVROUtils;
 	public static final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/AVROUtils;
 	public final fun getSchema (Ljava/lang/Object;)Lorg/apache/avro/Schema;
 	public final fun getSchemaDefinition (Ljava/lang/Object;)Ljava/lang/String;
 	public final fun parseSchema (Ljava/lang/String;)Lorg/apache/avro/Schema;
-}
-
-public final class com/amazonaws/services/schemaregistry/utils/AVROUtils$Companion {
-	public final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/AVROUtils;
 }
 
 public final class com/amazonaws/services/schemaregistry/utils/ProtobufSchemaParser {

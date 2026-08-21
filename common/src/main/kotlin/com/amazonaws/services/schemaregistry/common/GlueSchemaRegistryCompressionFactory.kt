@@ -21,7 +21,7 @@ import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
  * Factory to create the compression object.
  */
 class GlueSchemaRegistryCompressionFactory {
-    private var zlibCompression: GlueSchemaRegistryDefaultCompression? = null
+    private val zlibCompression: GlueSchemaRegistryDefaultCompression by lazy { GlueSchemaRegistryDefaultCompression() }
 
     /**
      * Get the respective compression handler based on the properties.
@@ -30,7 +30,7 @@ class GlueSchemaRegistryCompressionFactory {
         if (compressionType != null &&
             AWSSchemaRegistryConstants.COMPRESSION.ZLIB.name.equals(compressionType.name, ignoreCase = true)
         ) {
-            return getZlibCompression()
+            return zlibCompression
         }
         return null
     }
@@ -41,16 +41,8 @@ class GlueSchemaRegistryCompressionFactory {
      */
     fun getCompressionHandler(compressionByte: Byte): GlueSchemaRegistryCompressionHandler? {
         if (AWSSchemaRegistryConstants.COMPRESSION_BYTE == compressionByte) {
-            return getZlibCompression()
+            return zlibCompression
         }
         return null
-    }
-
-    @Synchronized
-    private fun getZlibCompression(): GlueSchemaRegistryCompressionHandler {
-        if (zlibCompression == null) {
-            zlibCompression = GlueSchemaRegistryDefaultCompression()
-        }
-        return zlibCompression!!
     }
 }

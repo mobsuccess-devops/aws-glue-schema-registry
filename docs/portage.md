@@ -282,3 +282,29 @@ Java.
   wrapper over `GlueSchemaRegistryKafkaStreamsSerde`. The wrapper checks the type of each record
   rather than casting blind, so a topic that does not hold what the caller declared fails where
   the record is read instead of somewhere further down a Kafka Streams topology.
+- **Two hand-written lazy initialisations became `by lazy`.** `ProtobufSchema.getProtobufFile`
+  read a field, built the value if it was null and assigned it back, with no synchronisation at
+  all: two threads calling it at once could each build a `ProtobufFile` and see different
+  instances, and the assignment was not safely published. `GlueSchemaRegistryCompressionFactory`
+  had the same shape guarded by `@Synchronized`, which was correct but took a monitor on a path
+  a deserializer walks per record. Both are now `by lazy`, whose default mode is synchronized and
+  publishes safely, and which takes no lock once the value is built. `ProtobufSchema` is not
+  reachable from the library today — nothing constructs it — but it is published API, so the race
+  was real for a caller who used it.
+- **The three hand-written singletons became `object`s.** `GlueSchemaRegistryUtils`, `AVROUtils`
+  and `GlueSchemaRegistryDeserializerDataParser` were each a class with a private constructor, a
+  companion holding an `INSTANCE`, and a `getInstance()` returning it — which is what a Kotlin
+  `object` is. `getInstance()` is kept as a `@JvmStatic` shim, so every caller, Java or Kotlin,
+  is unaffected. The `.api` dumps lose the three `$Companion` classes and their `Companion`
+  fields and gain the `INSTANCE` field an `object` declares; the static `getInstance()` that
+  callers actually use does not move.
+
+  That `Companion` was **not** part of the surface this fork promises to preserve. The Java
+  source used the initialization-on-demand holder idiom — a _private_ nested `UtilsHelper` /
+  `DataParserHelper` holding the instance, reached through a public static `getInstance()` — so
+  the only public member was `getInstance()` itself. The conversion to Kotlin introduced
+  `Companion` as a public member the Java original never had; removing it narrows the surface
+  back towards the source rather than away from it. The `INSTANCE` field an `object` declares is
+  new for the same reason the `Companion` was, and is equally not something a caller needs.
+  Laziness is unchanged in all three cases: the holder class, the companion and the `object` are
+  each initialised on first touch, which is the first `getInstance()` call.

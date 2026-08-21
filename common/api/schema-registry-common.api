@@ -348,16 +348,12 @@ public final class com/amazonaws/services/schemaregistry/utils/AvroRecordType$Co
 }
 
 public final class com/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils {
-	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils$Companion;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils;
 	public final fun checkIfPresentInMap (Ljava/util/Map;Ljava/lang/String;)Z
 	public final fun configureSchemaNamingStrategy (Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;
 	public final fun getDataFormat (Ljava/util/Map;)Ljava/lang/String;
 	public static final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils;
 	public final fun getSchemaName (Ljava/util/Map;)Ljava/lang/String;
-}
-
-public final class com/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils$Companion {
-	public final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils;
 }
 
 public final class com/amazonaws/services/schemaregistry/utils/ProtobufMessageType : java/lang/Enum {

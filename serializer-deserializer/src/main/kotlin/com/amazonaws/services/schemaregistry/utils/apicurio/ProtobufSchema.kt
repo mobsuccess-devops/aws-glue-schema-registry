@@ -20,39 +20,13 @@ package com.amazonaws.services.schemaregistry.utils.apicurio
 
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.squareup.wire.schema.internal.parser.ProtoFileElement
-import java.util.Objects
 
 /**
  * @author Fabian Martinez
  */
 class ProtobufSchema(
-    private val fileDescriptor: FileDescriptor,
-    private val protoFileElement: ProtoFileElement,
+    val fileDescriptor: FileDescriptor,
+    val protoFileElement: ProtoFileElement,
 ) {
-    private var protobufFile: ProtobufFile? = null
-
-    init {
-        Objects.requireNonNull(fileDescriptor)
-        Objects.requireNonNull(protoFileElement)
-    }
-
-    /**
-     * @return the fileDescriptor
-     */
-    fun getFileDescriptor(): FileDescriptor = fileDescriptor
-
-    /**
-     * @return the protoFileElement
-     */
-    fun getProtoFileElement(): ProtoFileElement = protoFileElement
-
-    /**
-     * @return the protobufFile
-     */
-    fun getProtobufFile(): ProtobufFile {
-        if (protobufFile == null) {
-            protobufFile = ProtobufFile(protoFileElement)
-        }
-        return protobufFile!!
-    }
+    val protobufFile: ProtobufFile by lazy { ProtobufFile(protoFileElement) }
 }

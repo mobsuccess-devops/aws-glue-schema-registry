@@ -21,7 +21,7 @@ import org.apache.avro.SchemaParseException
 import org.apache.avro.generic.GenericContainer
 import org.slf4j.LoggerFactory
 
-class AVROUtils private constructor() {
+object AVROUtils {
     /**
      * Get the schema definition.
      */
@@ -59,15 +59,11 @@ class AVROUtils private constructor() {
         )
     }
 
-    companion object {
-        private val log = LoggerFactory.getLogger(AVROUtils::class.java)
-        private val INSTANCE = AVROUtils()
+    private val log = LoggerFactory.getLogger(AVROUtils::class.java)
 
-        /**
-         * Thread safe singleton instance of the AVROUtil Class.
-         */
-        @JvmStatic
-        @Synchronized
-        fun getInstance(): AVROUtils = INSTANCE
-    }
+    /**
+     * Thread safe singleton instance of the AVROUtil Class.
+     */
+    @JvmStatic
+    fun getInstance(): AVROUtils = this
 }
