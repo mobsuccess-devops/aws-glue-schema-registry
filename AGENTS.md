@@ -61,7 +61,8 @@ order to follow for the Kotlin conversion.
 
 ## Build
 
-- Gradle 9.6.1, Kotlin DSL, **JVM 17** toolchain (consumable by Kafka Connect and Flink)
+- Gradle 9.6.1, Kotlin DSL, **JVM 17** toolchain (consumable by Kafka Connect and Flink).
+  CI installs 17 and 21: 21 runs Gradle itself, 17 is the compilation toolchain.
 - Versions centralized in `gradle/libs.versions.toml` — never hard-code a version in a
   `build.gradle.kts`
 - Shared configuration in `buildSrc/src/main/kotlin/gsr.*.gradle.kts`, no `subprojects {}`
@@ -157,6 +158,56 @@ These all cost a red test at least once. They are listed in the order they bite.
   then strips the `v`; without it, every release would restart from 1.0.0.
 - `.mobsuccess.yml` disables the `linear`, `ms-testers`, `mobsuccess`, `closed` and `python`
   workflows: this repository does not require a Linear ticket per pull request.
+
+## Supply chain
+
+The build resolves third-party code, and CI runs it with a GitHub token. These rules keep
+that surface small; none of them survive a careless rewrite, so check them before touching
+`.github/`, `settings.gradle.kts` or the wrapper.
+
+- **GitHub Actions are pinned to a commit SHA**, never a tag: a tag is mutable and moving
+  it is how `tj-actions/changed-files` was compromised. The trailing `# vX.Y.Z` comment is
+  the human-readable part and Dependabot rewrites both together — do not replace the SHA
+  with the tag.
+- **The Gradle wrapper is checksummed twice**: `distributionSha256Sum` in
+  `gradle-wrapper.properties` pins the distribution zip, and `gradle/actions/wrapper-validation`
+  checks the committed `gradle-wrapper.jar` against Gradle's published hashes. Both have to
+  be refreshed together when the wrapper is upgraded, with the values from
+  `services.gradle.org/distributions/gradle-<version>-bin.zip.sha256`.
+- **No job that runs repository code holds a write token.** `Gradle Build` runs third-party
+  plugin code and is limited to `contents: read` with `persist-credentials: false`, so a
+  hostile dependency finds neither a token in `.git/config` nor one it could comment or push
+  with. Keep the pull request comments in `report`, which downloads artifacts and runs no
+  repository code — `report` needs `contents: read` on top of its write scopes, since
+  `publish-unit-test-result-action` resolves the commit through the API. `permissions: {}` at
+  the top of the workflow means a new job starts with nothing, since the repository-wide
+  default is still `write`. The exceptions are deliberate:
+  `ktlint` takes `pull-requests: read` because reviewdog reads the diff to place its
+  findings, and the two `publish-*` jobs need `packages: write` to publish — plus, for
+  `publish-release`, `contents: write` and the only checkout that keeps its credentials
+  persisted, since its last step pushes the release tag. Those two run on a push to `master`
+  or `prod`, never on a pull request.
+- **`report` tolerates a build that produced nothing.** Its downloads are
+  `continue-on-error`, and each publishing step is gated on its own download having
+  succeeded: a compile failure leaves `Gradle Build` red on its own rather than dragging a
+  second job down with it. The job itself runs on `!cancelled()`, so a failing test suite is
+  still reported.
+- **Dependabot proposes a release only once it has aged** (`cooldown` in
+  `dependabot.yml`): a hijacked publish is usually pulled within days. The cooldown covers
+  version updates only — a security update still lands the day it is published, which is
+  the intent. The schedule is monthly and the groups are wide, so the batch arrives as a
+  handful of pull requests; a dependency lands in the **first** group it matches, which is
+  why the `minor-and-patch` catch-all comes last and why majors, excluded from it, keep an
+  individual pull request.
+- **`RepositoriesMode.FAIL_ON_PROJECT_REPOS`** in `settings.gradle.kts` turns a module
+  declaring its own repository into an error rather than a silent addition to the
+  resolution order.
+- **Dependency locking is deliberately absent.** The catalog fixes every direct version with
+  no range and Maven Central is immutable, so resolution is already deterministic and a
+  transitive only moves inside a reviewable commit. Lockfiles would add a manual
+  `--write-locks` to every bump, since Dependabot cannot regenerate them.
+  `gradle/verification-metadata.xml` is the control that would add something, and it is not
+  wired yet.
 
 ## Integration tests
 
