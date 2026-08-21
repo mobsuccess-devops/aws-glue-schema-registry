@@ -273,3 +273,12 @@ Java.
   call per newly registered schema definition. And the modes are read from the enum rather than
   from the prefix of its name, so `DISABLED` disables the check as `NONE` does; upstream's
   string test let `DISABLED` through.
+- **A Kotlin module was added.** `serde-kotlin` (`com.mobsuccess:schema-registry-serde-kotlin`)
+  is the first module that is not carried over from the source repository, and the first whose
+  package is `com.mobsuccess` rather than `com.amazonaws.services.schemaregistry`: it is the
+  fork's own API, and putting it under Amazon's package would say otherwise. It is strictly
+  additive — nothing in the other modules refers to it, and it introduces no behaviour, only a
+  configuration DSL that produces the same property map the Java API takes and a `Serde<T>`
+  wrapper over `GlueSchemaRegistryKafkaStreamsSerde`. The wrapper checks the type of each record
+  rather than casting blind, so a topic that does not hold what the caller declared fails where
+  the record is read instead of somewhere further down a Kafka Streams topology.

@@ -183,6 +183,7 @@ Available artifacts:
 | ---------------------------------------- | --------------------------------------------- |
 | `schema-registry-common`                 | Glue client, cache, exceptions                |
 | `schema-registry-serde`                  | Core SerDe (AVRO, JSON Schema, Protobuf)      |
+| `schema-registry-serde-kotlin`           | Kotlin configuration DSL and typed `Serde<T>` |
 | `schema-registry-serde-msk-iam`          | Uber-jar bundling the SerDe with MSK IAM auth |
 | `schema-registry-kafkastreams-serde`     | Kafka Streams integration                     |
 | `schema-registry-kafkaconnect-converter` | Kafka Connect AVRO converter                  |
@@ -226,35 +227,35 @@ their semantics live in
 "Scope" is the side that reads the property: a producer-only property on a consumer is simply
 ignored.
 
-| Key                              | Type                           | Default                                   | Scope                  | Notes                                                                                                                                                                                                                                              |
-| -------------------------------- | ------------------------------ | ----------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `region`                         | string                         | default AWS region chain                  | both                   | Configuration fails when neither this nor the provider chain resolves a region.                                                                                                                                                                    |
-| `endpoint`                       | string                         | regional Glue endpoint                    | both                   | Endpoint override, mostly for LocalStack and VPC endpoints.                                                                                                                                                                                        |
-| `proxyUrl`                       | string (URI)                   | none                                      | both                   | Rejected with a named error when it is not a valid URI.                                                                                                                                                                                            |
-| `registry.name`                  | string                         | `default-registry`                        | serializer             | The consumer resolves a schema by version id, so it needs no registry name.                                                                                                                                                                        |
-| `schemaName`                     | string                         | from the naming strategy                  | serializer             | The default strategy derives the name from the topic.                                                                                                                                                                                              |
-| `schemaNameGenerationClass`      | string (class name)            | topic-name strategy                       | serializer             | Must implement `AWSSchemaNamingStrategy`. An unloadable name falls back to the default strategy.                                                                                                                                                   |
-| `schemaAutoRegistrationEnabled`  | boolean                        | `false`                                   | serializer             | When `false`, an unknown schema fails serialization instead of being registered.                                                                                                                                                                   |
-| `compatibility`                  | string (enum)                  | `BACKWARD`                                | serializer             | Only read when auto-registration creates the schema. Accepted values: `Compatibility.knownValues()`.                                                                                                                                               |
-| `description`                    | string                         | `DEFAULT-DESCRIPTION-<region>-<registry>` | serializer             | Attached to a schema this library registers.                                                                                                                                                                                                       |
-| `tags`                           | `Map<String, String>`          | empty                                     | serializer             | Applied when the registry entry is created. Not declared in the Connect `ConfigDef` — see below.                                                                                                                                                   |
-| `metadata`                       | `Map<String, String>`          | none                                      | serializer             | Attached to the schema version. Not declared in the Connect `ConfigDef` — see below.                                                                                                                                                               |
-| `compression`                    | string (enum)                  | `NONE`                                    | serializer             | `NONE` or `ZLIB`. The consumer reads either: the choice is recorded in the record header.                                                                                                                                                          |
-| `dataFormat`                     | string (enum)                  | none                                      | serializer             | `AVRO`, `JSON` or `PROTOBUF`. A producer on the format-agnostic serializer has to set it; a consumer reads the format from the record header. Each Connect converter accepts only its own format.                                                  |
-| `avroRecordType`                 | string (enum)                  | `GENERIC_RECORD`                          | deserializer           | `GENERIC_RECORD` or `SPECIFIC_RECORD`. Case-sensitive.                                                                                                                                                                                             |
-| `protobufMessageType`            | string (enum)                  | none                                      | deserializer           | `DYNAMIC_MESSAGE` or `POJO`. Case-sensitive.                                                                                                                                                                                                       |
-| `jsonSchemaNullableEnabled`      | boolean                        | `false`                                   | serializer             | Generates `oneOf [null, type]` for an optional field when a schema is **derived from a POJO**. No effect through the Kafka Connect converter, which supplies its own schema. Off by default: it changes the schema text, hence the schema version. |
-| `jsonSchemaCompatibilityCheckEnabled` | boolean | `false` | serializer | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only. Costs one `GetSchemaVersion` call per newly registered definition. |
-| `jsonClassNameResolutionEnabled` | boolean                        | `false`                                   | deserializer           | Opt-in: it turns a registry field into a class name to load. See the className section above.                                                                                                                                                      |
-| `jsonClassNameAllowlist`         | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected.                                                                                                                                        |
-| `jacksonSerializationFeatures`   | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries to enable.                                                                                                                                                                           |
-| `jacksonDeserializationFeatures` | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.DeserializationFeature` entries to enable.                                                                                                                                                                         |
-| `secondaryDeserializer`          | string (class name) or `Class` | none                                      | deserializer           | Fallback for records that carry no Glue Schema Registry header.                                                                                                                                                                                    |
-| `timeToLiveMillis`               | long                           | `86400000` (24 h)                         | both                   | Time to live of a cache entry.                                                                                                                                                                                                                     |
-| `cacheSize`                      | int                            | `200`                                     | both                   | Maximum number of cached schemas.                                                                                                                                                                                                                  |
-| `userAgentApp`                   | string                         | `default`                                 | both                   | Reported in the User-Agent of the Glue calls. Ignored by the Connect converters, which always report `kafkaconnect`.                                                                                                                               |
-| `assumeRoleArn`                  | string                         | none                                      | Avro Connect converter | Role assumed through STS before calling Glue.                                                                                                                                                                                                      |
-| `assumeRoleSessionName`          | string                         | `kafka-connect-session`                   | Avro Connect converter | Only read when `assumeRoleArn` is set.                                                                                                                                                                                                             |
+| Key                                   | Type                           | Default                                   | Scope                  | Notes                                                                                                                                                                                                                                              |
+| ------------------------------------- | ------------------------------ | ----------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `region`                              | string                         | default AWS region chain                  | both                   | Configuration fails when neither this nor the provider chain resolves a region.                                                                                                                                                                    |
+| `endpoint`                            | string                         | regional Glue endpoint                    | both                   | Endpoint override, mostly for LocalStack and VPC endpoints.                                                                                                                                                                                        |
+| `proxyUrl`                            | string (URI)                   | none                                      | both                   | Rejected with a named error when it is not a valid URI.                                                                                                                                                                                            |
+| `registry.name`                       | string                         | `default-registry`                        | serializer             | The consumer resolves a schema by version id, so it needs no registry name.                                                                                                                                                                        |
+| `schemaName`                          | string                         | from the naming strategy                  | serializer             | The default strategy derives the name from the topic.                                                                                                                                                                                              |
+| `schemaNameGenerationClass`           | string (class name)            | topic-name strategy                       | serializer             | Must implement `AWSSchemaNamingStrategy`. An unloadable name falls back to the default strategy.                                                                                                                                                   |
+| `schemaAutoRegistrationEnabled`       | boolean                        | `false`                                   | serializer             | When `false`, an unknown schema fails serialization instead of being registered.                                                                                                                                                                   |
+| `compatibility`                       | string (enum)                  | `BACKWARD`                                | serializer             | Only read when auto-registration creates the schema. Accepted values: `Compatibility.knownValues()`.                                                                                                                                               |
+| `description`                         | string                         | `DEFAULT-DESCRIPTION-<region>-<registry>` | serializer             | Attached to a schema this library registers.                                                                                                                                                                                                       |
+| `tags`                                | `Map<String, String>`          | empty                                     | serializer             | Applied when the registry entry is created. Not declared in the Connect `ConfigDef` — see below.                                                                                                                                                   |
+| `metadata`                            | `Map<String, String>`          | none                                      | serializer             | Attached to the schema version. Not declared in the Connect `ConfigDef` — see below.                                                                                                                                                               |
+| `compression`                         | string (enum)                  | `NONE`                                    | serializer             | `NONE` or `ZLIB`. The consumer reads either: the choice is recorded in the record header.                                                                                                                                                          |
+| `dataFormat`                          | string (enum)                  | none                                      | serializer             | `AVRO`, `JSON` or `PROTOBUF`. A producer on the format-agnostic serializer has to set it; a consumer reads the format from the record header. Each Connect converter accepts only its own format.                                                  |
+| `avroRecordType`                      | string (enum)                  | `GENERIC_RECORD`                          | deserializer           | `GENERIC_RECORD` or `SPECIFIC_RECORD`. Case-sensitive.                                                                                                                                                                                             |
+| `protobufMessageType`                 | string (enum)                  | none                                      | deserializer           | `DYNAMIC_MESSAGE` or `POJO`. Case-sensitive.                                                                                                                                                                                                       |
+| `jsonSchemaNullableEnabled`           | boolean                        | `false`                                   | serializer             | Generates `oneOf [null, type]` for an optional field when a schema is **derived from a POJO**. No effect through the Kafka Connect converter, which supplies its own schema. Off by default: it changes the schema text, hence the schema version. |
+| `jsonSchemaCompatibilityCheckEnabled` | boolean                        | `false`                                   | serializer             | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only. Costs one `GetSchemaVersion` call per newly registered definition.          |
+| `jsonClassNameResolutionEnabled`      | boolean                        | `false`                                   | deserializer           | Opt-in: it turns a registry field into a class name to load. See the className section above.                                                                                                                                                      |
+| `jsonClassNameAllowlist`              | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected.                                                                                                                                        |
+| `jacksonSerializationFeatures`        | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries to enable.                                                                                                                                                                           |
+| `jacksonDeserializationFeatures`      | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.DeserializationFeature` entries to enable.                                                                                                                                                                         |
+| `secondaryDeserializer`               | string (class name) or `Class` | none                                      | deserializer           | Fallback for records that carry no Glue Schema Registry header.                                                                                                                                                                                    |
+| `timeToLiveMillis`                    | long                           | `86400000` (24 h)                         | both                   | Time to live of a cache entry.                                                                                                                                                                                                                     |
+| `cacheSize`                           | int                            | `200`                                     | both                   | Maximum number of cached schemas.                                                                                                                                                                                                                  |
+| `userAgentApp`                        | string                         | `default`                                 | both                   | Reported in the User-Agent of the Glue calls. Ignored by the Connect converters, which always report `kafkaconnect`.                                                                                                                               |
+| `assumeRoleArn`                       | string                         | none                                      | Avro Connect converter | Role assumed through STS before calling Glue.                                                                                                                                                                                                      |
+| `assumeRoleSessionName`               | string                         | `kafka-connect-session`                   | Avro Connect converter | Only read when `assumeRoleArn` is set.                                                                                                                                                                                                             |
 
 The three Kafka Connect converters publish these keys through `Converter.config()`, so
 `PUT /connector-plugins/{plugin}/config/validate` reports them, a Connect UI renders them, and an
@@ -604,6 +605,7 @@ properties[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = true
 
 It is off by default because it changes the schema text, and therefore registers a new schema
 version for a POJO that was already in the registry.
+
 ### Checking JSON Schema compatibility on the client
 
 Glue enforces the compatibility mode of a schema for Avro and Protobuf, but **not for JSON**: a
@@ -874,6 +876,48 @@ value.converter.registry.name=my-registry
 
 - For more examples for running Kafka Connect with Avro, JSON, and Protobuf formats, refer script **run-local-tests.sh** under
   **integration-tests** module.
+
+## Kotlin: configuration DSL and a typed `Serde<T>`
+
+`schema-registry-serde-kotlin` is additive: it introduces no behaviour of its own, builds the
+same objects the Java API builds, and nothing else depends on it. See
+[its README](serde-kotlin/README.md) for the full surface.
+
+```gradle
+implementation("com.mobsuccess:schema-registry-serde-kotlin:<version>")
+```
+
+One typed property per configuration key, instead of a map of string literals:
+
+```kotlin
+val properties = glueSchemaRegistryConfig {
+    region = "eu-west-1"
+    dataFormat = DataFormat.AVRO
+    autoRegistration = true
+    tags(mapOf("owner" to "data-platform"))
+}
+```
+
+Only the properties you set appear in the result, so the library's own defaults still apply, and
+`tags`/`metadata` are copied into the `HashMap` those keys require — `mapOf("a" to "b")` returns
+a `SingletonMap` and is rejected at runtime.
+
+A `Serde<T>`, where Kafka Streams gets a `Serde<Any>` today:
+
+```kotlin
+val serde = glueSchemaRegistrySerde<User> {
+    region = "eu-west-1"
+    dataFormat = DataFormat.AVRO
+    avroRecordType = AvroRecordType.SPECIFIC_RECORD
+}
+
+builder.stream("users", Consumed.with(Serdes.String(), serde))
+    .filter { _, user -> user.age > 18 }
+```
+
+The registry decides at runtime what a record deserializes to, so the type argument is checked on
+every record: a value of another type raises a `SerializationException` naming both types, where
+an unchecked cast would have failed further down the topology.
 
 ### Using Kafka Streams with AWS Glue Schema Registry
 
