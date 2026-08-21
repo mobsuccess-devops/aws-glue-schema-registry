@@ -32,6 +32,11 @@ dependencies {
     api(libs.hamcrest)
     api(libs.jaxb.api)
 
+    // The only Lombok left in the repository: this module is still entirely Java, and
+    // the root lombok.config still applies to it.
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
     // Classes generated from serializer-deserializer/src/test/proto, consumed through
     // the test jar just as the Maven `tests` classifier did.
     testImplementation(project(path = ":schema-registry-serde", configuration = "testArtifacts"))
