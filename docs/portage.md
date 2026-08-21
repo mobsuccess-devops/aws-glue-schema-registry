@@ -109,6 +109,21 @@ Java.
   A `LoadingCache` was deliberately not used: it wraps a loader failure in an
   `ExecutionException`, which would change the cause chain of the `DataException` and
   `AWSSchemaRegistryException` those two methods raise on a malformed schema.
+- **Dependency scopes narrowed to what each module actually exposes.** The pom put every
+  dependency at `compile` scope, and the Gradle port carried that over as `api` on all ten
+  modules. `api` propagates to a consumer's _compile_ classpath, so consumers were compiling
+  against the whole transitive world of the fork — including, for `schema-registry-serde`,
+  the embedded Kotlin compiler (`kotlin-scripting-compiler-embeddable` and its `-impl-`
+  twin, some 55 MB), `kotlin-reflect`, `wire-compiler` and `okio-fakefilesystem`. A
+  dependency now stays `api` only when a type from it appears in that module's committed
+  `.api` dump; everything else is `implementation`, and what no source references at all is
+  `runtimeOnly`. Nothing was added to or removed from any published pom: every entry that
+  was at `compile` is still there, at `runtime`. The three dependencies `common` stopped
+  exposing but `schema-registry-serde` genuinely exposes — `avro`, `guava`, `commons-lang3` —
+  are declared on `schema-registry-serde` instead, so a consumer of that module sees exactly
+  the compile classpath it saw before. A consumer of `schema-registry-common` on its own
+  does lose them at compile time, which is the point of the change. The eight `.api` dumps
+  are byte-identical before and after.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes

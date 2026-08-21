@@ -5,4 +5,6 @@ plugins {
 
 dependencies {
     api(project(":schema-registry-serde"))
+
+    testImplementation(libs.mbknor.jsonSchema)
 }

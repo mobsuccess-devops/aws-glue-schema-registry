@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":schema-registry-serde"))
-    api(libs.aws.mskIamAuth)
+    implementation(project(":schema-registry-serde"))
+    implementation(libs.aws.mskIamAuth)
 }

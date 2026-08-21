@@ -7,8 +7,11 @@ dependencies {
     api(project(":schema-registry-serde"))
     api(libs.kafka.connectApi)
     api(libs.protobuf.java)
-    api(libs.protobuf.javaUtil)
-    api(libs.apicurio.protobufUtils)
+    api(libs.protoGoogleCommon)
+
+    implementation(libs.protobuf.javaUtil)
+
+    runtimeOnly(libs.apicurio.protobufUtils)
 }
 
 protobuf {
