@@ -106,7 +106,7 @@ open class AWSKafkaAvroConverter(
         value: Any?,
     ): ByteArray? {
         try {
-            return serializer.serialize(topic, avroData!!.fromConnectData(schema, value))
+            return serializer.serialize(topic, configuredAvroData().fromConnectData(schema, value))
         } catch (e: SerializationException) {
             throw DataException("Converting Kafka Connect data to byte[] failed due to serialization error: ", e)
         } catch (e: AWSSchemaRegistryException) {
@@ -134,7 +134,7 @@ open class AWSKafkaAvroConverter(
                 throw DataException("Converting byte[] to Kafka Connect data failed due to serialization error: ", e)
             }
 
-        return avroData!!.toConnectData(extractAvroSchema(value, deserialized), deserialized)
+        return configuredAvroData().toConnectData(extractAvroSchema(value, deserialized), deserialized)
     }
 
     /**
@@ -148,10 +148,11 @@ open class AWSKafkaAvroConverter(
         deserialized: Any?,
     ): org.apache.avro.Schema {
         // Check if this is GSR data that can be processed by the GSR deserialization facade.
-        if (deserializer.glueSchemaRegistryDeserializationFacade!!.canDeserialize(value)) {
+        val facade = deserializer.glueSchemaRegistryDeserializationFacade
+        if (facade != null && facade.canDeserialize(value)) {
             try {
                 val schemaDefinition =
-                    deserializer.glueSchemaRegistryDeserializationFacade!!.getSchemaDefinition(value)
+                    facade.getSchemaDefinition(value)
                 parsedSchemaCache.getIfPresent(schemaDefinition)?.let { return it }
                 val parsed =
                     org.apache.avro.Schema
@@ -200,7 +201,12 @@ open class AWSKafkaAvroConverter(
             .build()
     }
 
+    private fun configuredAvroData(): AvroData = checkNotNull(avroData) { NOT_CONFIGURED }
+
     private companion object {
         private const val MAX_PARSED_SCHEMA_CACHE_SIZE = 100L
+
+        private const val NOT_CONFIGURED =
+            "configure() has not been called, so this converter is not ready to convert anything"
     }
 }

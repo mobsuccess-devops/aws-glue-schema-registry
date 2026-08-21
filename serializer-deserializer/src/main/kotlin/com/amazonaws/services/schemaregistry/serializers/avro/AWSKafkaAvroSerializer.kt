@@ -98,13 +98,13 @@ open class AWSKafkaAvroSerializer(
         val schemaVersionIdFromRegistry =
             if (schemaVersionId == null) {
                 log.debug("Schema Version Id is null. Trying to register the schema.")
-                glueSchemaRegistrySerializationFacade!!.getOrRegisterSchemaVersion(prepareInput(data, topic, isKey))
+                configuredFacade().getOrRegisterSchemaVersion(prepareInput(data, topic, isKey))
             } else {
                 schemaVersionId
             }
 
         log.debug("Schema Version Id received from the from schema registry: {}", schemaVersionIdFromRegistry)
-        return glueSchemaRegistrySerializationFacade!!.serialize(DATA_FORMAT, data, schemaVersionIdFromRegistry)
+        return configuredFacade().serialize(DATA_FORMAT, data, schemaVersionIdFromRegistry)
     }
 
     override fun close() {
@@ -120,7 +120,8 @@ open class AWSKafkaAvroSerializer(
         topic: String?,
         data: Any,
         isKey: Boolean?,
-    ): String? = schemaName ?: schemaNamingStrategy!!.getSchemaName(topic, data, isKey!!)
+    ): String? = schemaName ?: checkNotNull(schemaNamingStrategy) { NO_NAMING_STRATEGY }
+        .getSchemaName(topic, data, checkNotNull(isKey) { "isKey must be given" })
 
     // isKey stays boxed: the Java signature used Boolean and the tests look this method up
     // reflectively by that exact signature.
@@ -136,8 +137,17 @@ open class AWSKafkaAvroSerializer(
         .dataFormat(DATA_FORMAT.name)
         .build()
 
+    private fun configuredFacade(): GlueSchemaRegistrySerializationFacade = checkNotNull(glueSchemaRegistrySerializationFacade) { NOT_CONFIGURED }
+
     companion object {
         private val log = LoggerFactory.getLogger(AWSKafkaAvroSerializer::class.java)
         private val DATA_FORMAT = DataFormat.AVRO
+
+        private const val NOT_CONFIGURED =
+            "configure() has not been called, so this serializer has no connection to the schema registry"
+
+        private const val NO_NAMING_STRATEGY =
+            "No schema name and no usable schema naming strategy: set schemaName, or set " +
+                "schemaNameGenerationClass to a class implementing AWSSchemaNamingStrategy"
     }
 }

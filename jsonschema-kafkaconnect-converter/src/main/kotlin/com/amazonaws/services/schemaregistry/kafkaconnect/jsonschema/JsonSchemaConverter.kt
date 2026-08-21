@@ -113,13 +113,16 @@ class JsonSchemaConverter(
         schema: Schema?,
         value: Any?,
     ): ByteArray {
+        val schemaConverter = checkNotNull(connectSchemaToJsonSchemaConverter) { NOT_CONFIGURED }
+        val valueConverter = checkNotNull(connectValueToJsonNodeConverter) { NOT_CONFIGURED }
+
         try {
-            val jsonSchema = connectSchemaToJsonSchemaConverter!!.fromConnectSchema(schema)
-            val jsonPayload = connectValueToJsonNodeConverter!!.convertToJson(schema, value).toString()
+            val jsonSchema = schemaConverter.fromConnectSchema(schema)
+            val jsonPayload = valueConverter.convertToJson(schema, value).toString()
 
             val jsonSchemaWithData =
                 JsonDataWithSchema.builder(canonicalize(jsonSchema.toString()), jsonPayload).build()
-            return serializer.serialize(topic, jsonSchemaWithData)!!
+            return checkNotNull(serializer.serialize(topic, jsonSchemaWithData)) { SERIALIZED_NOTHING }
         } catch (e: SerializationException) {
             throw DataException("Converting Kafka Connect data to byte[] failed due to serialization error: ", e)
         } catch (e: AWSSchemaRegistryException) {
@@ -145,8 +148,10 @@ class JsonSchemaConverter(
                 throw DataException("Converting byte[] to Kafka Connect data failed due to serialization error: ", e)
             } ?: return SchemaAndValue.NULL
 
+        val facade =
+            checkNotNull(deserializer.glueSchemaRegistryDeserializationFacade) { NOT_CONFIGURED }
         val jsonSchemaString =
-            deserializer.glueSchemaRegistryDeserializationFacade!!.getSchemaDefinition(value!!)
+            facade.getSchemaDefinition(checkNotNull(value) { "A JSON record carries no bytes" })
 
         val jsonSchema =
             try {
@@ -172,13 +177,20 @@ class JsonSchemaConverter(
                 throw DataException("Failed to read JSON Payload : $payload", e)
             }
 
-        val connectSchema = jsonSchemaToConnectSchemaConverter!!.toConnectSchema(jsonSchema)
-        val connectValue = jsonNodeToConnectValueConverter!!.toConnectValue(connectSchema, jsonNode)
+        val connectSchema =
+            checkNotNull(jsonSchemaToConnectSchemaConverter) { NOT_CONFIGURED }.toConnectSchema(jsonSchema)
+        val connectValue =
+            checkNotNull(jsonNodeToConnectValueConverter) { NOT_CONFIGURED }.toConnectValue(connectSchema, jsonNode)
 
         return SchemaAndValue(connectSchema, connectValue)
     }
 
     companion object {
+        private const val NOT_CONFIGURED =
+            "configure() has not been called, so this converter is not ready to convert anything"
+
+        private const val SERIALIZED_NOTHING = "The JSON serializer produced no bytes for a non-null record"
+
         private val CANONICAL_MAPPER =
             ObjectMapper().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
 

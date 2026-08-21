@@ -96,6 +96,18 @@ class AWSKafkaAvroConverterTest {
      * Test for AWSKafkaAvroConverter config method.
      */
     @Test
+    fun testFromConnectData_beforeConfigure_saysConfigureWasNotCalled() {
+        val converter = AWSKafkaAvroConverter()
+
+        val thrown =
+            assertThrows(IllegalStateException::class.java) {
+                converter.fromConnectData("User-Topic", null, "some record")
+            }
+
+        assertTrue(thrown.message!!.contains("configure()"), thrown.message)
+    }
+
+    @Test
     fun testConverter_configure() {
         converter = AWSKafkaAvroConverter()
         converter.configure(getProperties(), false)

@@ -329,3 +329,25 @@ Java.
   for reflection alongside them, for the descriptor parsing that path performs. This
   packages, once and for every consumer, configuration each of them was otherwise writing
   by hand.
+- **Using a serializer, deserializer or converter before `configure()` now says so.** Every one
+  of these types keeps its collaborators in nullable properties that `configure()` fills, and
+  every use of them was written `field!!`. Calling `serialize`, `deserialize` or a converter
+  before `configure` therefore raised a `KotlinNullPointerException` with **no message**, from a
+  line that named a field the caller has never heard of — the least diagnosable failure the
+  library could produce, on the one mistake a Kafka integration makes most often. Each public
+  operation now binds its collaborators once, through
+  `checkNotNull(field) { "configure() has not been called…" }`, and the local it binds is what
+  the body uses. The declarations do not move: the properties inherited from Lombok `@Setter`
+  stay public, mutable and nullable, so nothing on the published surface changes.
+
+  This changes the exception from `NullPointerException` to `IllegalStateException`, which is
+  the one deliberate behaviour change. It is the right type — the object is being used in a
+  state it is not in, which is what `IllegalStateException` means, and what Kafka itself raises
+  for lifecycle misuse — and no message is lost, since there was none. One inherited test
+  asserted the old type: `testPrepareInput_nullDefinitionData_throwsException` on the generic
+  serializer, which despite its name never reached the data at all — `prepareInput` dereferenced
+  the unconfigured facade on its first line, so what the test caught was the missing `configure`.
+  It now asserts the state exception and the message, under a name that says which of the two it
+  checks. The `!!` on values a caller passes in — a null `credentialProvider`, a null record — is
+  left alone: those are argument errors, not lifecycle errors, and they keep raising
+  `NullPointerException` as the Java source did.

@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -147,6 +148,18 @@ class GlueSchemaRegistryKafkaDeserializerTest {
             glueSchemaRegistryDeserializationFacade
 
         Mockito.verify(glueSchemaRegistryDeserializationFacade, Mockito.atMost(1)).close()
+    }
+
+    @Test
+    fun testDeserialize_beforeConfigure_saysConfigureWasNotCalled() {
+        val glueSchemaRegistryKafkaDeserializer = GlueSchemaRegistryKafkaDeserializer()
+
+        val thrown =
+            assertThrows(IllegalStateException::class.java) {
+                glueSchemaRegistryKafkaDeserializer.deserialize("User-Topic", byteArrayOf(3, 0, 1, 2))
+            }
+
+        assertTrue(thrown.message!!.contains("configure()"), thrown.message)
     }
 
     /**

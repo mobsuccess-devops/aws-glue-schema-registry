@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -46,6 +47,7 @@ import org.mockito.kotlin.whenever
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.services.glue.model.DataFormat
 import software.amazon.awssdk.services.glue.model.EntityNotFoundException
+import java.lang.reflect.InvocationTargetException
 import java.util.UUID
 
 class GlueSchemaRegistryKafkaSerializerTest : GlueSchemaRegistryValidationUtil() {
@@ -412,7 +414,7 @@ class GlueSchemaRegistryKafkaSerializerTest : GlueSchemaRegistryValidationUtil()
     }
 
     @Test
-    fun testPrepareInput_nullDefinitionData_throwsException() {
+    fun testPrepareInput_beforeConfigure_saysConfigureWasNotCalled() {
         val glueSchemaRegistryKafkaSerializer = GlueSchemaRegistryKafkaSerializer()
         val method =
             GlueSchemaRegistryKafkaSerializer::class.java.getDeclaredMethod(
@@ -422,11 +424,26 @@ class GlueSchemaRegistryKafkaSerializerTest : GlueSchemaRegistryValidationUtil()
                 java.lang.Boolean::class.java,
             )
         method.isAccessible = true
-        try {
-            method.invoke(glueSchemaRegistryKafkaSerializer, null, "User-Topic", true)
-        } catch (e: Exception) {
-            assertEquals(NullPointerException::class.java, e.cause!!.javaClass)
-        }
+
+        val thrown =
+            assertThrows(InvocationTargetException::class.java) {
+                method.invoke(glueSchemaRegistryKafkaSerializer, null, "User-Topic", true)
+            }
+
+        assertEquals(IllegalStateException::class.java, thrown.cause!!.javaClass)
+        assertTrue(thrown.cause!!.message!!.contains("configure()"), thrown.cause!!.message)
+    }
+
+    @Test
+    fun testSerialize_beforeConfigure_saysConfigureWasNotCalled() {
+        val glueSchemaRegistryKafkaSerializer = GlueSchemaRegistryKafkaSerializer()
+
+        val thrown =
+            assertThrows(IllegalStateException::class.java) {
+                glueSchemaRegistryKafkaSerializer.serialize("User-Topic", "some record")
+            }
+
+        assertTrue(thrown.message!!.contains("configure()"), thrown.message)
     }
 
     companion object {

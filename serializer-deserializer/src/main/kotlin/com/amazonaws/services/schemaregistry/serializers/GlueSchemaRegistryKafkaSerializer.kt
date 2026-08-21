@@ -90,13 +90,13 @@ open class GlueSchemaRegistryKafkaSerializer(
         val schemaVersionIdFromRegistry =
             if (schemaVersionId == null) {
                 log.debug("Schema Version Id is null. Trying to register the schema.")
-                glueSchemaRegistrySerializationFacade!!.getOrRegisterSchemaVersion(prepareInput(data, topic, isKey))
+                configuredFacade().getOrRegisterSchemaVersion(prepareInput(data, topic, isKey))
             } else {
                 schemaVersionId
             }
 
         log.debug("Schema Version Id received from the from schema registry: {}", schemaVersionIdFromRegistry)
-        return glueSchemaRegistrySerializationFacade!!.serialize(
+        return configuredFacade().serialize(
             DataFormat.fromValue(dataFormat),
             data,
             schemaVersionIdFromRegistry,
@@ -116,7 +116,8 @@ open class GlueSchemaRegistryKafkaSerializer(
         topic: String?,
         data: Any,
         isKey: Boolean?,
-    ): String? = schemaName ?: schemaNamingStrategy!!.getSchemaName(topic, data, isKey!!)
+    ): String? = schemaName ?: checkNotNull(schemaNamingStrategy) { NO_NAMING_STRATEGY }
+        .getSchemaName(topic, data, checkNotNull(isKey) { "isKey must be given" })
 
     // isKey stays boxed: the Java signature used Boolean and the tests look this method up
     // reflectively by that exact signature.
@@ -126,7 +127,7 @@ open class GlueSchemaRegistryKafkaSerializer(
         isKey: Boolean?,
     ): AWSSerializerInput {
         val schemaDefinition =
-            glueSchemaRegistrySerializationFacade!!.getSchemaDefinition(DataFormat.fromValue(dataFormat), data)
+            configuredFacade().getSchemaDefinition(DataFormat.fromValue(dataFormat), data)
 
         return AWSSerializerInput
             .builder()
@@ -137,7 +138,16 @@ open class GlueSchemaRegistryKafkaSerializer(
             .build()
     }
 
+    private fun configuredFacade(): GlueSchemaRegistrySerializationFacade = checkNotNull(glueSchemaRegistrySerializationFacade) { NOT_CONFIGURED }
+
     companion object {
         private val log = LoggerFactory.getLogger(GlueSchemaRegistryKafkaSerializer::class.java)
+
+        private const val NOT_CONFIGURED =
+            "configure() has not been called, so this serializer has no connection to the schema registry"
+
+        private const val NO_NAMING_STRATEGY =
+            "No schema name and no usable schema naming strategy: set schemaName, or set " +
+                "schemaNameGenerationClass to a class implementing AWSSchemaNamingStrategy"
     }
 }
