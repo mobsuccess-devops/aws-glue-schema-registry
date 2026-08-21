@@ -5,9 +5,6 @@ plugins {
     `java-library`
     jacoco
     kotlin("jvm")
-    // Without this plugin, Kotlin cannot see the accessors Lombok generates on the
-    // Java classes still to be converted, and resolves to their private fields instead.
-    kotlin("plugin.lombok")
 }
 
 val libs = the<LibrariesForLibs>()
@@ -59,11 +56,6 @@ kotlin {
 }
 
 dependencies {
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
-
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiterApi)
     testImplementation(libs.junit.jupiterParams)

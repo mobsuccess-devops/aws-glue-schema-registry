@@ -53,7 +53,7 @@ Java.
   in favour of the `at.yawk.lz4:lz4-java` fork. Both declare the same _capability_, which
   Gradle refuses to arbitrate on its own.
 - **`@NonNull`: `IllegalArgumentException` becomes `NullPointerException`.** The
-  repository's `lombok.config` sets `lombok.nonNull.exceptionType = IllegalArgumentException`,
+  repository's root `lombok.config` sets `lombok.nonNull.exceptionType = IllegalArgumentException`,
   so the 112 `@NonNull` annotations raised an `IllegalArgumentException` on a null argument.
   Kotlin's non-nullable types raise a `NullPointerException`. Idiomatic Kotlin was chosen
   over nullable parameters guarded by `require()`, at the cost of updating the tests that

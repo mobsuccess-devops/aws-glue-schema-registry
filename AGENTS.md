@@ -78,9 +78,10 @@ These all cost a red test at least once. They are listed in the order they bite.
 - **`@NonNull` raised an `IllegalArgumentException`**, not a `NullPointerException`, because
   of `lombok.nonNull.exceptionType` in `lombok.config`. Converting to a non-nullable type
   changes the exception type; update the asserting test rather than weakening the signature.
-- **Kotlin does not see Lombok-generated accessors** on the Java classes left to convert; it
-  resolves the property name to the private field instead. The Kotlin Lombok plugin, applied
-  in the conventions, fixes this and stays necessary until the migration ends.
+- **Kotlin does not see Lombok-generated accessors** on a Java class it compiles alongside; it
+  resolves the property name to the private field instead. The Kotlin Lombok plugin used to
+  fix that in the conventions. It is gone: no Kotlin source consumes Lombok any more. Bring it
+  back only if Lombok reappears in a module that also holds Kotlin.
 - **Lombok's `@Builder` has no Kotlin equivalent.** Rewrite it as a nested `Builder` class
   plus a `@JvmStatic builder()`, so the API seen from Java stays identical.
 - **`@Data` also generated `equals`/`hashCode`/`toString`.** Omitting them silently falls
@@ -124,8 +125,10 @@ These all cost a red test at least once. They are listed in the order they bite.
 
 ## Other build notes
 
-- **Lombok is still active** for as long as code remains in Java. Every class converted to
-  Kotlin must drop its Lombok annotations in favour of native equivalents.
+- **Lombok is confined to `integration-tests`**, the one module still entirely in Java. It is
+  declared there, on the test configurations only. The root `lombok.config` is what keeps
+  `lombok.nonNull.exceptionType = IllegalArgumentException` in force for it, so it stays as
+  long as that module does; the per-module copies are gone.
 - **Root `gradle.properties`** turns on parallel execution and the build cache, and raises
   the daemon heap: the 512m default is inherited by the Kotlin compiler daemon and is not
   enough to compile the test sources of `serializer-deserializer`.
