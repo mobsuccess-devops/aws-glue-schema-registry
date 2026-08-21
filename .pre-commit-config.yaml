@@ -8,8 +8,8 @@ repos:
     rev: v3.0.0-alpha.4
     hooks:
       - id: prettier
-        # Le périmètre réel est défini dans .prettierignore ; ce filtre évite que
-        # pre-commit passe malgré tout les fixtures de test au formateur.
+        # The real scope is set in .prettierignore; this filter keeps pre-commit
+        # from handing the test fixtures to the formatter anyway.
         exclude: ^(gradlew|gradlew\.bat|gradle/wrapper/|.*/src/)
   - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
     rev: v2.14.0

@@ -10,7 +10,7 @@
 # devcontainer
 .devcontainer/devcontainer.json
 
-# Maven (build historique, conservé en ignore le temps de la bascule)
+# Maven (the historical build, kept ignored for the duration of the migration)
 **/target/
 **/dependency-reduced-pom.xml
 
@@ -26,7 +26,7 @@
 **/*.classpath
 **/*.factorypath
 
-# Fixtures locales des tests d'intégration
+# Local integration-test fixtures
 integration-tests/volume/cache/machine.json
 integration-tests/volume/cache/server.test.pem
 integration-tests/volume/cache/server.test.pem.crt

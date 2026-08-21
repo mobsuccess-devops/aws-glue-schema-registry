@@ -792,9 +792,17 @@ key.converter.assumeRoleSessionName=my-custom-session
 value.converter.assumeRoleSessionName=my-custom-session
 ```
 
-## Security issue notifications
+## Reporting a security issue
 
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
+Vulnerabilities in this fork are **not** reported to AWS: the build, the dependency set and
+part of the code are specific to it. Use GitHub's private vulnerability reporting on this
+repository — [Report a vulnerability](https://github.com/mobsuccess-devops/aws-glue-schema-registry/security/advisories/new)
+— and please do not open a public issue. The full policy is in [SECURITY.md](SECURITY.md).
+
+## Contributing
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) for the house
+rules and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## License and attribution
 
