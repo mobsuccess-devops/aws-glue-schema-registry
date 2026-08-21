@@ -19,7 +19,6 @@ dependencies {
     testImplementation(libs.localstack.utils)
     testImplementation(libs.awaitility)
     testImplementation(libs.slf4j.api)
-    testRuntimeOnly(libs.slf4j.simple)
     testImplementation(libs.avro)
     testImplementation(libs.avro.compiler)
     testImplementation(libs.avro.ipc)
