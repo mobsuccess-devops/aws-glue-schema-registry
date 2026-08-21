@@ -7,6 +7,10 @@ dependencies {
     api(project(":schema-registry-serde"))
     api(libs.kafka.connectApi)
 
+    implementation(libs.aws.sts)
+    implementation(libs.aws.urlConnectionClient)
+    implementation(libs.slf4j.api)
+
     testImplementation(libs.junit4)
     testRuntimeOnly(libs.junit.vintageEngine)
     testImplementation(libs.powermock.reflect)

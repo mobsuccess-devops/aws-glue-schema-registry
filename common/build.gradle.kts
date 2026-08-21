@@ -6,14 +6,14 @@ plugins {
 dependencies {
     api(platform(libs.aws.bom))
     api(libs.aws.glue)
-    api(libs.aws.jsonProtocol)
-    api(libs.aws.urlConnectionClient)
-    api(libs.avro) {
+    implementation(libs.aws.urlConnectionClient)
+    implementation(libs.avro) {
         exclude(group = "org.apache.commons", module = "commons-compress")
     }
-    api(libs.slf4j.api)
-    api(libs.guava)
-    api(libs.commons.lang3)
+    implementation(libs.slf4j.api)
+    implementation(libs.guava)
+    implementation(libs.commons.lang3)
+    runtimeOnly(libs.aws.jsonProtocol)
 }
 
 // Remplace le templating-maven-plugin : injecte la version du projet dans

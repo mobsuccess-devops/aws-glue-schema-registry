@@ -4,12 +4,12 @@ plugins {
 }
 
 dependencies {
-    api(project(":schema-registry-serde"))
-    api(platform(libs.aws.bom))
-    api(platform(libs.jackson.bom))
-    api(libs.aws.kinesis)
-    api(libs.jackson.cbor)
-    api(libs.commons.cli)
+    implementation(project(":schema-registry-serde"))
+    implementation(platform(libs.aws.bom))
+    implementation(platform(libs.jackson.bom))
+    implementation(libs.aws.kinesis)
+    implementation(libs.jackson.cbor)
+    implementation(libs.commons.cli)
 }
 
 tasks.register<JavaExec>("runExample") {

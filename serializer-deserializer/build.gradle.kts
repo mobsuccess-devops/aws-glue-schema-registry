@@ -7,33 +7,41 @@ plugins {
 dependencies {
     api(project(":schema-registry-common"))
     api(platform(libs.aws.bom))
-    api(libs.aws.sts)
-    api(libs.aws.arns)
     api(libs.kafka.clients)
-    api(libs.lz4)
-    api(libs.mbknor.jsonSchema) {
-        exclude(group = "io.github.classgraph", module = "classgraph")
+    api(libs.avro) {
+        exclude(group = "org.apache.commons", module = "commons-compress")
     }
-    api(libs.classgraph)
+    api(libs.guava)
+    api(libs.commons.lang3)
     api(libs.everit.jsonSchema) {
         exclude(group = "commons-collections", module = "commons-collections")
     }
-    api(libs.commons.collections4)
     api(libs.protobuf.java)
+    api(libs.wire.schema)
     api(libs.kotlin.stdlib)
     api(libs.kotlin.stdlibJdk8)
-    api(libs.kotlin.reflect)
-    api(libs.kotlin.scriptingCompilerImplEmbeddable)
-    api(libs.kotlin.scriptingCompilerEmbeddable)
-    api(libs.okio)
-    api(libs.okio.fakeFileSystem)
-    api(libs.kotlinx.serializationCore)
-    api(libs.wire.schema)
-    api(libs.wire.compiler) {
+
+    implementation(libs.aws.arns)
+    implementation(libs.slf4j.api)
+    implementation(libs.commons.collections4)
+    implementation(libs.protoGoogleCommon)
+    implementation(libs.mbknor.jsonSchema) {
+        exclude(group = "io.github.classgraph", module = "classgraph")
+    }
+    implementation(libs.okio)
+    implementation(libs.okio.fakeFileSystem)
+
+    runtimeOnly(libs.aws.sts)
+    runtimeOnly(libs.lz4)
+    runtimeOnly(libs.classgraph)
+    runtimeOnly(libs.kotlin.reflect)
+    runtimeOnly(libs.kotlin.scriptingCompilerImplEmbeddable)
+    runtimeOnly(libs.kotlin.scriptingCompilerEmbeddable)
+    runtimeOnly(libs.kotlinx.serializationCore)
+    runtimeOnly(libs.wire.compiler) {
         exclude(group = "com.squareup.wire", module = "wire-grpc-client")
         exclude(group = "com.charleskorn.kaml", module = "kaml")
     }
-    api(libs.protoGoogleCommon)
 
     testImplementation(libs.truth.protoExtension)
 }
