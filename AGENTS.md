@@ -126,6 +126,17 @@ These all cost a red test at least once. They are listed in the order they bite.
 
 - **Lombok is still active** for as long as code remains in Java. Every class converted to
   Kotlin must drop its Lombok annotations in favour of native equivalents.
+- **Root `gradle.properties`** turns on parallel execution and the build cache, and raises
+  the daemon heap: the 512m default is inherited by the Kotlin compiler daemon and is not
+  enough to compile the test sources of `serializer-deserializer`.
+- **Configuration caching is not enabled.** `com.github.jk1.dependency-license-report` holds a
+  `Project` reference in its `ReportTask`, so the entry is discarded on every build of the four
+  shaded modules — checked against 2.9 and 3.1.4 alike. Nothing else in the build objects, so
+  `org.gradle.configuration-cache=true` can go into `gradle.properties` the day that task is
+  fixed.
+- **Archives are reproducible**: `isPreserveFileTimestamps = false` and
+  `isReproducibleFileOrder = true` on every `AbstractArchiveTask`, so two builds of the same
+  commit produce byte-identical jars and a cached jar is the same artifact as a fresh one.
 - **`org.lz4:lz4-java` is excluded globally** in favour of `at.yawk.lz4:lz4-java`. Both
   declare the same _capability_; reintroducing the former breaks resolution.
 - **Code generation**: protobuf (`serializer-deserializer`, `protobuf-kafkaconnect-converter`)

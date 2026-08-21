@@ -43,6 +43,11 @@ tasks.withType<Jar>().configureEach {
     }
 }
 
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
+
 // Java and Kotlin coexist for the duration of the conversion: Kotlin compiles first,
 // then javac sees its classes. The sources still in Java therefore validate the code
 // already converted, without the tests having been touched.
@@ -67,7 +72,7 @@ dependencies {
     testImplementation(libs.mockito.junitJupiter)
     testImplementation(libs.mockito.kotlin)
     testRuntimeOnly(libs.junit.jupiterEngine)
-    // Gradle 9 exige le launcher de la plateforme JUnit sur le classpath de test.
+    // Gradle 9 requires the JUnit platform launcher on the test classpath.
     testRuntimeOnly(libs.junit.platformLauncher)
 }
 
@@ -87,9 +92,12 @@ val testJavaLauncher =
         languageVersion.set(testJavaVersion)
     }
 
+val testForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+
 tasks.test {
     useJUnitPlatform()
     javaLauncher.set(testJavaLauncher)
+    maxParallelForks = testForks
     // Mirrors the surefire exclusion of the parent pom: *IntegrationTest classes need
     // real AWS resources and are not part of the unit run.
     filter {
