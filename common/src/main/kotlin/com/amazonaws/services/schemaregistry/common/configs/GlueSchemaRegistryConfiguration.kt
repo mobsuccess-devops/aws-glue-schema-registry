@@ -381,8 +381,19 @@ class GlueSchemaRegistryConfiguration {
     private fun validateAndSetJsonSchemaCompatibilityCheckSetting(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED)) {
             isJsonSchemaCompatibilityCheckEnabled =
-                configs[AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED].toString().toBoolean()
+                booleanConfig(configs, AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED)
         }
+    }
+
+    private fun booleanConfig(
+        configs: Map<String, *>,
+        key: String,
+    ): Boolean {
+        val value = configs[key].toString()
+        if (!value.equals("true", ignoreCase = true) && !value.equals("false", ignoreCase = true)) {
+            log.warn("Unrecognized value '{}' for {}; interpreting it as false.", value, key)
+        }
+        return value.toBoolean()
     }
 
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
