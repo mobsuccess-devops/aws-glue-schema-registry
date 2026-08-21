@@ -1,0 +1,24 @@
+[
+  {
+    "name": "com.amazonaws.services.schemaregistry.serializers.GlueSchemaRegistryKafkaSerializer",
+    "methods": [{ "name": "<init>", "parameterTypes": [] }]
+  },
+  {
+    "name": "com.amazonaws.services.schemaregistry.serializers.avro.AWSKafkaAvroSerializer",
+    "methods": [{ "name": "<init>", "parameterTypes": [] }]
+  },
+  {
+    "name": "com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryKafkaDeserializer",
+    "methods": [{ "name": "<init>", "parameterTypes": [] }]
+  },
+  {
+    "name": "com.amazonaws.services.schemaregistry.deserializers.avro.AWSKafkaAvroDeserializer",
+    "methods": [{ "name": "<init>", "parameterTypes": [] }]
+  },
+  {
+    "name": "com.google.protobuf.DescriptorProtos",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  }
+]

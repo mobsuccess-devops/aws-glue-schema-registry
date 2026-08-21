@@ -1,0 +1,93 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "\\Qgoogle/type/money.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/timeofday.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/date.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/calendar_period.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/color.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/dayofweek.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/latlng.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/fraction.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/month.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/phone_number.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/postal_address.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/localized_text.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/interval.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/expr.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/type/quaternion.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/any.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/api.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/descriptor.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/duration.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/empty.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/field_mask.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/source_context.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/struct.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/timestamp.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/type.proto\\E"
+      },
+      {
+        "pattern": "\\Qgoogle/protobuf/wrappers.proto\\E"
+      },
+      {
+        "pattern": "\\Qwire/extensions.proto\\E"
+      },
+      {
+        "pattern": "\\Qmetadata/metadata.proto\\E"
+      },
+      {
+        "pattern": "\\QadditionalTypes/decimal.proto\\E"
+      }
+    ]
+  }
+}
