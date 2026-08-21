@@ -239,8 +239,9 @@ Three things to check on the way:
    - Since **2.0.0**, the JSON deserializer no longer resolves a schema's `className` into a
      POJO by default and returns `JsonDataWithSchema` instead. Restoring the old behaviour
      takes both `jsonClassNameResolutionEnabled=true` and an explicit
-     `jsonClassNameAllowlist`. See the [CHANGELOG](CHANGELOG.md) and
-     [Deserializing JSON into a Java POJO](#deserializing-json-into-a-java-pojo-classname-resolution).
+     `jsonClassNameAllowlist`. It is inherited from upstream rather than introduced here —
+     see [Deserializing JSON into a Java POJO](#deserializing-json-into-a-java-pojo-classname-resolution)
+     and [docs/upstream-history.md](docs/upstream-history.md).
 
 ## Building from source
 

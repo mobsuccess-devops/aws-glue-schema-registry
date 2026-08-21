@@ -31,8 +31,9 @@ makes the artifact a drop-in replacement, and it is the fork's whole value propo
 
 Deliberate improvements are allowed — the fork carries several — but they are **documented
 deviations, not silent ones**. A change in observable behaviour needs an entry in
-[docs/portage.md](docs/portage.md) saying what changed and why, and a line in
-[CHANGELOG.md](CHANGELOG.md) if a consumer could notice it.
+[docs/portage.md](docs/portage.md) saying what changed and why, and — if a consumer could
+notice it — a pull request title that says so, since that title is what ends up in the
+release notes.
 
 The inherited test suite is the oracle: **2099 tests, zero failures**. A change that lowers
 that total or breaks a test is not finished, however good the code looks. If a test has to
