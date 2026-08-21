@@ -21,6 +21,8 @@ import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryExceptio
 import com.amazonaws.services.schemaregistry.serializers.GlueSchemaRegistryKafkaSerializer
 import com.amazonaws.services.schemaregistry.serializers.json.JsonDataWithSchema
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -111,11 +113,14 @@ class JsonSchemaConverter(
             val jsonSchema = connectSchemaToJsonSchemaConverter!!.fromConnectSchema(schema)
             val jsonPayload = connectValueToJsonNodeConverter!!.convertToJson(schema, value).toString()
 
-            val jsonSchemaWithData = JsonDataWithSchema.builder(jsonSchema.toString(), jsonPayload).build()
+            val jsonSchemaWithData =
+                JsonDataWithSchema.builder(canonicalize(jsonSchema.toString()), jsonPayload).build()
             return serializer.serialize(topic, jsonSchemaWithData)!!
         } catch (e: SerializationException) {
             throw DataException("Converting Kafka Connect data to byte[] failed due to serialization error: ", e)
         } catch (e: AWSSchemaRegistryException) {
+            throw DataException("Converting Kafka Connect data to byte[] failed due to serialization error: ", e)
+        } catch (e: JsonProcessingException) {
             throw DataException("Converting Kafka Connect data to byte[] failed due to serialization error: ", e)
         }
     }
@@ -167,5 +172,18 @@ class JsonSchemaConverter(
         val connectValue = jsonNodeToConnectValueConverter!!.toConnectValue(connectSchema, jsonNode)
 
         return SchemaAndValue(connectSchema, connectValue)
+    }
+
+    companion object {
+        private val CANONICAL_MAPPER =
+            ObjectMapper().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+
+        private val MAP_TYPE = object : TypeReference<Map<String, Any>>() {}
+
+        @JvmStatic
+        fun canonicalize(jsonSchema: String): String {
+            val properties = CANONICAL_MAPPER.readValue(jsonSchema, MAP_TYPE)
+            return CANONICAL_MAPPER.writeValueAsString(properties)
+        }
     }
 }
