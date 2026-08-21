@@ -21,7 +21,7 @@ import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryExceptio
 import org.apache.commons.lang3.Validate
 import org.slf4j.LoggerFactory
 
-class GlueSchemaRegistryUtils private constructor() {
+object GlueSchemaRegistryUtils {
     /**
      * Check value is present in the map or not.
      */
@@ -87,14 +87,11 @@ class GlueSchemaRegistryUtils private constructor() {
 
     private fun isSchemaGenerationClassPresent(configs: Map<String, *>): Boolean = checkIfPresentInMap(configs, AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS)
 
-    companion object {
-        private val log = LoggerFactory.getLogger(GlueSchemaRegistryUtils::class.java)
-        private val INSTANCE = GlueSchemaRegistryUtils()
+    private val log = LoggerFactory.getLogger(GlueSchemaRegistryUtils::class.java)
 
-        /**
-         * Thread safe singleton instance of the GlueSchemaRegistryUtils Class.
-         */
-        @JvmStatic
-        fun getInstance(): GlueSchemaRegistryUtils = INSTANCE
-    }
+    /**
+     * Thread safe singleton instance of the GlueSchemaRegistryUtils Class.
+     */
+    @JvmStatic
+    fun getInstance(): GlueSchemaRegistryUtils = this
 }

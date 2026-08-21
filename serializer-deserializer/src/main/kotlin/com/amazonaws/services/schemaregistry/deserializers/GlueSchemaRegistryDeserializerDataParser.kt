@@ -28,9 +28,9 @@ import java.util.UUID
  * Parser that understands the schema registry data format and extracts schema
  * id from serialized data, also performs data integrity validations.
  */
-class GlueSchemaRegistryDeserializerDataParser private constructor(
-    private val compressionFactory: GlueSchemaRegistryCompressionFactory,
-) {
+object GlueSchemaRegistryDeserializerDataParser {
+    private val compressionFactory = GlueSchemaRegistryCompressionFactory()
+
     /**
      * Gets the schema version id embedded within the data.
      *
@@ -193,14 +193,11 @@ class GlueSchemaRegistryDeserializerDataParser private constructor(
         AWSSchemaRegistryConstants.COMPRESSION_BYTE_SIZE +
         AWSSchemaRegistryConstants.SCHEMA_VERSION_ID_SIZE
 
-    companion object {
-        private val log = LoggerFactory.getLogger(GlueSchemaRegistryDeserializerDataParser::class.java)
-        private val INSTANCE = GlueSchemaRegistryDeserializerDataParser(GlueSchemaRegistryCompressionFactory())
+    private val log = LoggerFactory.getLogger(GlueSchemaRegistryDeserializerDataParser::class.java)
 
-        /**
-         * Singleton instantiation helper.
-         */
-        @JvmStatic
-        fun getInstance(): GlueSchemaRegistryDeserializerDataParser = INSTANCE
-    }
+    /**
+     * Singleton instantiation helper.
+     */
+    @JvmStatic
+    fun getInstance(): GlueSchemaRegistryDeserializerDataParser = this
 }
