@@ -49,8 +49,9 @@ order to work in.
 
 ## Rules for every change
 
-- **Converting Java to Kotlin? Read [docs/kotlin-interop.md](docs/kotlin-interop.md)
-  first.** Every trap listed there cost a red test at least once.
+- **Writing or editing Kotlin? [docs/kotlin-interop.md](docs/kotlin-interop.md) lists
+  where Kotlin and Java do not line up** — the API-shape rules, and the changes that keep
+  the build green while moving the output. Each one cost a red test at least once.
 - **Run the whole build before committing.** A module's own tests do not cover the modules
   that consume it.
 - **Never hard-code a version** in a `build.gradle.kts` — everything goes through
@@ -70,7 +71,7 @@ order to work in.
 | Topic                                                   | File                                                 |
 | ------------------------------------------------------- | ---------------------------------------------------- |
 | Port contract, accepted deviations from the Maven build | [docs/portage.md](docs/portage.md)                   |
-| Conversion method and Java interop traps                | [docs/kotlin-interop.md](docs/kotlin-interop.md)     |
+| Java interop rules, and the module still in Java        | [docs/kotlin-interop.md](docs/kotlin-interop.md)     |
 | Build layout, ABI dumps, integration tests              | [docs/build.md](docs/build.md)                       |
 | CI, releases, branch protection, supply chain           | [docs/ci.md](docs/ci.md)                             |
 | Upstream release history                                | [docs/upstream-history.md](docs/upstream-history.md) |
