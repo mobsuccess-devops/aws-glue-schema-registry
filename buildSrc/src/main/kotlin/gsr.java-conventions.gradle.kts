@@ -49,6 +49,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 // then javac sees its classes. The sources still in Java therefore validate the code
 // already converted, without the tests having been touched.
 kotlin {
+    explicitApiWarning()
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
         freeCompilerArgs.add("-Xjsr305=strict")

@@ -1,0 +1,366 @@
+public abstract interface class com/amazonaws/services/schemaregistry/caching/GlueSchemaRegistryCache {
+	public abstract fun delete (Ljava/lang/Object;)V
+	public abstract fun flushCache ()V
+	public abstract fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getCacheSize ()J
+	public abstract fun getCacheStats ()Ljava/lang/Object;
+	public abstract fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSDeserializerInput {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/AWSDeserializerInput$Companion;
+	public fun <init> (Ljava/nio/ByteBuffer;Ljava/lang/String;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/common/AWSDeserializerInput$Builder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBuffer ()Ljava/nio/ByteBuffer;
+	public final fun getTransportName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSDeserializerInput$Builder {
+	public final fun buffer (Ljava/nio/ByteBuffer;)Lcom/amazonaws/services/schemaregistry/common/AWSDeserializerInput$Builder;
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/common/AWSDeserializerInput;
+	public final fun transportName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/common/AWSDeserializerInput$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSDeserializerInput$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/common/AWSDeserializerInput$Builder;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy {
+	public abstract fun getSchemaName (Ljava/lang/String;)Ljava/lang/String;
+	public fun getSchemaName (Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;
+	public fun getSchemaName (Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy$DefaultImpls {
+	public static fun getSchemaName (Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;
+	public static fun getSchemaName (Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategyDefaultImpl : com/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy {
+	public fun <init> ()V
+	public fun getSchemaName (Ljava/lang/String;)Ljava/lang/String;
+	public fun getSchemaName (Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;
+	public fun getSchemaName (Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/String;
+}
+
+public class com/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient$Companion;
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;Lsoftware/amazon/awssdk/core/retry/RetryPolicy;)V
+	public fun <init> (Lsoftware/amazon/awssdk/services/glue/GlueClient;)V
+	public fun buildGetSchemaByDefinitionRequest (Ljava/lang/String;Ljava/lang/String;)Lsoftware/amazon/awssdk/services/glue/model/GetSchemaByDefinitionRequest;
+	public fun buildGetSchemaByDefinitionRequest (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lsoftware/amazon/awssdk/services/glue/model/GetSchemaByDefinitionRequest;
+	public fun createSchema (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Ljava/util/UUID;
+	public fun getSchemaVersionIdByDefinition (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/util/UUID;
+	public fun getSchemaVersionResponse (Ljava/lang/String;)Lsoftware/amazon/awssdk/services/glue/model/GetSchemaVersionResponse;
+	public fun putSchemaVersionMetadata (Ljava/util/UUID;Ljava/util/Map;)V
+	public fun putSchemaVersionMetadata (Ljava/util/UUID;Lsoftware/amazon/awssdk/services/glue/model/MetadataKeyValuePair;)Lsoftware/amazon/awssdk/services/glue/model/PutSchemaVersionMetadataResponse;
+	public fun querySchemaTags (Ljava/lang/String;Ljava/lang/String;)Lsoftware/amazon/awssdk/services/glue/model/GetTagsResponse;
+	public fun querySchemaVersionMetadata (Ljava/util/UUID;)Lsoftware/amazon/awssdk/services/glue/model/QuerySchemaVersionMetadataResponse;
+	public fun registerSchemaVersion (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lsoftware/amazon/awssdk/services/glue/model/GetSchemaVersionResponse;
+	public fun registerSchemaVersion (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Ljava/util/UUID;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSSchemaRegistryGlueClientRetryPolicyHelper {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/common/AWSSchemaRegistryGlueClientRetryPolicyHelper;
+	public static final fun getRetryPolicy ()Lsoftware/amazon/awssdk/core/retry/RetryPolicy;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSSerializerInput {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public static final fun builder ()Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput$Builder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDataFormat ()Ljava/lang/String;
+	public final fun getSchemaDefinition ()Ljava/lang/String;
+	public final fun getSchemaName ()Ljava/lang/String;
+	public final fun getTransportName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSSerializerInput$Builder {
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput;
+	public final fun dataFormat (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput$Builder;
+	public final fun schemaDefinition (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput$Builder;
+	public final fun schemaName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput$Builder;
+	public final fun transportName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/AWSSerializerInput$Companion {
+	public final fun builder ()Lcom/amazonaws/services/schemaregistry/common/AWSSerializerInput$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionFactory {
+	public fun <init> ()V
+	public final fun getCompressionHandler (B)Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler;
+	public final fun getCompressionHandler (Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;)Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler {
+	public static final field BUFFER_SIZE I
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler$Companion;
+	public fun compress ([B)[B
+	public fun decompress ([BII)[B
+}
+
+public final class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler$Companion {
+	public static final field BUFFER_SIZE I
+	public final fun decompress (Ljava/util/zip/Inflater;I)[B
+	public final fun getDeflatorObject ([B)Ljava/util/zip/Deflater;
+	public final fun getInflatorObject ([BII)Ljava/util/zip/Inflater;
+	public final fun writeToByteArrayOutputStream (Ljava/util/zip/Inflater;Ljava/io/ByteArrayOutputStream;)[B
+	public final fun writeToDeflatorObject ([BLjava/util/zip/Deflater;)[B
+}
+
+public final class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler$DefaultImpls {
+	public static fun compress (Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler;[B)[B
+	public static fun decompress (Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler;[BII)[B
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatDeserializer {
+	public abstract fun deserialize (Ljava/nio/ByteBuffer;Lcom/amazonaws/services/schemaregistry/common/Schema;)Ljava/lang/Object;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatSerializer {
+	public abstract fun getSchemaDefinition (Ljava/lang/Object;)Ljava/lang/String;
+	public abstract fun serialize (Ljava/lang/Object;)[B
+	public abstract fun validate (Ljava/lang/Object;)V
+	public abstract fun validate (Ljava/lang/String;[B)V
+}
+
+public final class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDefaultCompression : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryCompressionHandler {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDefaultCompression$Companion;
+	public fun <init> ()V
+	public fun compress ([B)[B
+	public fun decompress ([BII)[B
+}
+
+public final class com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDefaultCompression$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/common/MavenPackaging {
+	public static final field VERSION Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public final class com/amazonaws/services/schemaregistry/common/Schema {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/common/Schema;
+	public static synthetic fun copy$default (Lcom/amazonaws/services/schemaregistry/common/Schema;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/amazonaws/services/schemaregistry/common/Schema;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDataFormat ()Ljava/lang/String;
+	public final fun getSchemaDefinition ()Ljava/lang/String;
+	public final fun getSchemaName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public class com/amazonaws/services/schemaregistry/common/SchemaByDefinitionFetcher {
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
+	public fun getORRegisterSchemaVersionId (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Ljava/util/UUID;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/util/Map;)V
+	public fun <init> (Ljava/util/Properties;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAvroRecordType ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public final fun getCacheSize ()I
+	public final fun getCompatibilitySetting ()Lsoftware/amazon/awssdk/services/glue/model/Compatibility;
+	public final fun getCompressionType ()Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getEndPoint ()Ljava/lang/String;
+	public final fun getJacksonDeserializationFeatures ()Ljava/util/List;
+	public final fun getJacksonSerializationFeatures ()Ljava/util/List;
+	public final fun getJsonClassNameAllowlist ()Ljava/util/Set;
+	public final fun getMetadata ()Ljava/util/Map;
+	public final fun getProtobufMessageType ()Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+	public final fun getProxyUrl ()Ljava/net/URI;
+	public final fun getRegion ()Ljava/lang/String;
+	public final fun getRegistryName ()Ljava/lang/String;
+	public final fun getSecondaryDeserializer ()Ljava/lang/String;
+	public final fun getTags ()Ljava/util/Map;
+	public final fun getTimeToLiveMillis ()J
+	public final fun getUserAgentApp ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isClassNameAllowed (Ljava/lang/String;)Z
+	public final fun isJsonClassNameResolutionEnabled ()Z
+	public final fun isSchemaAutoRegistrationEnabled ()Z
+	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
+	public final fun setCacheSize (I)V
+	public final fun setCompatibilitySetting (Lsoftware/amazon/awssdk/services/glue/model/Compatibility;)V
+	public final fun setCompressionType (Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;)V
+	public final fun setDescription (Ljava/lang/String;)V
+	public final fun setEndPoint (Ljava/lang/String;)V
+	public final fun setJacksonDeserializationFeatures (Ljava/util/List;)V
+	public final fun setJacksonSerializationFeatures (Ljava/util/List;)V
+	public final fun setJsonClassNameAllowlist (Ljava/util/Set;)V
+	public final fun setJsonClassNameResolutionEnabled (Z)V
+	public final fun setMetadata (Ljava/util/Map;)V
+	public final fun setProtobufMessageType (Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;)V
+	public final fun setProxyUrl (Ljava/net/URI;)V
+	public final fun setRegion (Ljava/lang/String;)V
+	public final fun setRegistryName (Ljava/lang/String;)V
+	public final fun setSchemaAutoRegistrationEnabled (Z)V
+	public final fun setSecondaryDeserializer (Ljava/lang/String;)V
+	public final fun setTags (Ljava/util/Map;)V
+	public final fun setTimeToLiveMillis (J)V
+	public final fun setUserAgentApp (Ljava/lang/String;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/common/configs/UserAgents {
+	public static final field FLINK Ljava/lang/String;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/common/configs/UserAgents;
+	public static final field KAFKA Ljava/lang/String;
+	public static final field KAFKACONNECT Ljava/lang/String;
+	public static final field KAFKASTREAMS Ljava/lang/String;
+}
+
+public class com/amazonaws/services/schemaregistry/exception/AWSSchemaRegistryException : java/lang/RuntimeException {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/exception/AWSSchemaRegistryException$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun <init> (Ljava/lang/Throwable;)V
+	public fun <init> (Ljava/lang/Throwable;Ljava/util/UUID;)V
+	public final fun getSchemaVersionId ()Ljava/util/UUID;
+}
+
+public final class com/amazonaws/services/schemaregistry/exception/AWSSchemaRegistryException$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/exception/GlueSchemaRegistryIncompatibleDataException : com/amazonaws/services/schemaregistry/exception/AWSSchemaRegistryException {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/exception/GlueSchemaRegistryIncompatibleDataException$Companion;
+	public static final field UNKNOWN_COMPRESSION_BYTE_ERROR_MESSAGE Ljava/lang/String;
+	public static final field UNKNOWN_DATA_ERROR_MESSAGE Ljava/lang/String;
+	public static final field UNKNOWN_HEADER_VERSION_BYTE_ERROR_MESSAGE Ljava/lang/String;
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/exception/GlueSchemaRegistryIncompatibleDataException$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants {
+	public static final field ASSUME_ROLE_ARN Ljava/lang/String;
+	public static final field ASSUME_ROLE_SESSION_NAME Ljava/lang/String;
+	public static final field AUTO_REGISTRATION_IS_DISABLED_MSG Ljava/lang/String;
+	public static final field AVRO_RECORD_TYPE Ljava/lang/String;
+	public static final field AWS_ENDPOINT Ljava/lang/String;
+	public static final field AWS_REGION Ljava/lang/String;
+	public static final field CACHE_SIZE Ljava/lang/String;
+	public static final field CACHE_TIME_TO_LIVE_MILLIS Ljava/lang/String;
+	public static final field COMPATIBILITY_SETTING Ljava/lang/String;
+	public static final field COMPRESSION_BYTE B
+	public static final field COMPRESSION_BYTE_SIZE I
+	public static final field COMPRESSION_DEFAULT_BYTE B
+	public static final field COMPRESSION_TYPE Ljava/lang/String;
+	public static final field DATA_FORMAT Ljava/lang/String;
+	public static final field DEFAULT_COMPATIBILITY_SETTING Lsoftware/amazon/awssdk/services/glue/model/Compatibility;
+	public static final field DEFAULT_REGISTRY_NAME Ljava/lang/String;
+	public static final field DEFAULT_SCHEMA_STRATEGY Ljava/lang/String;
+	public static final field DESCRIPTION Ljava/lang/String;
+	public static final field HEADER_VERSION_BYTE B
+	public static final field HEADER_VERSION_BYTE_SIZE I
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants;
+	public static final field JACKSON_DESERIALIZATION_FEATURES Ljava/lang/String;
+	public static final field JACKSON_SERIALIZATION_FEATURES Ljava/lang/String;
+	public static final field JSON_CLASS_NAME_ALLOWLIST Ljava/lang/String;
+	public static final field JSON_CLASS_NAME_RESOLUTION_ENABLED Ljava/lang/String;
+	public static final field METADATA Ljava/lang/String;
+	public static final field PROTOBUF_MESSAGE_TYPE Ljava/lang/String;
+	public static final field PROXY_URL Ljava/lang/String;
+	public static final field REGISTRY_NAME Ljava/lang/String;
+	public static final field SCHEMA_AUTO_REGISTRATION_SETTING Ljava/lang/String;
+	public static final field SCHEMA_NAME Ljava/lang/String;
+	public static final field SCHEMA_NAMING_GENERATION_CLASS Ljava/lang/String;
+	public static final field SCHEMA_NOT_FOUND_MSG Ljava/lang/String;
+	public static final field SCHEMA_VERSION_ID_SIZE I
+	public static final field SCHEMA_VERSION_NOT_FOUND_MSG Ljava/lang/String;
+	public static final field SECONDARY_DESERIALIZER Ljava/lang/String;
+	public static final field TAGS Ljava/lang/String;
+	public static final field TAGS_CONFIG_NOT_HASHMAP_MSG Ljava/lang/String;
+	public static final field TRANSPORT_METADATA_KEY Ljava/lang/String;
+	public static final field USER_AGENT_APP Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION : java/lang/Enum {
+	public static final field NONE Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;
+	public static final field ZLIB Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;
+	public static fun values ()[Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$SchemaVersionStatus : java/lang/Enum {
+	public static final field AVAILABLE Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$SchemaVersionStatus;
+	public static final field DELETING Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$SchemaVersionStatus;
+	public static final field FAILURE Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$SchemaVersionStatus;
+	public static final field PENDING Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$SchemaVersionStatus;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$SchemaVersionStatus;
+	public static fun values ()[Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$SchemaVersionStatus;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/AvroRecordType : java/lang/Enum {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType$Companion;
+	public static final field GENERIC_RECORD Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public static final field SPECIFIC_RECORD Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public static final field UNKNOWN Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public static final fun fromName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getValue ()I
+	public static fun valueOf (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public static fun values ()[Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/AvroRecordType$Companion {
+	public final fun fromName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils$Companion;
+	public final fun checkIfPresentInMap (Ljava/util/Map;Ljava/lang/String;)Z
+	public final fun configureSchemaNamingStrategy (Ljava/util/Map;)Lcom/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy;
+	public final fun getDataFormat (Ljava/util/Map;)Ljava/lang/String;
+	public static final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils;
+	public final fun getSchemaName (Ljava/util/Map;)Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils$Companion {
+	public final fun getInstance ()Lcom/amazonaws/services/schemaregistry/utils/GlueSchemaRegistryUtils;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/ProtobufMessageType : java/lang/Enum {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType$Companion;
+	public static final field DYNAMIC_MESSAGE Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+	public static final field POJO Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+	public static final field UNKNOWN Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+	public static final fun fromName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getValue ()I
+	public static fun valueOf (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+	public static fun values ()[Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+}
+
+public final class com/amazonaws/services/schemaregistry/utils/ProtobufMessageType$Companion {
+	public final fun fromName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+}
+

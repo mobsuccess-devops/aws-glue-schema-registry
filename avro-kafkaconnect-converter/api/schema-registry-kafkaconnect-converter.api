@@ -1,0 +1,241 @@
+public class com/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConverter : org/apache/kafka/connect/storage/Converter {
+	public fun <init> ()V
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer;Lcom/amazonaws/services/schemaregistry/deserializers/avro/AWSKafkaAvroDeserializer;Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData;)V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun fromConnectData (Ljava/lang/String;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)[B
+	public final fun getAvroData ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData;
+	public final fun getDeserializer ()Lcom/amazonaws/services/schemaregistry/deserializers/avro/AWSKafkaAvroDeserializer;
+	public final fun getSerializer ()Lcom/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer;
+	public final fun isKey ()Z
+	public final fun setAvroData (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData;)V
+	public final fun setDeserializer (Lcom/amazonaws/services/schemaregistry/deserializers/avro/AWSKafkaAvroDeserializer;)V
+	public final fun setKey (Z)V
+	public final fun setSerializer (Lcom/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer;)V
+	public fun toConnectData (Ljava/lang/String;[B)Lorg/apache/kafka/connect/data/SchemaAndValue;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConverterConfig : org/apache/kafka/common/config/AbstractConfig {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConverterConfig$Companion;
+	public fun <init> (Ljava/util/Map;)V
+	public static final fun configDef ()Lorg/apache/kafka/common/config/ConfigDef;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConverterConfig$Companion {
+	public final fun configDef ()Lorg/apache/kafka/common/config/ConfigDef;
+}
+
+public class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData {
+	public static final field ANYTHING_SCHEMA Lorg/apache/avro/Schema;
+	public static final field ANYTHING_SCHEMA_MAP_ELEMENT Lorg/apache/avro/Schema;
+	public static final field AVRO_ENUM_DEFAULT_PREFIX_PROP Ljava/lang/String;
+	public static final field AVRO_ENUM_DOC_PREFIX_PROP Ljava/lang/String;
+	public static final field AVRO_FIELD_DEFAULT_FLAG_PROP Ljava/lang/String;
+	public static final field AVRO_FIELD_DOC_PREFIX_PROP Ljava/lang/String;
+	public static final field AVRO_LOGICAL_DATE Ljava/lang/String;
+	public static final field AVRO_LOGICAL_DECIMAL Ljava/lang/String;
+	public static final field AVRO_LOGICAL_DECIMAL_PRECISION_PROP Ljava/lang/String;
+	public static final field AVRO_LOGICAL_DECIMAL_SCALE_PROP Ljava/lang/String;
+	public static final field AVRO_LOGICAL_TIMESTAMP_MILLIS Ljava/lang/String;
+	public static final field AVRO_LOGICAL_TIME_MILLIS Ljava/lang/String;
+	public static final field AVRO_LOGICAL_TYPE_PROP Ljava/lang/String;
+	public static final field AVRO_PROP Ljava/lang/String;
+	public static final field AVRO_RECORD_DOC_PROP Ljava/lang/String;
+	public static final field AVRO_TYPE_ANYTHING Ljava/lang/String;
+	public static final field AVRO_TYPE_ENUM Ljava/lang/String;
+	public static final field AVRO_TYPE_UNION Ljava/lang/String;
+	public static final field CONNECT_AVRO_DECIMAL_PRECISION_DEFAULT I
+	public static final field CONNECT_AVRO_DECIMAL_PRECISION_PROP Ljava/lang/String;
+	public static final field CONNECT_DEFAULT_VALUE_PROP Ljava/lang/String;
+	public static final field CONNECT_DOC_PROP Ljava/lang/String;
+	public static final field CONNECT_INTERNAL_TYPE_NAME Ljava/lang/String;
+	public static final field CONNECT_NAME_PROP Ljava/lang/String;
+	public static final field CONNECT_PARAMETERS_PROP Ljava/lang/String;
+	public static final field CONNECT_TYPE_INT16 Ljava/lang/String;
+	public static final field CONNECT_TYPE_INT8 Ljava/lang/String;
+	public static final field CONNECT_TYPE_PROP Ljava/lang/String;
+	public static final field CONNECT_VERSION_PROP Ljava/lang/String;
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData$Companion;
+	public static final field DEFAULT_SCHEMA_FULL_NAME Ljava/lang/String;
+	public static final field DEFAULT_SCHEMA_NAME Ljava/lang/String;
+	public static final field KEY_FIELD Ljava/lang/String;
+	public static final field MAP_ENTRY_TYPE_NAME Ljava/lang/String;
+	public static final field NAMESPACE Ljava/lang/String;
+	public static final field VALUE_FIELD Ljava/lang/String;
+	public fun <init> (I)V
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroDataConfig;)V
+	public static final fun fields (Lorg/apache/kafka/connect/data/Schema;)Ljava/util/List;
+	public fun fromConnectData (Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)Ljava/lang/Object;
+	protected fun fromConnectData (Lorg/apache/kafka/connect/data/Schema;Lorg/apache/avro/Schema;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun fromConnectSchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/avro/Schema;
+	public fun fromConnectSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData$FromConnectContext;Z)Lorg/apache/avro/Schema;
+	public fun fromConnectSchema (Lorg/apache/kafka/connect/data/Schema;Ljava/util/Map;)Lorg/apache/avro/Schema;
+	public fun fromConnectSchemaWithCycle (Lorg/apache/kafka/connect/data/Schema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData$FromConnectContext;Z)Lorg/apache/avro/Schema;
+	protected fun getForceOptionalDefault ()Z
+	public static final fun keySchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public static final fun nonOptional (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public fun toConnectData (Lorg/apache/avro/Schema;Ljava/lang/Object;)Lorg/apache/kafka/connect/data/SchemaAndValue;
+	public fun toConnectData (Lorg/apache/avro/Schema;Ljava/lang/Object;Ljava/lang/Integer;)Lorg/apache/kafka/connect/data/SchemaAndValue;
+	public fun toConnectSchema (Lorg/apache/avro/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public static final fun valueSchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData$Companion {
+	public final fun fields (Lorg/apache/kafka/connect/data/Schema;)Ljava/util/List;
+	public final fun keySchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public final fun nonOptional (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+	public final fun valueSchema (Lorg/apache/kafka/connect/data/Schema;)Lorg/apache/kafka/connect/data/Schema;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData$FromConnectContext {
+	public final fun getCycleReferences ()Ljava/util/Map;
+	public final fun getSchemaMap ()Ljava/util/Map;
+}
+
+public class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroDataConfig : org/apache/kafka/common/config/AbstractConfig {
+	public static final field CONNECT_META_DATA_CONFIG Ljava/lang/String;
+	public static final field CONNECT_META_DATA_DEFAULT Z
+	public static final field CONNECT_META_DATA_DOC Ljava/lang/String;
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroDataConfig$Companion;
+	public static final field ENHANCED_AVRO_SCHEMA_SUPPORT_CONFIG Ljava/lang/String;
+	public static final field ENHANCED_AVRO_SCHEMA_SUPPORT_DEFAULT Z
+	public static final field ENHANCED_AVRO_SCHEMA_SUPPORT_DOC Ljava/lang/String;
+	public static final field SCHEMAS_CACHE_SIZE_CONFIG Ljava/lang/String;
+	public static final field SCHEMAS_CACHE_SIZE_DEFAULT I
+	public static final field SCHEMAS_CACHE_SIZE_DOC Ljava/lang/String;
+	public fun <init> (Ljava/util/Map;)V
+	public static final fun baseConfigDef ()Lorg/apache/kafka/common/config/ConfigDef;
+	public fun getSchemasCacheSize ()I
+	public fun isConnectMetaData ()Z
+	public fun isEnhancedAvroSchemaSupport ()Z
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroDataConfig$Builder {
+	public fun <init> ()V
+	public final fun build ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroDataConfig;
+	public final fun with (Ljava/lang/String;Ljava/lang/Object;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroDataConfig$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroDataConfig$Companion {
+	public final fun baseConfigDef ()Lorg/apache/kafka/common/config/ConfigDef;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroSchema : com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroSchema$Companion;
+	public static final field TYPE Ljava/lang/String;
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;Ljava/lang/Integer;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;Ljava/lang/Integer;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;Ljava/lang/Integer;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lorg/apache/avro/Schema;)V
+	public fun <init> (Lorg/apache/avro/Schema;Ljava/lang/Integer;)V
+	public synthetic fun <init> (Lorg/apache/avro/Schema;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun canonicalString ()Ljava/lang/String;
+	public final fun copy ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroSchema;
+	public fun deepEquals (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;)Z
+	public fun equals (Ljava/lang/Object;)Z
+	public fun formattedString (Ljava/lang/String;)Ljava/lang/String;
+	public fun hashCode ()I
+	public fun isBackwardCompatible (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;)Ljava/util/List;
+	public fun isCompatible (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;Ljava/util/List;)Ljava/util/List;
+	public final fun isNew ()Z
+	public fun name ()Ljava/lang/String;
+	public synthetic fun rawSchema ()Ljava/lang/Object;
+	public fun rawSchema ()Lorg/apache/avro/Schema;
+	public final fun resolvedReferences ()Ljava/util/Map;
+	public fun schemaType ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+	public fun validate ()V
+	public final fun version ()Ljava/lang/Integer;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroSchema$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker {
+	public static final field BACKWARD_CHECKER Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public static final field BACKWARD_TRANSITIVE_CHECKER Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker$Companion;
+	public static final field FORWARD_CHECKER Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public static final field FORWARD_TRANSITIVE_CHECKER Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public static final field FULL_CHECKER Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public static final field FULL_TRANSITIVE_CHECKER Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public static final field NO_OP_CHECKER Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public static final fun checker (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+	public final fun isCompatible (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;Ljava/util/List;)Ljava/util/List;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker$Companion {
+	public final fun checker (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityChecker;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel : java/lang/Enum {
+	public static final field BACKWARD Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static final field BACKWARD_TRANSITIVE Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel$Companion;
+	public static final field FORWARD Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static final field FORWARD_TRANSITIVE Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static final field FULL Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static final field FULL_TRANSITIVE Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static final field NONE Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static final fun forName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+	public static fun values ()[Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel$Companion {
+	public final fun forName (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/NonRecordContainer : org/apache/avro/generic/GenericContainer {
+	public fun <init> (Lorg/apache/avro/Schema;Ljava/lang/Object;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getSchema ()Lorg/apache/avro/Schema;
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema {
+	public abstract fun canonicalString ()Ljava/lang/String;
+	public fun deepEquals (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;)Z
+	public fun formattedString (Ljava/lang/String;)Ljava/lang/String;
+	public abstract fun isBackwardCompatible (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;)Ljava/util/List;
+	public fun isCompatible (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;Ljava/util/List;)Ljava/util/List;
+	public abstract fun name ()Ljava/lang/String;
+	public abstract fun rawSchema ()Ljava/lang/Object;
+	public abstract fun schemaType ()Ljava/lang/String;
+	public fun validate ()V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema$DefaultImpls {
+	public static fun deepEquals (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;)Z
+	public static fun formattedString (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;Ljava/lang/String;)Ljava/lang/String;
+	public static fun isCompatible (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/CompatibilityLevel;Ljava/util/List;)Ljava/util/List;
+	public static fun validate (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;)V
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidationStrategy {
+	public abstract fun validate (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;)Ljava/util/List;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidator {
+	public abstract fun validate (Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/ParsedSchema;Ljava/lang/Iterable;)Ljava/util/List;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidatorBuilder {
+	public fun <init> ()V
+	public final fun canBeReadStrategy ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidatorBuilder;
+	public final fun canReadStrategy ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidatorBuilder;
+	public final fun mutualReadStrategy ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidatorBuilder;
+	public final fun validateAll ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidator;
+	public final fun validateLatest ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidator;
+}
+
+public final class org/apache/avro/Schemas {
+	public static final field INSTANCE Lorg/apache/avro/Schemas;
+	public static final fun toString (Lorg/apache/avro/Schema;Ljava/util/Collection;)Ljava/lang/String;
+	public static final fun toString (Lorg/apache/avro/Schema;Ljava/util/Collection;Z)Ljava/lang/String;
+	public static synthetic fun toString$default (Lorg/apache/avro/Schema;Ljava/util/Collection;ZILjava/lang/Object;)Ljava/lang/String;
+}
+

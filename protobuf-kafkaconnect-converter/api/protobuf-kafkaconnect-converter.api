@@ -1,0 +1,208 @@
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/ProtobufSchemaConverter : org/apache/kafka/connect/storage/Converter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/ProtobufSchemaConverter$Companion;
+	public fun <init> ()V
+	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer;Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer;)V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun fromConnectData (Ljava/lang/String;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)[B
+	public fun toConnectData (Ljava/lang/String;[B)Lorg/apache/kafka/connect/data/SchemaAndValue;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/ProtobufSchemaConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/ArrayDataConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter {
+	public fun <init> ()V
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;)Ljava/lang/Object;
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;Lcom/google/protobuf/Message$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/ConnectDataToProtobufDataConverter {
+	public fun <init> ()V
+	public final fun convert (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)Lcom/google/protobuf/Message;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/ConnectDataToProtobufDataConverterFactory {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/ConnectDataToProtobufDataConverterFactory;
+	public static final fun get (Lorg/apache/kafka/connect/data/Schema;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter {
+	public abstract fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;)Ljava/lang/Object;
+	public abstract fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;Lcom/google/protobuf/Message$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DecimalDataConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DecimalDataConverter$Companion;
+	public fun <init> ()V
+	public static final fun fromBigDecimal (Ljava/math/BigDecimal;)LadditionalTypes/Decimals$Decimal;
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;)Ljava/lang/Object;
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;Lcom/google/protobuf/Message$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DecimalDataConverter$Companion {
+	public final fun fromBigDecimal (Ljava/math/BigDecimal;)LadditionalTypes/Decimals$Decimal;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DescriptorTree {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DescriptorTree;
+	public static final fun parseAllDescriptors (Lcom/google/protobuf/Descriptors$FileDescriptor;)Ljava/util/Map;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/EnumDataConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter {
+	public fun <init> ()V
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;)Ljava/lang/Object;
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;Lcom/google/protobuf/Message$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/PrimitiveDataConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/PrimitiveDataConverter$Companion;
+	public fun <init> ()V
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;)Ljava/lang/Object;
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;Lcom/google/protobuf/Message$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/PrimitiveDataConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/StructDataConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter {
+	public fun <init> ()V
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;)Ljava/lang/Object;
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;Lcom/google/protobuf/Message$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/TimeDataConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectdata/DataConverter {
+	public fun <init> ()V
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;)Ljava/lang/Object;
+	public fun toProtobufData (Lcom/google/protobuf/Descriptors$FileDescriptor;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;Lcom/google/protobuf/Descriptors$FieldDescriptor;Lcom/google/protobuf/Message$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ArraySchemaTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public fun <init> ()V
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ConnectSchemaToProtobufSchemaConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ConnectSchemaToProtobufSchemaConverter$Companion;
+	public fun <init> ()V
+	public final fun convert (Lorg/apache/kafka/connect/data/Schema;)Lcom/google/protobuf/Descriptors$FileDescriptor;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ConnectSchemaToProtobufSchemaConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ConnectToProtobufTypeConverterFactory {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ConnectToProtobufTypeConverterFactory;
+	public static final fun get (Lorg/apache/kafka/connect/data/Schema;)Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/DecimalSchemaTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/DecimalSchemaTypeConverter$Companion;
+	public fun <init> ()V
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/DecimalSchemaTypeConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/EnumSchemaTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public fun <init> ()V
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/FieldBuilder {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/FieldBuilder;
+	public static final fun build (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/MapSchemaTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public fun <init> ()V
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/PrimitiveSchemaTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/PrimitiveSchemaTypeConverter$Companion;
+	public fun <init> ()V
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/PrimitiveSchemaTypeConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ProtobufSchemaConverterConstants {
+	public static final field CONNECT_SCHEMA_INT16 Ljava/lang/String;
+	public static final field CONNECT_SCHEMA_INT8 Ljava/lang/String;
+	public static final field CONNECT_SCHEMA_TYPE Ljava/lang/String;
+	public static final field DECIMAL_DEFAULT_SCALE I
+	public static final field DECIMAL_SCALE_VALUE Ljava/lang/String;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ProtobufSchemaConverterConstants;
+	public static final field METADATA_IMPORT Ljava/lang/String;
+	public static final field PROTOBUF_ENUM_NAME Ljava/lang/String;
+	public static final field PROTOBUF_ENUM_TYPE Ljava/lang/String;
+	public static final field PROTOBUF_ENUM_VALUE Ljava/lang/String;
+	public static final field PROTOBUF_ONEOF_TYPE Ljava/lang/String;
+	public static final field PROTOBUF_PACKAGE Ljava/lang/String;
+	public static final field PROTOBUF_TAG Ljava/lang/String;
+	public static final field PROTOBUF_TYPE Ljava/lang/String;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ProtobufSchemaConverterUtils {
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/ProtobufSchemaConverterUtils;
+	public static final fun convertFromGoogleDate (Lcom/google/type/Date;)Ljava/util/Date;
+	public static final fun convertFromGoogleTime (Lcom/google/type/TimeOfDay;)Ljava/util/Date;
+	public static final fun getSchemaSimpleName (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun getTypeName (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun isEnumType (Lorg/apache/kafka/connect/data/Schema;)Z
+	public static final fun isTimeType (Lorg/apache/kafka/connect/data/Schema;)Z
+	public static final fun toMapEntryName (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public abstract fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter$DefaultImpls {
+	public static fun addImportToProtobufSchema (Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/StructSchemaTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public fun <init> ()V
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/TimeSchemaTypeConverter : com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/SchemaTypeConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/TimeSchemaTypeConverter$Companion;
+	public fun <init> ()V
+	public fun addImportToProtobufSchema (Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;Ljava/lang/String;)V
+	public fun toProtobufSchema (Lorg/apache/kafka/connect/data/Schema;Lcom/google/protobuf/DescriptorProtos$DescriptorProto$Builder;Lcom/google/protobuf/DescriptorProtos$FileDescriptorProto$Builder;)Lcom/google/protobuf/DescriptorProtos$FieldDescriptorProto$Builder;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/fromconnectschema/TimeSchemaTypeConverter$Companion {
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/toconnectdata/ProtobufDataToConnectDataConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/toconnectdata/ProtobufDataToConnectDataConverter$Companion;
+	public fun <init> ()V
+	public static final fun fromDecimalProto (LadditionalTypes/Decimals$Decimal;)Ljava/math/BigDecimal;
+	public final fun toConnectData (Lcom/google/protobuf/Message;Lorg/apache/kafka/connect/data/Schema;)Ljava/lang/Object;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/toconnectdata/ProtobufDataToConnectDataConverter$Companion {
+	public final fun fromDecimalProto (LadditionalTypes/Decimals$Decimal;)Ljava/math/BigDecimal;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/toconnectschema/ProtobufSchemaToConnectSchemaConverter {
+	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/protobuf/toconnectschema/ProtobufSchemaToConnectSchemaConverter$Companion;
+	public fun <init> ()V
+	public final fun toConnectSchema (Lcom/google/protobuf/Message;)Lorg/apache/kafka/connect/data/Schema;
+}
+
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/protobuf/toconnectschema/ProtobufSchemaToConnectSchemaConverter$Companion {
+}
+

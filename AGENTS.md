@@ -69,6 +69,46 @@ order to follow for the Kotlin conversion.
   in the root build
 - Published to GitHub Packages under the `com.mobsuccess` group
 
+### The ABI is versioned
+
+`org.jetbrains.kotlinx.binary-compatibility-validator` is applied at the root build and
+dumps the public ABI of every published module into `<module>/api/<artifactId>.api`. Those
+files are committed, and `apiCheck` is wired into `check`: a change to a public signature
+fails the build until the dump is refreshed.
+
+```bash
+./gradlew apiCheck    # runs as part of `check`
+./gradlew apiDump     # accept the new surface, then commit the .api diff
+```
+
+This is what mechanizes the fork's promise that the API stays identical to the source. A
+red `apiCheck` is not a formality — read the diff it prints and decide whether the change
+is deliberate before running `apiDump`. `examples` and `integration-tests` are excluded:
+they publish nothing.
+
+The dumps include the protobuf classes generated from `src/main/proto`. They really are on
+the published surface, so a protobuf bump that moves a generated signature shows up as an
+ABI change, which is the point.
+
+Two things the dumps deliberately do **not** cover:
+
+- **What an uber-jar bundles.** The validator reads a module's own `main` output, not the
+  jar `shadowJar` assembles, so `schema-registry-serde-msk-iam.api` is four lines describing
+  the one class that module declares — not the `schema-registry-serde` classes its uber-jar
+  ships. That is not a gap: those classes are guarded by `:schema-registry-serde:apiCheck`,
+  where they are declared. What is guarded nowhere is the _relocation and exclusion_ rules of
+  `gsr.shaded-conventions`; changing those changes what consumers receive without moving a
+  single dump.
+- **`examples`.** It is excluded because it is a sample application. It is published, so it
+  technically has an ABI, but the fork makes no promise about it — a consumer depending on
+  `schema-registry-examples` is doing something the module was not built for. Add it to the
+  validator if that ever stops being true.
+
+`explicitApiWarning()` is set in the Kotlin convention. It is a **warning**, not an error:
+916 declarations inherited from the conversion still rely on Kotlin's implicit `public`
+(780 missing a visibility modifier, 136 missing an explicit return type). The value is on
+new code — anything added from now on is flagged the moment it is written.
+
 ## Java interop traps
 
 These all cost a red test at least once. They are listed in the order they bite.
