@@ -364,15 +364,16 @@ Java.
   three `Object` overrides.
 
   That is not restored, deliberately. `equals` and `hashCode` over the mutable collaborators of a
-  stateful converter are not a value contract anyone can rely on — a converter put in a `HashSet`
-  before `configure()` moves bucket once configured — and swapping a serializer out from under a
-  running converter is not an operation this library should keep offering. The narrowing is real
-  and is recorded here rather than reverted. `Schema`, the one `@Value` type among them, is a
-  Kotlin `data class` and keeps all three overrides.
+  stateful converter are not a value contract anyone can rely on: `configure()` replaces those
+  collaborators, so a converter added to a `HashSet` beforehand hashes to one bucket and is then
+  looked for in another, and the set can neither find it nor report it as present. Swapping a
+  serializer out from under a running converter is not an operation this library should keep
+  offering either. The narrowing is real, and is recorded here rather than reverted. `Schema`,
+  the one `@Value` type among them, is a Kotlin `data class` and keeps all three overrides.
 
   The audit that prompted this entry also reported the opposite defect — that the JSON Schema
-  converter caches, "privés en Java", had become public `val`s by accident. They had not:
-  `ConnectSchemaToJsonSchemaConverter` and `JsonSchemaToConnectSchemaConverter` both carry
+  converter caches, described there as private in Java, had become public `val`s by accident.
+  They had not: `ConnectSchemaToJsonSchemaConverter` and `JsonSchemaToConnectSchemaConverter` carry
   `@Data`, so `getFromConnectSchemaCache()` and `getToConnectSchemaCache()` were already public,
   with setters. Making them `internal` would have narrowed the surface away from the source, not
   towards it. A sweep of every converted class for a field that is public in Kotlin and had no
