@@ -11,3 +11,11 @@ dependencies {
     api(libs.jackson.cbor)
     api(libs.commons.cli)
 }
+
+tasks.register<JavaExec>("runExample") {
+    group = "application"
+    description = "Runs PutRecordGetRecordExample against real Kinesis and Glue resources."
+    mainClass.set("com.amazonaws.services.schemaregistry.examples.kds.PutRecordGetRecordExample")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = projectDir
+}
