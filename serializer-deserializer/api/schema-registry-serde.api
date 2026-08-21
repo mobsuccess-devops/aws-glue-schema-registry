@@ -351,7 +351,7 @@ public final class com/amazonaws/services/schemaregistry/kafkaconnect/config/Glu
 	public static final fun baseConfigDef ()Lorg/apache/kafka/common/config/ConfigDef;
 	public static final fun coerce (Lorg/apache/kafka/common/config/ConfigDef;Ljava/util/Map;)Ljava/util/Map;
 	public static final fun defineAvro (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
-	public static final fun defineDataFormat (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
+	public static final fun defineDataFormat (Lorg/apache/kafka/common/config/ConfigDef;Lsoftware/amazon/awssdk/services/glue/model/DataFormat;)Lorg/apache/kafka/common/config/ConfigDef;
 	public static final fun defineJson (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
 	public static final fun defineProtobuf (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
 }

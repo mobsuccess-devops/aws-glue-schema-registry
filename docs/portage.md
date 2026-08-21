@@ -209,13 +209,22 @@ Java.
   `GlueSchemaRegistryConfiguration` reads is now declared — type, default, accepted values,
   importance, group and documentation — in `GlueSchemaRegistryConfigDef`, which the three
   converter config classes assemble and which each converter now returns from `config()`.
-  Two deliberate limits: `tags` and `metadata` are left undeclared, because their values are
-  maps and Kafka's `ConfigDef` has no map type — an undeclared key is passed through
-  untouched, so both keep working exactly as before. And the values of the declared keys go
+  What this buys is value validation, not key validation: `AbstractConfig` parses the keys it
+  knows and passes the rest through untouched, so a misspelled key is still ignored in silence.
+  That is also what lets `tags` and `metadata` be left undeclared — their values are maps and
+  Kafka's `ConfigDef` has no map type, so declaring them would reject a configuration that works
+  today. `userAgentApp` is left undeclared for a different reason: each converter sets that field
+  on its serializer and deserializer, whose `configure` then overwrites the configuration value
+  with it, so the key has no effect through a converter and documenting it would be a lie. And the values of the declared keys go
   through `GlueSchemaRegistryConfigDef.coerce` first, which renders a non-`String` value of a
   `STRING` key through `toString()`, and a `Class` through `getName()`, because that is what
   `GlueSchemaRegistryConfiguration` itself accepts for those keys and `ConfigDef` accepts
-  neither. What the converters reject that they used to ignore is therefore only what the
+  neither. `coerce` also splits a comma-separated value of a `LIST` key, and the converters hand
+  the rendered map on to their serializer and deserializer rather than the one they were given:
+  a Connect worker can only supply strings, so `jacksonSerializationFeatures` was unusable from a
+  worker before — the value reached `GlueSchemaRegistryConfiguration` as a `String` and was
+  rejected as "should be a list". When nothing needs rendering, `coerce` returns the very map it
+  was given. What the converters reject that they used to ignore is therefore only what the
   registry configuration would have rejected later anyway. `ProtobufSchemaConverter`, which
   had no config class at all, gained `ProtobufSchemaConverterConfig` and now validates its
   configuration like the other two. The enum validators follow the parsing the registry

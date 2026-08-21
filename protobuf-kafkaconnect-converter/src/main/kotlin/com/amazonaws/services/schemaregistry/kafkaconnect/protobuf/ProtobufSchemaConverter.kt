@@ -66,9 +66,10 @@ class ProtobufSchemaConverter(
     ) {
         this.isKey = isKey
         ProtobufSchemaConverterConfig(configs)
+        val resolvedConfigs = ProtobufSchemaConverterConfig.coerce(configs)
 
-        serializer.configure(configs, this.isKey)
-        deserializer.configure(configs, this.isKey)
+        serializer.configure(resolvedConfigs, this.isKey)
+        deserializer.configure(resolvedConfigs, this.isKey)
         connectSchemaToProtobufSchemaConverter = ConnectSchemaToProtobufSchemaConverter()
         connectDataToProtobufDataConverter = ConnectDataToProtobufDataConverter()
         protobufSchemaToConnectSchemaConverter = ProtobufSchemaToConnectSchemaConverter()

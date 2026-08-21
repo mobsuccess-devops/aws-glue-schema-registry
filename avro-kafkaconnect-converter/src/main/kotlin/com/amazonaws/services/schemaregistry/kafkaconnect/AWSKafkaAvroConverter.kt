@@ -75,25 +75,26 @@ open class AWSKafkaAvroConverter(
     ) {
         this.isKey = isKey
         AWSKafkaAvroConverterConfig(configs)
+        val resolvedConfigs = AWSKafkaAvroConverterConfig.coerce(configs)
 
         // TODO: add this feature to all other converters
-        val roleToAssume = configs[AWSSchemaRegistryConstants.ASSUME_ROLE_ARN] as String?
+        val roleToAssume = resolvedConfigs[AWSSchemaRegistryConstants.ASSUME_ROLE_ARN] as String?
         if (!roleToAssume.isNullOrEmpty()) {
             val sessionName =
-                configs[AWSSchemaRegistryConstants.ASSUME_ROLE_SESSION_NAME]?.toString()
+                resolvedConfigs[AWSSchemaRegistryConstants.ASSUME_ROLE_SESSION_NAME]?.toString()
                     ?: AWSKafkaAvroConverterConfig.ASSUME_ROLE_SESSION_NAME_DEFAULT
-            val region = configs[AWSSchemaRegistryConstants.AWS_REGION].toString()
+            val region = resolvedConfigs[AWSSchemaRegistryConstants.AWS_REGION].toString()
 
             val credentialsProvider = getCredentialsProvider(roleToAssume, sessionName, region)
 
-            deserializer = AWSKafkaAvroDeserializer(credentialsProvider, configs)
-            serializer = AWSKafkaAvroSerializer(credentialsProvider, configs)
+            deserializer = AWSKafkaAvroDeserializer(credentialsProvider, resolvedConfigs)
+            serializer = AWSKafkaAvroSerializer(credentialsProvider, resolvedConfigs)
         }
 
-        serializer.configure(configs, this.isKey)
-        deserializer.configure(configs, this.isKey)
+        serializer.configure(resolvedConfigs, this.isKey)
+        deserializer.configure(resolvedConfigs, this.isKey)
 
-        avroData = AvroData(AvroDataConfig(configs))
+        avroData = AvroData(AvroDataConfig(resolvedConfigs))
     }
 
     /**

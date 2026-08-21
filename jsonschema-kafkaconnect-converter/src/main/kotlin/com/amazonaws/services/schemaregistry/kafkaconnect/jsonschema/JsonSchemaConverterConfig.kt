@@ -18,6 +18,7 @@ package com.amazonaws.services.schemaregistry.kafkaconnect.jsonschema
 import com.amazonaws.services.schemaregistry.kafkaconnect.config.GlueSchemaRegistryConfigDef
 import org.apache.kafka.common.config.AbstractConfig
 import org.apache.kafka.common.config.ConfigDef
+import software.amazon.awssdk.services.glue.model.DataFormat
 
 /**
  * Glue Schema Registry JSON Schema converter config.
@@ -31,12 +32,17 @@ class JsonSchemaConverterConfig(
         private val CONFIG_DEF: ConfigDef =
             GlueSchemaRegistryConfigDef
                 .defineJson(
-                    GlueSchemaRegistryConfigDef.defineDataFormat(GlueSchemaRegistryConfigDef.baseConfigDef()),
+                    GlueSchemaRegistryConfigDef.defineDataFormat(
+                        GlueSchemaRegistryConfigDef.baseConfigDef(),
+                        DataFormat.JSON,
+                    ),
                 ).also { configDef ->
                     JsonSchemaDataConfig.baseConfigDef().configKeys().values.forEach { configDef.define(it) }
                 }
 
         @JvmStatic
         fun configDef(): ConfigDef = ConfigDef(CONFIG_DEF)
+
+        internal fun coerce(props: Map<String, *>): Map<String, *> = GlueSchemaRegistryConfigDef.coerce(CONFIG_DEF, props)
     }
 }

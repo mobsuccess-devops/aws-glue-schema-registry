@@ -18,6 +18,8 @@ package com.amazonaws.services.schemaregistry.kafkaconnect.config
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType
 import com.amazonaws.services.schemaregistry.utils.ProtobufMessageType
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
 import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.common.config.ConfigException
 import software.amazon.awssdk.services.glue.model.Compatibility
@@ -35,6 +37,8 @@ import software.amazon.awssdk.services.glue.model.DataFormat
  * their types, defaults and accepted values are those that class enforces.
  */
 public object GlueSchemaRegistryConfigDef {
+    private const val PACKAGE_WILDCARD = ".*"
+
     public const val GROUP_AWS: String = "AWS"
     public const val GROUP_REGISTRY: String = "Schema registry"
     public const val GROUP_SERIALIZATION: String = "Serialization"
@@ -174,17 +178,6 @@ public object GlueSchemaRegistryConfigDef {
             ConfigDef.Width.LONG,
             "Secondary deserializer",
         ).define(
-            AWSSchemaRegistryConstants.USER_AGENT_APP,
-            ConfigDef.Type.STRING,
-            null,
-            ConfigDef.Importance.LOW,
-            "Application name reported in the User-Agent of the Glue calls. The converters report " +
-                "kafkaconnect unless this is set.",
-            GROUP_SERIALIZATION,
-            3,
-            ConfigDef.Width.MEDIUM,
-            "User agent application",
-        ).define(
             AWSSchemaRegistryConstants.CACHE_SIZE,
             ConfigDef.Type.INT,
             AWSSchemaRegistryConstants.DEFAULT_CACHE_SIZE,
@@ -207,16 +200,21 @@ public object GlueSchemaRegistryConfigDef {
         )
 
     /**
-     * Adds the data format key, which the converters built on the format-agnostic serializer read.
+     * Adds the data format key, fixed to [dataFormat], which is the one format a converter reads
+     * and writes.
      */
     @JvmStatic
-    public fun defineDataFormat(configDef: ConfigDef): ConfigDef = configDef.define(
+    public fun defineDataFormat(
+        configDef: ConfigDef,
+        dataFormat: DataFormat,
+    ): ConfigDef = configDef.define(
         AWSSchemaRegistryConstants.DATA_FORMAT,
         ConfigDef.Type.STRING,
-        null,
-        optionalValidString(dataFormatValues(), caseSensitive = false),
+        dataFormat.toString(),
+        optionalValidString(listOf(dataFormat.toString()), caseSensitive = false),
         ConfigDef.Importance.HIGH,
-        "Data format of the records this converter reads and writes.",
+        "Data format of the records this converter reads and writes. A producer has to set it; a " +
+            "consumer reads the format from the record header and may leave it unset.",
         GROUP_SERIALIZATION,
         4,
         ConfigDef.Width.SHORT,
@@ -268,6 +266,7 @@ public object GlueSchemaRegistryConfigDef {
             AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES,
             ConfigDef.Type.LIST,
             null,
+            enumNameList(SerializationFeature.entries.map { it.name }),
             ConfigDef.Importance.LOW,
             "Names of com.fasterxml.jackson.databind.SerializationFeature entries to enable.",
             GROUP_JSON,
@@ -278,6 +277,7 @@ public object GlueSchemaRegistryConfigDef {
             AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES,
             ConfigDef.Type.LIST,
             null,
+            enumNameList(DeserializationFeature.entries.map { it.name }),
             ConfigDef.Importance.LOW,
             "Names of com.fasterxml.jackson.databind.DeserializationFeature entries to enable.",
             GROUP_JSON,
@@ -299,6 +299,7 @@ public object GlueSchemaRegistryConfigDef {
             AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST,
             ConfigDef.Type.LIST,
             null,
+            NoBareWildcard,
             ConfigDef.Importance.MEDIUM,
             "Classes the deserializer may instantiate when " +
                 AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED + " is true. An entry " +
@@ -310,23 +311,35 @@ public object GlueSchemaRegistryConfigDef {
         )
 
     /**
-     * Renders the values of [props] that belong to a [ConfigDef.Type.STRING] key of [configDef]
-     * the way the registry configuration reads them: through `toString()`, and through
-     * `Class.getName()` for a `Class`. Every other entry is returned unchanged.
+     * Renders the values of [props] the way the converters have to hand them on: a value of a
+     * [ConfigDef.Type.STRING] key through `toString()`, or `Class.getName()` for a `Class`, and a
+     * comma-separated value of a [ConfigDef.Type.LIST] key as the list it denotes. Every other
+     * entry is returned unchanged, as is [props] itself when nothing needs rendering.
      */
     @JvmStatic
     public fun coerce(
         configDef: ConfigDef,
         props: Map<String, *>,
-    ): Map<String, Any?> {
-        val stringKeys =
-            configDef
-                .configKeys()
-                .filterValues { it.type == ConfigDef.Type.STRING }
-                .keys
-        return props.mapValues { (key, value) ->
-            if (key !in stringKeys || value == null || value is String) value else asConfigString(value)
+    ): Map<String, *> {
+        val configKeys = configDef.configKeys()
+        val coerced = LinkedHashMap<String, Any?>(props.size)
+        var changed = false
+        props.forEach { (key, value) ->
+            val rendered = render(configKeys[key]?.type, value)
+            changed = changed || rendered !== value
+            coerced[key] = rendered
         }
+        return if (changed) coerced else props
+    }
+
+    private fun render(
+        type: ConfigDef.Type?,
+        value: Any?,
+    ): Any? = when {
+        value == null -> value
+        type == ConfigDef.Type.STRING && value !is String -> asConfigString(value)
+        type == ConfigDef.Type.LIST && value is String -> value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        else -> value
     }
 
     private fun asConfigString(value: Any): String = if (value is Class<*>) value.name else value.toString()
@@ -340,6 +353,49 @@ public object GlueSchemaRegistryConfigDef {
         .knownValues()
         .map { it.toString() }
         .sorted()
+
+    private fun enumNameList(validValues: List<String>): ConfigDef.Validator = EnumNameList(validValues)
+
+    private object NoBareWildcard : ConfigDef.Validator {
+        override fun ensureValid(
+            name: String,
+            value: Any?,
+        ) {
+            val entries = value as? List<*> ?: return
+            if (entries.any { it == "*" || it == PACKAGE_WILDCARD }) {
+                throw ConfigException(
+                    name,
+                    value,
+                    "A bare wildcard allows every class on the classpath. List classes explicitly, or " +
+                        "scope a package with a prefix such as \"com.example.pojos.*\".",
+                )
+            }
+        }
+
+        override fun toString(): String = "Class names, or package prefixes ending in $PACKAGE_WILDCARD"
+    }
+
+    private class EnumNameList(
+        private val validValues: List<String>,
+    ) : ConfigDef.Validator {
+        override fun ensureValid(
+            name: String,
+            value: Any?,
+        ) {
+            val entries = value as? List<*> ?: return
+            val unknown = entries.map { it.toString() }.filter { it !in validValues }
+            if (unknown.isNotEmpty()) {
+                throw ConfigException(
+                    name,
+                    value,
+                    "Unknown ${if (unknown.size == 1) "entry" else "entries"} ${unknown.joinToString(", ")}. " +
+                        "Entries must be among: ${validValues.joinToString(", ")}",
+                )
+            }
+        }
+
+        override fun toString(): String = "[${validValues.joinToString(", ")}]"
+    }
 
     private fun optionalValidString(
         validValues: List<String>,

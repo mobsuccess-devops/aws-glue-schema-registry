@@ -24,11 +24,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import software.amazon.awssdk.services.glue.model.DataFormat
 import java.util.stream.Stream
 
 class GlueSchemaRegistryConfigDefTest {
@@ -50,7 +52,6 @@ class GlueSchemaRegistryConfigDefTest {
                     AWSSchemaRegistryConstants.DESCRIPTION,
                     AWSSchemaRegistryConstants.COMPRESSION_TYPE,
                     AWSSchemaRegistryConstants.SECONDARY_DESERIALIZER,
-                    AWSSchemaRegistryConstants.USER_AGENT_APP,
                     AWSSchemaRegistryConstants.CACHE_SIZE,
                     AWSSchemaRegistryConstants.CACHE_TIME_TO_LIVE_MILLIS,
                 ),
@@ -171,9 +172,111 @@ class GlueSchemaRegistryConfigDefTest {
         assertFalse(keys.contains(AWSSchemaRegistryConstants.METADATA))
     }
 
+    @Test
+    fun testJacksonFeatures_rejectAnUnknownFeatureName() {
+        val configDef = fullConfigDef()
+
+        assertThrows(ConfigException::class.java) {
+            AbstractConfig(
+                configDef,
+                mapOf(AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES to "NOT_A_FEATURE"),
+            )
+        }
+        assertThrows(ConfigException::class.java) {
+            AbstractConfig(
+                configDef,
+                mapOf(AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES to listOf("NOT_A_FEATURE")),
+            )
+        }
+    }
+
+    @Test
+    fun testJacksonFeatures_acceptAKnownFeatureName() {
+        val parsed =
+            AbstractConfig(
+                fullConfigDef(),
+                mapOf(AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES to "INDENT_OUTPUT,WRAP_ROOT_VALUE"),
+            )
+
+        assertEquals(
+            listOf("INDENT_OUTPUT", "WRAP_ROOT_VALUE"),
+            parsed.getList(AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES),
+        )
+    }
+
+    @Test
+    fun testAllowlist_rejectsABareWildcard() {
+        val configDef = fullConfigDef()
+
+        assertThrows(ConfigException::class.java) {
+            AbstractConfig(configDef, mapOf(AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST to "*"))
+        }
+        assertThrows(ConfigException::class.java) {
+            AbstractConfig(configDef, mapOf(AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST to ".*"))
+        }
+    }
+
+    @Test
+    fun testAllowlist_acceptsAScopedPackage() {
+        val parsed =
+            AbstractConfig(
+                fullConfigDef(),
+                mapOf(AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST to "com.example.pojos.*"),
+            )
+
+        assertEquals(
+            listOf("com.example.pojos.*"),
+            parsed.getList(AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST),
+        )
+    }
+
+    @Test
+    fun testDefineDataFormat_acceptsOnlyTheConvertersOwnFormat() {
+        val protobufConfigDef =
+            GlueSchemaRegistryConfigDef.defineDataFormat(
+                GlueSchemaRegistryConfigDef.baseConfigDef(),
+                DataFormat.PROTOBUF,
+            )
+
+        assertEquals(
+            "PROTOBUF",
+            AbstractConfig(protobufConfigDef, emptyMap<String, Any>())
+                .getString(AWSSchemaRegistryConstants.DATA_FORMAT),
+        )
+        assertThrows(ConfigException::class.java) {
+            AbstractConfig(protobufConfigDef, mapOf(AWSSchemaRegistryConstants.DATA_FORMAT to "AVRO"))
+        }
+    }
+
+    @Test
+    fun testCoerce_splitsACommaSeparatedValueOfAListKey() {
+        val coerced =
+            GlueSchemaRegistryConfigDef.coerce(
+                fullConfigDef(),
+                mapOf(AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES to " INDENT_OUTPUT , ,WRAP_ROOT_VALUE"),
+            )
+
+        assertEquals(
+            listOf("INDENT_OUTPUT", "WRAP_ROOT_VALUE"),
+            coerced[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES],
+        )
+    }
+
+    @Test
+    fun testCoerce_returnsTheSameMapWhenNothingNeedsRendering() {
+        val props = mapOf(AWSSchemaRegistryConstants.AWS_REGION to "eu-west-1")
+
+        assertSame(props, GlueSchemaRegistryConfigDef.coerce(fullConfigDef(), props))
+    }
+
+    @Test
+    fun testConfigDef_leavesTheUserAgentUndeclared() {
+        assertFalse(fullConfigDef().configKeys().containsKey(AWSSchemaRegistryConstants.USER_AGENT_APP))
+    }
+
     private fun fullConfigDef(): ConfigDef {
         val configDef = GlueSchemaRegistryConfigDef.baseConfigDef()
-        GlueSchemaRegistryConfigDef.defineDataFormat(configDef)
+        GlueSchemaRegistryConfigDef.defineDataFormat(configDef, DataFormat.JSON)
         GlueSchemaRegistryConfigDef.defineAvro(configDef)
         GlueSchemaRegistryConfigDef.defineProtobuf(configDef)
         GlueSchemaRegistryConfigDef.defineJson(configDef)
@@ -187,8 +290,8 @@ class GlueSchemaRegistryConfigDefTest {
             arrayOf(AWSSchemaRegistryConstants.COMPRESSION_TYPE, "zlib"),
             arrayOf(AWSSchemaRegistryConstants.COMPATIBILITY_SETTING, "FULL"),
             arrayOf(AWSSchemaRegistryConstants.COMPATIBILITY_SETTING, "full"),
-            arrayOf(AWSSchemaRegistryConstants.DATA_FORMAT, "PROTOBUF"),
-            arrayOf(AWSSchemaRegistryConstants.DATA_FORMAT, "protobuf"),
+            arrayOf(AWSSchemaRegistryConstants.DATA_FORMAT, "JSON"),
+            arrayOf(AWSSchemaRegistryConstants.DATA_FORMAT, "json"),
             arrayOf(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, "SPECIFIC_RECORD"),
             arrayOf(AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE, "DYNAMIC_MESSAGE"),
         )
@@ -198,6 +301,7 @@ class GlueSchemaRegistryConfigDefTest {
             arrayOf(AWSSchemaRegistryConstants.COMPRESSION_TYPE, "GZIP"),
             arrayOf(AWSSchemaRegistryConstants.COMPATIBILITY_SETTING, "SOMETIMES"),
             arrayOf(AWSSchemaRegistryConstants.DATA_FORMAT, "YAML"),
+            arrayOf(AWSSchemaRegistryConstants.DATA_FORMAT, "PROTOBUF"),
             arrayOf(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, "specific_record"),
             arrayOf(AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE, "dynamic_message"),
         )

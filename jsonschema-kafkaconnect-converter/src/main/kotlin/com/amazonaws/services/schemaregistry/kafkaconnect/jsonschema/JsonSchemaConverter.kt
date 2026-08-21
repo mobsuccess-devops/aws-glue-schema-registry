@@ -75,18 +75,19 @@ class JsonSchemaConverter(
     ) {
         this.isKey = isKey
         JsonSchemaConverterConfig(configs)
+        val resolvedConfigs = JsonSchemaConverterConfig.coerce(configs)
 
-        serializer.configure(configs, this.isKey)
-        deserializer.configure(configs, this.isKey)
+        serializer.configure(resolvedConfigs, this.isKey)
+        deserializer.configure(resolvedConfigs, this.isKey)
 
-        if (!MapUtils.isEmpty(configs)) {
+        if (!MapUtils.isEmpty(resolvedConfigs)) {
             @Suppress("UNCHECKED_CAST")
             val serializationFeatures =
-                configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] as List<String>?
+                resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] as List<String>?
 
             @Suppress("UNCHECKED_CAST")
             val deserializationFeatures =
-                configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] as List<String>?
+                resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] as List<String>?
 
             if (!CollectionUtils.isEmpty(serializationFeatures)) {
                 serializationFeatures!!.forEach { objectMapper.enable(SerializationFeature.valueOf(it)) }
@@ -96,7 +97,7 @@ class JsonSchemaConverter(
             }
         }
 
-        val jsonSchemaDataConfigs = JsonSchemaDataConfig(configs)
+        val jsonSchemaDataConfigs = JsonSchemaDataConfig(resolvedConfigs)
 
         connectSchemaToJsonSchemaConverter = ConnectSchemaToJsonSchemaConverter(jsonSchemaDataConfigs)
         connectValueToJsonNodeConverter = ConnectValueToJsonNodeConverter(jsonSchemaDataConfigs)

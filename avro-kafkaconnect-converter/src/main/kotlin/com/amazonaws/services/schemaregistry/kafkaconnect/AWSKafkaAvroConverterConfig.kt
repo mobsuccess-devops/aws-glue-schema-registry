@@ -65,5 +65,7 @@ class AWSKafkaAvroConverterConfig(
 
         @JvmStatic
         fun configDef(): ConfigDef = ConfigDef(CONFIG_DEF)
+
+        internal fun coerce(props: Map<String, *>): Map<String, *> = GlueSchemaRegistryConfigDef.coerce(CONFIG_DEF, props)
     }
 }
