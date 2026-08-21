@@ -21,9 +21,14 @@ readable with `git diff eed1506 -- <path>`.
 that upstream itself has never released — most visibly the JSON `className` allowlist
 ([awslabs #533](https://github.com/awslabs/aws-glue-schema-registry/pull/533)) and the
 cross-account `assumeRole` support in the Avro converter
-([awslabs #376](https://github.com/awslabs/aws-glue-schema-registry/pull/376)). That is why a
-consumer coming from `software.amazon.glue:1.1.27` meets the `className` change as a breaking
-change in this fork's 2.0.0: it is inherited, not invented here. See
+([awslabs #376](https://github.com/awslabs/aws-glue-schema-registry/pull/376)).
+
+That has a consequence worth stating explicitly, because it is easy to get wrong: the
+`className` change is a **breaking change relative to `software.amazon.glue:1.1.27`, present
+in every release of this fork including the first one**. It is not something the fork
+introduced at 2.0.0 — at `v1.0.0` the code already defaults `jsonClassNameResolutionEnabled`
+to `false` with an empty allowlist, because `eed1506` already contained
+[awslabs #533](https://github.com/awslabs/aws-glue-schema-registry/pull/533). See
 [Deserializing JSON into a Java POJO](../README.md#deserializing-json-into-a-java-pojo-classname-resolution).
 
 Upstream has not moved since 2026-08-13.

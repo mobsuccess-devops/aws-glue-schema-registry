@@ -236,11 +236,12 @@ Three things to check on the way:
      `IllegalArgumentException` upstream's `lombok.config` produced. A null argument is still
      rejected, at the same point; only the exception type differs. See
      [docs/portage.md](docs/portage.md).
-   - Since **2.0.0**, the JSON deserializer no longer resolves a schema's `className` into a
-     POJO by default and returns `JsonDataWithSchema` instead. Restoring the old behaviour
-     takes both `jsonClassNameResolutionEnabled=true` and an explicit
-     `jsonClassNameAllowlist`. It is inherited from upstream rather than introduced here —
-     see [Deserializing JSON into a Java POJO](#deserializing-json-into-a-java-pojo-classname-resolution)
+   - The JSON deserializer does not resolve a schema's `className` into a POJO by default;
+     it returns `JsonDataWithSchema`. Restoring the old behaviour takes both
+     `jsonClassNameResolutionEnabled=true` and an explicit `jsonClassNameAllowlist`. This is
+     **inherited from upstream**, not introduced here, and it has been in effect since this
+     fork's first release — see
+     [Deserializing JSON into a Java POJO](#deserializing-json-into-a-java-pojo-classname-resolution)
      and [docs/upstream-history.md](docs/upstream-history.md).
 
 ## Building from source
@@ -479,7 +480,7 @@ We use [mbknor-jackson-jsonschema](https://github.com/mbknor/mbknor-jackson-json
 the POJO passed. This library can also inject additional information in the JSON Schema.
 
 **GSR Library uses the "className" fully qualified class name to deserialize back to an Object of the POJO.
-Introduced in 2.0.0; disabled by default — see
+Disabled by default — see
 [Deserializing JSON into a Java POJO (className resolution)](#deserializing-json-into-a-java-pojo-classname-resolution).
 Until you enable it, the deserializer returns a `JsonDataWithSchema` even when the schema carries a `className`.**
 
@@ -570,9 +571,11 @@ Notes:
 - Prefer naming classes explicitly. A package entry also allows any class added to that package
   later, which is a decision you make once here rather than reviewing when the class appears.
 
-**This is a breaking behavior change in 2.0.0.** Consumers that previously relied on automatic POJO
-deserialization must set both properties to keep working; otherwise they will receive
-`JsonDataWithSchema` and fail on the cast.
+**This is a breaking change relative to the AWS artifact**, and it applies to every release of
+this fork — it arrived with the very first one, in code inherited from upstream. Consumers
+coming from `software.amazon.glue` that relied on automatic POJO deserialization must set both
+properties to keep working; otherwise they will receive `JsonDataWithSchema` and fail on the
+cast.
 
 ### Using AWS Glue Schema Registry with Kinesis Data Streams
 
