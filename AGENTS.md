@@ -187,10 +187,22 @@ that surface small; none of them survive a careless rewrite, so check them befor
   the human-readable part and Dependabot rewrites both together — do not replace the SHA
   with the tag.
 - **The Gradle wrapper is checksummed twice**: `distributionSha256Sum` in
-  `gradle-wrapper.properties` pins the distribution zip, and `gradle/actions/wrapper-validation`
-  checks the committed `gradle-wrapper.jar` against Gradle's published hashes. Both have to
-  be refreshed together when the wrapper is upgraded, with the values from
-  `services.gradle.org/distributions/gradle-<version>-bin.zip.sha256`.
+  `gradle-wrapper.properties` pins the distribution zip, and `validate-wrappers: true`
+  checks the committed `gradle-wrapper.jar` against Gradle's published hashes before any
+  Gradle code runs. Both have to be refreshed together when the wrapper is upgraded, with
+  the values from `services.gradle.org/distributions/gradle-<version>-bin.zip.sha256`. Every
+  job that runs Gradle sets that flag — on `gradle/actions/setup-gradle` in `ci.yml` and
+  `codeql.yml`, on `gradle/actions/dependency-submission` in `dependency-submission.yml`,
+  which takes the same option. A new job that runs `./gradlew` has to set it too.
+- **The Gradle cache is written from a push to `master` only.** `setup-gradle` restores it
+  everywhere but takes `cache-read-only` on anything else, so neither a pull request —
+  including one from a fork — nor a push to `prod` can poison the cache a later `master`
+  build restores. `test-jdk` and the two `publish-*` jobs are read-only unconditionally:
+  they consume what `Gradle Build` produced.
+- **`test-jdk` lists its JDKs newest-first for a reason.** `setup-java` makes the _last_
+  entry `JAVA_HOME`, so the order `25, 17, 21` is what puts Gradle itself on 21 while
+  keeping 17 as the compilation toolchain and leaving 25 available as a target to run the
+  tests on. Reordering that list silently changes which JVM Gradle runs on.
 - **No job that runs repository code holds a write token.** `Gradle Build` runs third-party
   plugin code and is limited to `contents: read` with `persist-credentials: false`, so a
   hostile dependency finds neither a token in `.git/config` nor one it could comment or push
@@ -216,9 +228,39 @@ that surface small; none of them survive a careless rewrite, so check them befor
   handful of pull requests; a dependency lands in the **first** group it matches, which is
   why the `minor-and-patch` catch-all comes last and why majors, excluded from it, keep an
   individual pull request.
+- **The dependency graph is generated and submitted by two different jobs.** Dependabot
+  alerts otherwise see only the direct versions of the catalog, never the transitives that
+  actually carry most CVEs. Submitting the graph needs `contents: write`, and resolving it
+  needs to run the build — so `dependency-submission.yml` splits the two, exactly as
+  `ci.yml` splits `build` and `report`: `generate` resolves the graph with `contents: read`
+  and uploads it as an artifact, `submit` posts that artifact and runs no repository code.
+- **CodeQL is wired but dormant.** `codeql.yml` analyses `java-kotlin` with a manual build
+  mode, and is gated on the `ENABLE_CODEQL` repository variable being `true`. Code scanning
+  needs GitHub Code Security, which this private repository does not have: the gate keeps
+  the workflow ready and out of the way instead of red on every run. Flip the variable once
+  the feature is enabled. `actions/dependency-review-action` is deliberately absent for the
+  same reason — it needs the same feature.
+- **Releases are attested and checksummed.** `publish-release` builds a `SHA256SUMS.txt`
+  over every jar it published and attaches it to the GitHub release, then
+  `actions/attest-build-provenance` signs a provenance statement for those same jars. A
+  consumer can check a jar pulled from GitHub Packages against the release checksums, or
+  verify its build provenance with `gh attestation verify <jar> --repo <this repo>`. The
+  job therefore also holds `id-token: write` and `attestations: write`.
+- **Redundant runs are cancelled on pull requests only.** `build`, `test-jdk` and `ktlint`
+  carry a `concurrency` group keyed on the pull request number — `test-jdk` keys on its
+  matrix leg too, or the two legs would cancel each other — with `cancel-in-progress` scoped
+  to `pull_request`. A push to `master` or `prod` is never cancelled: `publish-snapshot` and
+  `publish-release` hang off `build`, and cancelling it would cancel the publication with
+  it. `merge_group` is excluded for the same reason.
 - **`RepositoriesMode.FAIL_ON_PROJECT_REPOS`** in `settings.gradle.kts` turns a module
   declaring its own repository into an error rather than a silent addition to the
   resolution order.
+- **Dependabot is told to leave Flink alone.** The catalog pins `flink` at 1.12.2 because
+  `flink-streaming-java_2.11` exists under no later coordinate: the Scala suffix was dropped
+  upstream. Since both Flink artifacts share the same version reference, any bump Dependabot
+  proposed would either fail to resolve or dead-end at 1.14.6. The `ignore` entry on
+  `org.apache.flink:*` keeps that pull request from being opened; moving off 1.12.2 is a
+  deliberate migration, not a version bump.
 - **Dependency locking is deliberately absent.** The catalog fixes every direct version with
   no range and Maven Central is immutable, so resolution is already deterministic and a
   transitive only moves inside a reviewable commit. Lockfiles would add a manual

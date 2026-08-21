@@ -1,0 +1,45 @@
+name: Dependency Submission
+
+on:
+  push:
+    branches:
+      - master
+
+permissions: {}
+
+jobs:
+  generate:
+    name: Generate dependency graph
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+      - name: Resolve and upload the dependency graph
+        uses: gradle/actions/dependency-submission@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          validate-wrappers: true
+          cache-read-only: true
+          dependency-graph: generate-and-upload
+
+  submit:
+    name: Submit dependency graph
+    needs: [generate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Submit the dependency graph
+        uses: gradle/actions/dependency-submission@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          dependency-graph: download-and-submit
