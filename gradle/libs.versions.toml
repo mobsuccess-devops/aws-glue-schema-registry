@@ -31,7 +31,7 @@ mockito = "5.23.0"
 mockitoKotlin = "6.3.0"
 hamcrest = "3.0"
 awaitility = "4.3.0"
-kinesisClient = "2.2.9"
+kinesisClient = "3.5.1"
 # Upstream pins KPL here on purpose: "LATEST KPL will cause integration test failure in
 # Linux environment, update once we find a way to address the issue".
 kinesisProducer = "0.15.8"
