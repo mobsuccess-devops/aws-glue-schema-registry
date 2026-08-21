@@ -50,8 +50,20 @@ JVM 17 or later; Gradle resolves its own toolchain.
 ./gradlew assemble        # jars only
 ```
 
-The `integration-tests` module needs real AWS resources. Its `*IntegrationTest` classes are
-excluded from the unit run and from CI — do not re-enable them there.
+The `*IntegrationTest` classes need a Kafka broker and a Glue endpoint. They are excluded
+from `test` and from `check` — do not re-enable them there — and are reached through the
+separate `integrationTest` task instead:
+
+```bash
+./gradlew :schema-registry-kafkaconnect-converter:integrationTest       # needs nothing
+./gradlew :schema-registry-integration-tests:integrationTestWithoutGlue # a broker and LocalStack
+./gradlew :schema-registry-integration-tests:integrationTest            # the above, plus a Glue endpoint
+```
+
+`GLUE_ENDPOINT` and `KAFKA_BOOTSTRAP` point them at your own endpoints; unset, they fall back
+to the values the upstream sources hard-coded. [integration.yml](.github/workflows/integration.yml)
+runs the whole set nightly and on demand — never on a pull request — against a `motoserver/moto`
+service container, so no AWS account is involved.
 
 Install the hooks once, so formatting is fixed before it reaches review:
 
