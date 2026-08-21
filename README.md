@@ -1,7 +1,8 @@
 # AWS Glue Schema Registry Library
 
 [![JVM Library](https://github.com/mobsuccess-devops/aws-glue-schema-registry/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mobsuccess-devops/aws-glue-schema-registry/actions/workflows/ci.yml)
-[![Apache 2 License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](http://aws.amazon.com/apache-2-0/)
+[![Latest release](https://img.shields.io/github/v/release/mobsuccess-devops/aws-glue-schema-registry?sort=semver&label=release&color=blue)](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest)
+[![Apache 2 License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE.txt)
 ![JVM 17](https://img.shields.io/badge/JVM-17-blue.svg)
 
 Mobsuccess fork of [`awslabs/aws-glue-schema-registry`](https://github.com/awslabs/aws-glue-schema-registry).
@@ -57,17 +58,46 @@ Deviations are documented in [docs/portage.md](docs/portage.md); agent-facing no
 
 ## Installation
 
-Artifacts are published to GitHub Packages. Authentication is required even for reads — use a
-token carrying the `read:packages` scope.
+Artifacts are published to **GitHub Packages**, not to Maven Central.
+
+> **GitHub Packages requires a token even to read a public repository.** This is a GitHub
+> limitation, not a choice of this project: anonymous reads of the Maven registry are not
+> supported for any repository, public or private. Publishing to Maven Central, which would
+> remove that step, is planned but not done.
+
+### 1. Create a token
+
+GitHub Packages' Maven and Gradle registries only accept a **personal access token
+(classic)** — [fine-grained tokens are not
+supported](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry).
+
+Create one at [**Settings → Developer settings → Personal access tokens (classic)**](https://github.com/settings/tokens/new?scopes=read:packages&description=aws-glue-schema-registry),
+with the single scope `read:packages`, and export it:
+
+```bash
+export GITHUB_ACTOR=your-github-username
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+```
+
+The token is what authenticates; the username only has to be a real GitHub login. Keep the
+token out of the build files — pass it through the environment or `~/.gradle/gradle.properties`.
+
+### 2. Declare the repository
+
+**Gradle (Kotlin DSL)** — in `settings.gradle.kts` under `dependencyResolutionManagement`,
+or in `build.gradle.kts`:
 
 ```kotlin
 repositories {
     mavenCentral()
     maven {
+        name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry")
         credentials {
-            username = "_"
-            password = System.getenv("GITHUB_TOKEN")
+            username = providers.gradleProperty("gpr.user").orNull
+                ?: System.getenv("GITHUB_ACTOR")
+            password = providers.gradleProperty("gpr.token").orNull
+                ?: System.getenv("GITHUB_TOKEN")
         }
     }
 }
@@ -76,6 +106,76 @@ dependencies {
     implementation("com.mobsuccess:schema-registry-serde:<version>")
 }
 ```
+
+**Gradle (Groovy DSL)**:
+
+```groovy
+repositories {
+    mavenCentral()
+    maven {
+        name = 'GitHubPackages'
+        url = 'https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry'
+        credentials {
+            username = findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
+            password = findProperty('gpr.token') ?: System.getenv('GITHUB_TOKEN')
+        }
+    }
+}
+```
+
+**Maven** — the repository goes in `pom.xml`, the credentials in `~/.m2/settings.xml`, keyed
+by the same `<id>`:
+
+```xml
+<!-- pom.xml -->
+<repositories>
+  <repository>
+    <id>github-mobsuccess</id>
+    <url>https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry</url>
+  </repository>
+</repositories>
+
+<dependencies>
+  <dependency>
+    <groupId>com.mobsuccess</groupId>
+    <artifactId>schema-registry-serde</artifactId>
+    <version><!-- version --></version>
+  </dependency>
+</dependencies>
+```
+
+```xml
+<!-- ~/.m2/settings.xml -->
+<servers>
+  <server>
+    <id>github-mobsuccess</id>
+    <username>your-github-username</username>
+    <password>${env.GITHUB_TOKEN}</password>
+  </server>
+</servers>
+```
+
+**In CI**, store the classic token as a secret and export it as `GITHUB_TOKEN`. The
+automatic `GITHUB_TOKEN` of a workflow in _another_ repository does not carry read access to
+this one's packages unless that access has been granted explicitly, so a workflow secret is
+the reliable path.
+
+### 3. Pick a version
+
+The latest release is on the [releases page](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest);
+every published version is listed under the repository's
+[Packages](https://github.com/orgs/mobsuccess-devops/packages?repo_name=aws-glue-schema-registry).
+Each push to `master` also publishes a `<next-version>-SNAPSHOT`; releases are what you want
+in production.
+
+### Troubleshooting
+
+| Symptom                                                            | Cause                                                                                         |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `401 Unauthorized`                                                 | No token, an expired token, or a fine-grained token — the Maven registry needs a classic one. |
+| `403 Forbidden`                                                    | The token exists but lacks the `read:packages` scope.                                         |
+| `Could not find com.mobsuccess:...`                                | The repository block is missing, or the version does not exist.                               |
+| `Unsupported class file major version` / `UnsupportedClassVersion` | The runtime is older than JVM 17.                                                             |
 
 Available artifacts:
 
@@ -126,8 +226,10 @@ artifactIds, the package names and the class names are all unchanged.
 
 Three things to check on the way:
 
-1. **The repository.** GitHub Packages requires authentication even to read; add the
-   repository block from [Installation](#installation) and a token carrying `read:packages`.
+1. **The repository.** GitHub Packages requires authentication even to read a public
+   repository, and its Maven registry only accepts a _classic_ personal access token. Add
+   the repository block and the token from [Installation](#installation) — this is the one
+   step that has no equivalent when consuming from Maven Central.
 2. **The JVM.** Upstream targeted 8, this fork targets 17.
 3. **Two behaviour deltas**, both deliberate:
    - A `@NonNull` violation raises a `NullPointerException` rather than the
