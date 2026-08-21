@@ -13,7 +13,7 @@ serializers and deserializers that plug into it.
 
 ## How this fork differs
 
-The library behaviour is unchanged — the inherited test suite (2099 tests) passes in full,
+The library behaviour is unchanged — the inherited test suite (2103 tests) passes in full,
 and the first commit of this repository is the upstream source verbatim, so every deviation
 is visible with `git diff eed1506`.
 
@@ -246,7 +246,7 @@ Three things to check on the way:
 ## Building from source
 
 ```bash
-./gradlew clean build     # compile, run the 2099 tests, produce the jars
+./gradlew clean build     # compile, run the 2103 tests, produce the jars
 ./gradlew test            # tests only
 ./gradlew assemble        # jars only
 ```

@@ -35,7 +35,7 @@ deviations, not silent ones**. A change in observable behaviour needs an entry i
 notice it — a pull request title that says so, since that title is what ends up in the
 release notes.
 
-The inherited test suite is the oracle: **2099 tests, zero failures**. A change that lowers
+The inherited test suite is the oracle: **2103 tests, zero failures**. A change that lowers
 that total or breaks a test is not finished, however good the code looks. If a test has to
 change, the pull request has to explain why the old assertion was wrong.
 
@@ -44,7 +44,7 @@ change, the pull request has to explain why the old assertion was wrong.
 JVM 17 or later; Gradle resolves its own toolchain.
 
 ```bash
-./gradlew clean build     # compile, run the 2099 tests, produce the jars
+./gradlew clean build     # compile, run the 2103 tests, produce the jars
 ./gradlew test            # tests only
 ./gradlew assemble        # jars only
 ```
