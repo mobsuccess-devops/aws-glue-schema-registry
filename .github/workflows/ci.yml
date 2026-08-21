@@ -149,8 +149,6 @@ jobs:
       - name: Calculate version
         id: version
         run: |
-          # Assign before eval: a command substitution swallows the exit status, so a
-          # version.sh that refuses to run would otherwise publish an empty version.
           CALCULATED=$(./scripts/version.sh)
           eval "$CALCULATED"
           echo "version=${VERSION}-SNAPSHOT" >> $GITHUB_OUTPUT

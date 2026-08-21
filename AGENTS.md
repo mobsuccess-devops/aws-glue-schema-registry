@@ -155,8 +155,10 @@ These all cost a red test at least once. They are listed in the order they bite.
   The Kotlin conversion therefore ships under `feat!:` to come out as 2.0.0.
 
 - Versions: the git tag carries the `v` prefix (`v1.0.0`), the Maven version does not
-  (`1.0.0`). The prefix is not cosmetic — `version.sh` runs `git describe --match 'v*'`
-  then strips the `v`; without it, every release would restart from 1.0.0.
+  (`1.0.0`). The prefix is not cosmetic — `version.sh` runs
+  `git describe --match 'v[0-9]*.[0-9]*.[0-9]*'` then strips the `v`; without it, every
+  release would restart from 1.0.0. That glob, and the semver check that follows it, are
+  what keep a tag like `v.1.1.15` or `v1.2.08` out of the arithmetic.
 - `.mobsuccess.yml` disables the `linear`, `ms-testers`, `mobsuccess`, `closed` and `python`
   workflows: this repository does not require a Linear ticket per pull request.
 

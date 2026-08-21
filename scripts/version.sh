@@ -17,9 +17,6 @@
 
 set -euo pipefail
 
-# Only tags of the form v<major>.<minor>.<patch> name a release. The glob keeps the
-# malformed ones (`v.1.1.15`) out of the selection; the regex below is the assertion
-# that nothing else slipped through.
 LATEST_TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "")
 
 # If no tag exists, first release is 1.0.0
@@ -31,7 +28,7 @@ fi
 
 CURRENT="${LATEST_TAG#v}"
 
-if [[ ! "$CURRENT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ! "$CURRENT" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
   echo "version.sh: latest tag '${LATEST_TAG}' is not a v<major>.<minor>.<patch> release tag." >&2
   exit 1
 fi
@@ -40,8 +37,6 @@ IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
 RANGE="${LATEST_TAG}..HEAD"
 
-# Subjects drive the type; full messages (%B) are needed for the BREAKING CHANGE footer,
-# which lives in the body and is invisible to a subject-only scan.
 SUBJECTS=$(git log "$RANGE" --pretty=format:"%s" 2>/dev/null || echo "")
 BODIES=$(git log "$RANGE" --format=%B 2>/dev/null || echo "")
 
