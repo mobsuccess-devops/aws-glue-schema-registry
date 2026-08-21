@@ -33,7 +33,9 @@ mockitoKotlin = "6.3.0"
 hamcrest = "3.0"
 awaitility = "4.3.0"
 kinesisClient = "2.2.9"
-kinesisProducer = "1.0.7"
+# Upstream pins KPL here on purpose: "LATEST KPL will cause integration test failure in
+# Linux environment, update once we find a way to address the issue".
+kinesisProducer = "0.15.8"
 localstackUtils = "0.2.23"
 okio = "3.18.1"
 okioFakeFs = "3.18.1"
@@ -64,7 +66,7 @@ aws-jsonProtocol = { module = "software.amazon.awssdk:aws-json-protocol" }
 aws-urlConnectionClient = { module = "software.amazon.awssdk:url-connection-client" }
 aws-mskIamAuth = { module = "software.amazon.msk:aws-msk-iam-auth", version.ref = "mskIamAuth" }
 kinesis-client = { module = "software.amazon.kinesis:amazon-kinesis-client", version.ref = "kinesisClient" }
-kinesis-producer = { module = "software.amazon.kinesis:amazon-kinesis-producer", version.ref = "kinesisProducer" }
+kinesis-producer = { module = "com.amazonaws:amazon-kinesis-producer", version.ref = "kinesisProducer" }
 
 # --- Kafka ---
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka" }

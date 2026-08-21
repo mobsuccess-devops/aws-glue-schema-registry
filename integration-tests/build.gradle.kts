@@ -13,7 +13,10 @@ dependencies {
     testImplementation(libs.kinesis.client) {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
     }
-    testImplementation(libs.kinesis.producer)
+    testImplementation(libs.kinesis.producer) {
+        // The exclusion the original pom carried on this dependency.
+        exclude(group = "software.amazon.ion", module = "ion-java")
+    }
     testImplementation(libs.kafka.clients)
     testImplementation(libs.kafka.streams)
     testImplementation(libs.localstack.utils)
