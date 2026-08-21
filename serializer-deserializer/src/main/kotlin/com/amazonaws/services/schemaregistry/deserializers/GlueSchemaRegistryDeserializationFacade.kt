@@ -91,7 +91,7 @@ open class GlueSchemaRegistryDeserializationFacade : Closeable {
      * in GlueSchemaRegistryConfiguration.
      */
     open fun overrideUserAgentApp(name: String?) {
-        glueSchemaRegistryConfiguration.userAgentApp = name!!
+        glueSchemaRegistryConfiguration.userAgentApp = name
     }
 
     /**

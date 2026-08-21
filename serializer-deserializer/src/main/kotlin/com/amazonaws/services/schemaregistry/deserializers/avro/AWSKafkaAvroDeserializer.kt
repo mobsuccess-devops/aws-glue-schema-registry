@@ -66,7 +66,7 @@ open class AWSKafkaAvroDeserializer(
             userAgentApp = UserAgents.KAFKA
         }
         val glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(configs)
-        glueSchemaRegistryConfiguration.userAgentApp = userAgentApp!!
+        glueSchemaRegistryConfiguration.userAgentApp = userAgentApp
         glueSchemaRegistryDeserializationFacade =
             GlueSchemaRegistryDeserializationFacade(glueSchemaRegistryConfiguration, credentialProvider!!)
 

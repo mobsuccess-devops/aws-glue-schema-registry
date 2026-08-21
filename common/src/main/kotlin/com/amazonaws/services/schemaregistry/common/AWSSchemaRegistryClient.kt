@@ -535,7 +535,7 @@ open class AWSSchemaRegistryClient {
                     "secdeser",
                     if (configuration.secondaryDeserializer != null) ONE else ZERO,
                     "app",
-                    configuration.userAgentApp,
+                    configuration.userAgentApp!!,
                 )
 
             val userAgentSuffix = StringJoiner(":")

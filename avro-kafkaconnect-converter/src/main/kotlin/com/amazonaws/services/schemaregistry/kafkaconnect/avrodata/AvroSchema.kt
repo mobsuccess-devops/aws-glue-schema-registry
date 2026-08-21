@@ -84,16 +84,16 @@ class AvroSchema : ParsedSchema {
 
     override fun name(): String? = if (schemaObj != null && schemaObj.type == Schema.Type.RECORD) schemaObj.fullName else null
 
-    override fun canonicalString(): String {
+    override fun canonicalString(): String? {
         if (schemaObj == null) {
-            return null!!
+            return null
         }
         if (canonicalString == null) {
             val parser = getParser()
             val schemaRefs = resolvedReferences.values.map { parser.parse(it) }
             canonicalString = Schemas.toString(schemaObj, schemaRefs)
         }
-        return canonicalString!!
+        return canonicalString
     }
 
     fun version(): Int? = version
@@ -128,7 +128,7 @@ class AvroSchema : ParsedSchema {
 
     override fun hashCode(): Int = Objects.hash(schemaObj, version)
 
-    override fun toString(): String = canonicalString()
+    override fun toString(): String = canonicalString().toString()
 
     companion object {
         private val log = LoggerFactory.getLogger(AvroSchema::class.java)

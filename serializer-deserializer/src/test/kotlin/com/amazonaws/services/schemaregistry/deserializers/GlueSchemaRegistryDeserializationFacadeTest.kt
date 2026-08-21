@@ -42,6 +42,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
@@ -246,6 +247,30 @@ class GlueSchemaRegistryDeserializationFacadeTest {
             GlueSchemaRegistryConfiguration(this.configs),
             glueSchemaRegistryDeserializationFacade.glueSchemaRegistryConfiguration,
         )
+    }
+
+    /**
+     * Tests that overriding the user-agent app name accepts a null, which the Java source stored
+     * as-is.
+     */
+    @Test
+    fun testOverrideUserAgentApp_withNull_storesNull() {
+        val glueSchemaRegistryDeserializationFacade =
+            GlueSchemaRegistryDeserializationFacade
+                .builder()
+                .credentialProvider(this.mockDefaultCredProvider)
+                .schemaRegistryClient(this.mockDefaultRegistryClient)
+                .configs(this.configs)
+                .build()
+
+        glueSchemaRegistryDeserializationFacade.overrideUserAgentApp("kafkaconnect")
+        assertEquals(
+            "kafkaconnect",
+            glueSchemaRegistryDeserializationFacade.glueSchemaRegistryConfiguration.userAgentApp,
+        )
+
+        glueSchemaRegistryDeserializationFacade.overrideUserAgentApp(null)
+        assertNull(glueSchemaRegistryDeserializationFacade.glueSchemaRegistryConfiguration.userAgentApp)
     }
 
     /**

@@ -90,9 +90,9 @@ open class AWSKafkaAvroConverter(
         topic: String?,
         schema: Schema?,
         value: Any?,
-    ): ByteArray {
+    ): ByteArray? {
         try {
-            return serializer.serialize(topic, avroData!!.fromConnectData(schema, value))!!
+            return serializer.serialize(topic, avroData!!.fromConnectData(schema, value))
         } catch (e: SerializationException) {
             throw DataException("Converting Kafka Connect data to byte[] failed due to serialization error: ", e)
         } catch (e: AWSSchemaRegistryException) {

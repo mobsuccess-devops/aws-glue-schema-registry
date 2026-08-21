@@ -36,6 +36,7 @@ import org.apache.kafka.connect.errors.DataException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -163,6 +164,30 @@ class AWSKafkaAvroConverterTest {
     fun testConverter_toConnectData_NullValue() {
         converter = spy(AWSKafkaAvroConverter())
         assertEquals(SchemaAndValue.NULL, converter.toConnectData(TEST_TOPIC, null))
+    }
+
+    /**
+     * Test AWSKafkaAvroConverter on a tombstone: Kafka Connect marks a deletion with a null
+     * value, which has to serialize to a null byte array rather than raise.
+     */
+    @Test
+    fun testConverter_fromConnectData_NullValue_returnsNull() {
+        converter =
+            AWSKafkaAvroConverter(
+                AWSKafkaAvroSerializer(mockCredProvider, null),
+                awsKafkaAvroDeserializer,
+                avroData,
+            )
+
+        val optionalSchema =
+            SchemaBuilder
+                .struct()
+                .field("name", Schema.OPTIONAL_STRING_SCHEMA)
+                .optional()
+                .build()
+
+        assertNull(converter.fromConnectData(TEST_TOPIC, optionalSchema, null))
+        assertNull(converter.fromConnectData(TEST_TOPIC, null, null))
     }
 
     /**
