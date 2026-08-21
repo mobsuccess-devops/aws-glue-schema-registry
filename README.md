@@ -21,7 +21,7 @@ What changed is everything around the code:
 
 |              | Upstream               | This fork                          |
 | ------------ | ---------------------- | ---------------------------------- |
-| Build        | Maven                  | Gradle 9.6.1, Kotlin DSL           |
+| Build        | Maven                  | Gradle 9.7.0, Kotlin DSL           |
 | Languages    | Java + C#              | Java only, Kotlin port in progress |
 | Distribution | Maven Central          | GitHub Packages                    |
 | Group        | `software.amazon.glue` | `com.mobsuccess`                   |
