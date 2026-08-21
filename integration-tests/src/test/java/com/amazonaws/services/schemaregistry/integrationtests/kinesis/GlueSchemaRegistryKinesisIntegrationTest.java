@@ -513,6 +513,12 @@ public class GlueSchemaRegistryKinesisIntegrationTest {
                 .setKinesisPort(LOCALSTACK_KINESIS_PORT)
                 .setCloudwatchEndpoint(LOCALSTACK_HOSTNAME)
                 .setCloudwatchPort(LOCALSTACK_CLOUDWATCH_PORT)
+                // The native producer resolves the stream ARN through STS GetCallerIdentity.
+                // Without these it asks the real AWS endpoint, which rejects the emulator's
+                // dummy credentials and takes the child process down with it. The port is the
+                // LocalStack edge port, the same one Kinesis is served from.
+                .setStsEndpoint(LOCALSTACK_HOSTNAME)
+                .setStsPort(LOCALSTACK_KINESIS_PORT)
                 .setVerifyCertificate(false)
                 .setAggregationEnabled(false)
                 .setLogLevel(Level.ERROR.name()
