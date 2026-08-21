@@ -124,7 +124,7 @@ from `gradle/libs.versions.toml`, which is the single source of truth for the bu
 | JVM                 | 17 or later        | Bytecode target is 17, so a JVM 8 or 11 runtime cannot load these artifacts.                                                      |
 | Apache Kafka        | 3.9.x              | `kafka-clients`, `kafka-streams`, `connect-api`, `connect-json`. Shaded into the uber-jars: a consumer cannot override that copy. |
 | Apache Avro         | 1.11.4             |                                                                                                                                   |
-| Protocol Buffers    | 3.25.5             | `protobuf-java`; syntax 2 and 3.                                                                                                  |
+| Protocol Buffers    | 4.36.0             | `protobuf-java`; syntax 2 and 3. A consumer on protobuf 3 has to move: 4 is not binary compatible.                                |
 | AWS SDK for Java v2 | 2.53.1             | Imported as a BOM, so the whole SDK moves together.                                                                               |
 | MSK IAM auth        | 2.3.7              | `schema-registry-serde-msk-iam` only.                                                                                             |
 | Apache Flink        | 1.12.2, Scala 2.11 | **Not recommended** — see below.                                                                                                  |

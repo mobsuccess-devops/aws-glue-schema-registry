@@ -17,9 +17,6 @@ package com.amazonaws.services.schemaregistry.integrationtests.kinesis;
 
 import cloud.localstack.Constants;
 import cloud.localstack.ServiceName;
-import com.amazonaws.services.kinesis.producer.KinesisProducer;
-import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
-import com.amazonaws.services.kinesis.producer.UserRecordResult;
 import com.amazonaws.services.schemaregistry.common.GlueSchemaRegistryDataFormatDeserializer;
 import com.amazonaws.services.schemaregistry.common.GlueSchemaRegistryDataFormatSerializer;
 import com.amazonaws.services.schemaregistry.common.Schema;
@@ -76,6 +73,9 @@ import software.amazon.awssdk.services.kinesis.model.StreamStatus;
 import software.amazon.kinesis.common.ConfigsBuilder;
 import software.amazon.kinesis.coordinator.Scheduler;
 import software.amazon.kinesis.metrics.NullMetricsFactory;
+import software.amazon.kinesis.producer.KinesisProducer;
+import software.amazon.kinesis.producer.KinesisProducerConfiguration;
+import software.amazon.kinesis.producer.UserRecordResult;
 import software.amazon.kinesis.retrieval.RetrievalConfig;
 import software.amazon.kinesis.retrieval.polling.PollingConfig;
 
@@ -110,8 +110,8 @@ public class GlueSchemaRegistryKinesisIntegrationTest {
     private static final String LOCALSTACK_ENDPOINT = String.format("http://%s:%d",LOCALSTACK_HOSTNAME,LOCALSTACK_KINESIS_PORT);
     private static final int LOCALSTACK_CLOUDWATCH_PORT = Constants.DEFAULT_PORTS.get(ServiceName.CLOUDWATCH)
             .intValue();
-    private static final int KCL_SCHEDULER_START_UP_WAIT_TIME_SECONDS = 15;
-    private static final int KCL_SCHEDULER_SHUT_DOWN_WAIT_TIME_SECONDS = 5;
+    private static final int KCL_SCHEDULER_START_UP_TIMEOUT_SECONDS = 300;
+    private static final int KCL_CONSUMPTION_TIMEOUT_SECONDS = 120;
 
     private static final String SCHEMA_REGISTRY_ENDPOINT_OVERRIDE = GlueSchemaRegistryConnectionProperties.ENDPOINT;
     private static final String REGION = GlueSchemaRegistryConnectionProperties.REGION;
@@ -377,7 +377,9 @@ public class GlueSchemaRegistryKinesisIntegrationTest {
 
         produceRecordsWithKPL(streamName, producerRecords, dataFormat, compatibility, gsrConfig);
 
-        TimeUnit.SECONDS.sleep(KCL_SCHEDULER_SHUT_DOWN_WAIT_TIME_SECONDS);
+        Awaitility.await()
+                .atMost(KCL_CONSUMPTION_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertEquals(producerRecords.size(), recordProcessor.consumedRecords.size()));
         scheduler.shutdown();
 
         assertTrue(recordProcessor.creationSuccess);
@@ -408,7 +410,9 @@ public class GlueSchemaRegistryKinesisIntegrationTest {
 
         produceRecordsWithKPL(streamName, producerRecords, dataFormat, compatibility, gsrConfig);
 
-        TimeUnit.SECONDS.sleep(KCL_SCHEDULER_SHUT_DOWN_WAIT_TIME_SECONDS);
+        Awaitility.await()
+                .atMost(KCL_CONSUMPTION_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertEquals(producerRecords.size(), recordProcessor.consumedRecords.size()));
         scheduler.shutdown();
 
         assertTrue(recordProcessor.creationSuccess);
@@ -563,7 +567,7 @@ public class GlueSchemaRegistryKinesisIntegrationTest {
     }
 
     private Scheduler startConsumingWithKCL(GlueSchemaRegistryConfiguration gsrConfig,
-                                            RecordProcessor recordProcessor) throws InterruptedException {
+                                            RecordProcessor recordProcessor) {
         GlueSchemaRegistryRecordProcessorFactory glueSchemaRegistryRecordProcessorFactory =
                 new GlueSchemaRegistryRecordProcessorFactory(recordProcessor, glueSchemaRegistryDeserializerFactory,
                                                              gsrConfig);
@@ -582,7 +586,9 @@ public class GlueSchemaRegistryKinesisIntegrationTest {
 
         new Thread(scheduler).start();
 
-        TimeUnit.SECONDS.sleep(KCL_SCHEDULER_START_UP_WAIT_TIME_SECONDS);
+        Awaitility.await()
+                .atMost(KCL_SCHEDULER_START_UP_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .until(() -> recordProcessor.creationSuccess);
 
         return scheduler;
     }

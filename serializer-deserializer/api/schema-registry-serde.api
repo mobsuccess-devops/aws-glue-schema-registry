@@ -1,10 +1,10 @@
-public final class additionalTypes/Decimals {
+public final class additionalTypes/Decimals : com/google/protobuf/GeneratedFile {
 	public static fun getDescriptor ()Lcom/google/protobuf/Descriptors$FileDescriptor;
 	public static fun registerAllExtensions (Lcom/google/protobuf/ExtensionRegistry;)V
 	public static fun registerAllExtensions (Lcom/google/protobuf/ExtensionRegistryLite;)V
 }
 
-public final class additionalTypes/Decimals$Decimal : com/google/protobuf/GeneratedMessageV3, additionalTypes/Decimals$DecimalOrBuilder {
+public final class additionalTypes/Decimals$Decimal : com/google/protobuf/GeneratedMessage, additionalTypes/Decimals$DecimalOrBuilder {
 	public static final field FRACTION_FIELD_NUMBER I
 	public static final field PRECISION_FIELD_NUMBER I
 	public static final field SCALE_FIELD_NUMBER I
@@ -15,6 +15,7 @@ public final class additionalTypes/Decimals$Decimal : com/google/protobuf/Genera
 	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/Message;
 	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/MessageLite;
 	public static final fun getDescriptor ()Lcom/google/protobuf/Descriptors$Descriptor;
+	public fun getDescriptorForType ()Lcom/google/protobuf/Descriptors$Descriptor;
 	public fun getFraction ()I
 	public fun getParserForType ()Lcom/google/protobuf/Parser;
 	public fun getPrecision ()I
@@ -47,10 +48,7 @@ public final class additionalTypes/Decimals$Decimal : com/google/protobuf/Genera
 	public fun writeTo (Lcom/google/protobuf/CodedOutputStream;)V
 }
 
-public final class additionalTypes/Decimals$Decimal$Builder : com/google/protobuf/GeneratedMessageV3$Builder, additionalTypes/Decimals$DecimalOrBuilder {
-	public fun addRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun addRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun addRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/Message$Builder;
+public final class additionalTypes/Decimals$Decimal$Builder : com/google/protobuf/GeneratedMessage$Builder, additionalTypes/Decimals$DecimalOrBuilder {
 	public fun build ()LadditionalTypes/Decimals$Decimal;
 	public synthetic fun build ()Lcom/google/protobuf/Message;
 	public synthetic fun build ()Lcom/google/protobuf/MessageLite;
@@ -59,27 +57,13 @@ public final class additionalTypes/Decimals$Decimal$Builder : com/google/protobu
 	public synthetic fun buildPartial ()Lcom/google/protobuf/MessageLite;
 	public fun clear ()LadditionalTypes/Decimals$Decimal$Builder;
 	public synthetic fun clear ()Lcom/google/protobuf/AbstractMessage$Builder;
-	public synthetic fun clear ()Lcom/google/protobuf/GeneratedMessageV3$Builder;
+	public synthetic fun clear ()Lcom/google/protobuf/GeneratedMessage$Builder;
 	public synthetic fun clear ()Lcom/google/protobuf/Message$Builder;
 	public synthetic fun clear ()Lcom/google/protobuf/MessageLite$Builder;
-	public fun clearField (Lcom/google/protobuf/Descriptors$FieldDescriptor;)LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun clearField (Lcom/google/protobuf/Descriptors$FieldDescriptor;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun clearField (Lcom/google/protobuf/Descriptors$FieldDescriptor;)Lcom/google/protobuf/Message$Builder;
 	public fun clearFraction ()LadditionalTypes/Decimals$Decimal$Builder;
-	public fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)Lcom/google/protobuf/AbstractMessage$Builder;
-	public synthetic fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun clearOneof (Lcom/google/protobuf/Descriptors$OneofDescriptor;)Lcom/google/protobuf/Message$Builder;
 	public fun clearPrecision ()LadditionalTypes/Decimals$Decimal$Builder;
 	public fun clearScale ()LadditionalTypes/Decimals$Decimal$Builder;
 	public fun clearUnits ()LadditionalTypes/Decimals$Decimal$Builder;
-	public fun clone ()LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun clone ()Lcom/google/protobuf/AbstractMessage$Builder;
-	public synthetic fun clone ()Lcom/google/protobuf/AbstractMessageLite$Builder;
-	public synthetic fun clone ()Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun clone ()Lcom/google/protobuf/Message$Builder;
-	public synthetic fun clone ()Lcom/google/protobuf/MessageLite$Builder;
-	public synthetic fun clone ()Ljava/lang/Object;
 	public fun getDefaultInstanceForType ()LadditionalTypes/Decimals$Decimal;
 	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/Message;
 	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/MessageLite;
@@ -99,23 +83,10 @@ public final class additionalTypes/Decimals$Decimal$Builder : com/google/protobu
 	public fun mergeFrom (Lcom/google/protobuf/Message;)LadditionalTypes/Decimals$Decimal$Builder;
 	public synthetic fun mergeFrom (Lcom/google/protobuf/Message;)Lcom/google/protobuf/AbstractMessage$Builder;
 	public synthetic fun mergeFrom (Lcom/google/protobuf/Message;)Lcom/google/protobuf/Message$Builder;
-	public final fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/AbstractMessage$Builder;
-	public synthetic fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun mergeUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/Message$Builder;
-	public fun setField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun setField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun setField (Lcom/google/protobuf/Descriptors$FieldDescriptor;Ljava/lang/Object;)Lcom/google/protobuf/Message$Builder;
 	public fun setFraction (I)LadditionalTypes/Decimals$Decimal$Builder;
 	public fun setPrecision (I)LadditionalTypes/Decimals$Decimal$Builder;
-	public fun setRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;ILjava/lang/Object;)LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun setRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;ILjava/lang/Object;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun setRepeatedField (Lcom/google/protobuf/Descriptors$FieldDescriptor;ILjava/lang/Object;)Lcom/google/protobuf/Message$Builder;
 	public fun setScale (I)LadditionalTypes/Decimals$Decimal$Builder;
 	public fun setUnits (J)LadditionalTypes/Decimals$Decimal$Builder;
-	public final fun setUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)LadditionalTypes/Decimals$Decimal$Builder;
-	public synthetic fun setUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/GeneratedMessageV3$Builder;
-	public synthetic fun setUnknownFields (Lcom/google/protobuf/UnknownFieldSet;)Lcom/google/protobuf/Message$Builder;
 }
 
 public abstract interface class additionalTypes/Decimals$DecimalOrBuilder : com/google/protobuf/MessageOrBuilder {
@@ -748,7 +719,7 @@ public final class com/amazonaws/services/schemaregistry/utils/apicurio/Protobuf
 	public final fun getSchema ()Lcom/squareup/wire/schema/Schema;
 }
 
-public final class metadata/ProtobufSchemaMetadata {
+public final class metadata/ProtobufSchemaMetadata : com/google/protobuf/GeneratedFile {
 	public static final field METADATA_KEY_FIELD_NUMBER I
 	public static final field METADATA_VALUE_FIELD_NUMBER I
 	public static final field metadataKey Lcom/google/protobuf/GeneratedMessage$GeneratedExtension;
