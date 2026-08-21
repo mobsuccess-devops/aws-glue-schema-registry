@@ -33,8 +33,15 @@ The `main` sources were converted first, with the tests left in Java: the inheri
 was then an oracle that had not moved, validating the converted code. The tests followed,
 one module at a time, against a per-class inventory — the count of tests each class runs —
 so that a class silently dropping out of the run is caught rather than hidden in a total.
-Only `integration-tests`, and the Avro classes generated into the test trees, are still
-Java.
+
+`integration-tests` came last, and had no such oracle: its classes are excluded from
+`tasks.test`, so a green build proves only that they compile. The conversion was measured
+instead against a full run of the suite on an emulator stack — Kafka in KRaft mode,
+LocalStack for Kinesis, DynamoDB and CloudWatch, moto for Glue — recording the same
+per-test inventory before and after. Java and Kotlin both run **73 tests, none failing**,
+with an identical breakdown per test method. The recipe is in [build.md](build.md).
+
+The only Java left in the repository is the Avro classes generated into the test trees.
 
 ## Accepted deviations from the Maven build
 
@@ -379,3 +386,28 @@ Java.
   towards it. A sweep of every converted class for a field that is public in Kotlin and had no
   public accessor in Java — Lombok annotations accounted for — finds **no** accidental widening
   anywhere in the port.
+
+- **`GlueSchemaRegistryKinesisIntegrationTest` is no longer byte-identical to upstream.**
+  Until the Kotlin conversion, that file differed from `awslabs`' only by the STS redirect
+  that points the KPL child process at LocalStack, so `git diff eed1506 -- <path>` read as a
+  four-line patch. In Kotlin it is a rewrite, and upstream changes to it now have to be
+  merged by hand rather than applied. The redirect itself — `setStsEndpoint` /
+  `setStsPort` — survives, and must: without it the native producer resolves the stream ARN
+  through the real AWS STS, which rejects the emulator's dummy credentials and takes the
+  child process down with an opaque `DaemonException: The child process has been shutdown`,
+  failing all 15 KPL tests at once.
+
+- **Lombok is gone.** `integration-tests` was the last module using it: `@Slf4j` (3),
+  `@Getter` (3), `@Builder` (3), `@AllArgsConstructor` (2), `@EqualsAndHashCode` (1) and
+  `@SneakyThrows` (1). The loggers became `LoggerFactory.getLogger` in a companion object,
+  the getters Kotlin `val`s, and each `@Builder` a hand-written nested `Builder` with a
+  `@JvmStatic builder()`. `Car.equals` reproduces `@EqualsAndHashCode`'s deep array
+  comparison by hand — its `String[] owners` is compared by the JSON specific-record tests,
+  which an identity comparison would turn red. The dependency, the root `lombok.config` and
+  the `libs.versions.toml` entry are all deleted.
+
+- **The static constants of `GlueSchemaRegistryConnectionProperties` moved to a companion
+  object.** In Java it was an interface holding `REGION` and `ENDPOINT`, and `KafkaHelper`
+  read them off an instance — `consumerProperties.ENDPOINT` — which Java permits for an
+  inherited static field and Kotlin does not. The call sites now name the interface. The
+  values, and the `GLUE_ENDPOINT` override this fork added, are unchanged.
