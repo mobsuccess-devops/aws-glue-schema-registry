@@ -1,7 +1,4 @@
 policy:
-  # Workflows mobsuccessbot must not propose on this repository.
-  # The names are those of the actions declared in github-mobsuccess-policy
-  # (app/policies/gh-actions.js), not the workflow file names.
   skip-actions:
     - linear
     - ms-testers
@@ -10,16 +7,14 @@ policy:
     - python
   repo-settings:
     - branch: master
-      # Agent-driven repository: no human reviewer required, and admins (team Core)
-      # can force a merge. Same settings as panoramai.
       override-settings:
         requiredApprovingReviewCount: 0
         isAdminEnforced: false
-      # Automatic detection only knows the jobs of the policy's template workflows;
-      # those of ci.yml, written by hand, are invisible to it. Without this list, a
-      # red CI would still leave the pull request mergeable.
       additional-required-job-names:
         - Gradle Build
+        - Tests on JDK 21
+        - Tests on JDK 25
+        - Analyze java-kotlin
 linear:
   team_identifier: FTTECH
   team_label_identifier: Core
