@@ -249,3 +249,11 @@ Java.
   last point does not extend to a **non**-nullable multi-type union, whose branches are still
   required and which therefore still cannot carry a value — a pre-existing limitation of the
   union encoding, untouched here because changing it would move schemas that convert today.
+- **Nullable fields can be opted into when a JSON schema is derived from a POJO.**
+  `JsonSerializer` built its `JsonSchemaGenerator` with the mbknor default, which types an
+  optional field as its type alone. A POJO whose optional field is null therefore serialises
+  to `"field": null` and then fails its own generated schema — the object cannot be sent at
+  all. The new `jsonSchemaNullableEnabled` property switches the generator to
+  `JsonSchemaConfig.nullableJsonSchemaDraft4()`, which emits `oneOf [null, type]` for those
+  fields. It defaults to false because turning it on changes the schema text, and therefore
+  registers a new schema version. This is upstream PR #529 (upstream issue #73).

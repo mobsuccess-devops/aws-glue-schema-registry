@@ -49,6 +49,7 @@ class GlueSchemaRegistryConfiguration {
     // produced — that is the name Java callers use.
     var isSchemaAutoRegistrationEnabled: Boolean = false
     var isJsonClassNameResolutionEnabled: Boolean = false
+    var isJsonSchemaNullableEnabled: Boolean = false
 
     var jsonClassNameAllowlist: Set<String>? = emptySet()
     var tags: Map<String, String> = HashMap()
@@ -95,6 +96,7 @@ class GlueSchemaRegistryConfiguration {
         validateAndSetCompressionType(configs)
         validateAndSetSchemaAutoRegistrationSetting(configs)
         validateAndSetJsonClassNameResolutionSetting(configs)
+        validateAndSetJsonSchemaNullableSetting(configs)
         validateAndSetJacksonSerializationFeatures(configs)
         validateAndSetJacksonDeserializationFeatures(configs)
         validateAndSetTags(configs)
@@ -366,6 +368,13 @@ class GlueSchemaRegistryConfiguration {
         }
     }
 
+    private fun validateAndSetJsonSchemaNullableSetting(configs: Map<String, *>) {
+        if (isPresent(configs, AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED)) {
+            isJsonSchemaNullableEnabled =
+                configs[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED].toString().toBoolean()
+        }
+    }
+
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES)) {
             val value = configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES]
@@ -457,6 +466,7 @@ class GlueSchemaRegistryConfiguration {
             description == other.description &&
             isSchemaAutoRegistrationEnabled == other.isSchemaAutoRegistrationEnabled &&
             isJsonClassNameResolutionEnabled == other.isJsonClassNameResolutionEnabled &&
+            isJsonSchemaNullableEnabled == other.isJsonSchemaNullableEnabled &&
             jsonClassNameAllowlist == other.jsonClassNameAllowlist &&
             tags == other.tags &&
             metadata == other.metadata &&
@@ -470,7 +480,8 @@ class GlueSchemaRegistryConfiguration {
     override fun hashCode(): Int = listOf(
         compressionType, endPoint, region, timeToLiveMillis, cacheSize, avroRecordType,
         protobufMessageType, registryName, compatibilitySetting, description,
-        isSchemaAutoRegistrationEnabled, isJsonClassNameResolutionEnabled, jsonClassNameAllowlist,
+        isSchemaAutoRegistrationEnabled, isJsonClassNameResolutionEnabled, isJsonSchemaNullableEnabled,
+        jsonClassNameAllowlist,
         tags, metadata, secondaryDeserializer, proxyUrl, userAgentApp,
         jacksonSerializationFeatures, jacksonDeserializationFeatures,
     ).fold(1) { acc, value -> 31 * acc + (value?.hashCode() ?: 0) }
@@ -481,6 +492,7 @@ class GlueSchemaRegistryConfiguration {
         "registryName=$registryName, compatibilitySetting=$compatibilitySetting, " +
         "description=$description, schemaAutoRegistrationEnabled=$isSchemaAutoRegistrationEnabled, " +
         "jsonClassNameResolutionEnabled=$isJsonClassNameResolutionEnabled, " +
+        "jsonSchemaNullableEnabled=$isJsonSchemaNullableEnabled, " +
         "jsonClassNameAllowlist=$jsonClassNameAllowlist, tags=$tags, metadata=$metadata, " +
         "secondaryDeserializer=$secondaryDeserializer, proxyUrl=$proxyUrl, userAgentApp=$userAgentApp, " +
         "jacksonSerializationFeatures=$jacksonSerializationFeatures, " +

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.nio.charset.StandardCharsets
 
@@ -32,6 +33,16 @@ class JsonSerializerTest {
     private val jsonSerializer =
         JsonSerializer(
             GlueSchemaRegistryConfiguration(hashMapOf(AWSSchemaRegistryConstants.AWS_REGION to "us-west-2")),
+        )
+
+    private val nullableJsonSerializer =
+        JsonSerializer(
+            GlueSchemaRegistryConfiguration(
+                hashMapOf(
+                    AWSSchemaRegistryConstants.AWS_REGION to "us-west-2",
+                    AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED to true,
+                ),
+            ),
         )
 
     @Test
@@ -146,6 +157,40 @@ class JsonSerializerTest {
     @Test
     fun testSerialize_nullObject_throwsException() {
         assertThrows(NullPointerException::class.java) { jsonSerializer.serialize(nullOf()) }
+    }
+
+    @Test
+    fun testGetSchemaDefinition_withoutTheNullableSetting_typesAnOptionalFieldDirectly() {
+        val schema = ObjectMapper().readTree(jsonSerializer.getSchemaDefinition(SPECIFIC_TEST_RECORD))
+
+        val purchaseDate = schema.path("properties").path("purchaseDate")
+        assertEquals("integer", purchaseDate.path("type").asText())
+        assertTrue(purchaseDate.path("oneOf").isMissingNode)
+    }
+
+    @Test
+    fun testGetSchemaDefinition_withTheNullableSetting_offersNullAsWellAsTheType() {
+        val schema = ObjectMapper().readTree(nullableJsonSerializer.getSchemaDefinition(SPECIFIC_TEST_RECORD))
+
+        val branches = schema.path("properties").path("purchaseDate").path("oneOf")
+        assertEquals(2, branches.size())
+        assertTrue(branches.any { it.path("type").asText() == "null" })
+        assertTrue(branches.any { it.path("type").asText() == "integer" })
+    }
+
+    @Test
+    fun testGetSchemaDefinition_withTheNullableSetting_leavesARequiredFieldAlone() {
+        val schema = ObjectMapper().readTree(nullableJsonSerializer.getSchemaDefinition(SPECIFIC_TEST_RECORD))
+
+        assertEquals("string", schema.path("properties").path("make").path("type").asText())
+    }
+
+    @Test
+    fun testSerialize_withTheNullableSetting_acceptsANullOptionalField() {
+        val car = Car.builder().make("Tesla").model("Model 3").used(true).miles(1000).year(2020).build()
+
+        assertThrows(AWSSchemaRegistryException::class.java) { jsonSerializer.serialize(car) }
+        assertDoesNotThrow { nullableJsonSerializer.serialize(car) }
     }
 
     companion object {

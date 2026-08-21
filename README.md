@@ -587,6 +587,22 @@ class Car(
 )
 ```
 
+### Nullable fields in a generated JSON Schema
+
+When a schema is derived from a POJO, an optional field is typed as its type alone by default.
+A POJO whose optional field is null then serializes to `"field": null` and fails validation
+against its own generated schema, so the object cannot be sent at all.
+
+Set this property on the producer to generate `oneOf [null, type]` for those fields instead:
+
+```kotlin
+// Defaults to false.
+properties[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = true
+```
+
+It is off by default because it changes the schema text, and therefore registers a new schema
+version for a POJO that was already in the registry.
+
 ### Deserializing JSON into a Java POJO (className resolution)
 
 By default the JSON deserializer returns a `JsonDataWithSchema`, even when the schema carries a

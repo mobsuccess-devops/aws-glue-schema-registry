@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator
 import org.apache.commons.collections4.CollectionUtils
 import java.nio.charset.StandardCharsets
@@ -48,7 +49,12 @@ open class JsonSerializer(
                 configs.jacksonDeserializationFeatures!!.forEach { objectMapper.enable(it) }
             }
         }
-        jsonSchemaGenerator = JsonSchemaGenerator(objectMapper)
+        jsonSchemaGenerator =
+            if (configs != null && configs.isJsonSchemaNullableEnabled) {
+                JsonSchemaGenerator(objectMapper, JsonSchemaConfig.nullableJsonSchemaDraft4())
+            } else {
+                JsonSchemaGenerator(objectMapper)
+            }
     }
 
     /**

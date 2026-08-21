@@ -60,6 +60,7 @@ object AWSSchemaRegistryConstants {
     const val JACKSON_SERIALIZATION_FEATURES = "jacksonSerializationFeatures"
     const val JACKSON_DESERIALIZATION_FEATURES = "jacksonDeserializationFeatures"
     const val USER_AGENT_APP = "userAgentApp"
+    const val JSON_SCHEMA_NULLABLE_ENABLED = "jsonSchemaNullableEnabled"
     const val JSON_CLASS_NAME_RESOLUTION_ENABLED = "jsonClassNameResolutionEnabled"
     const val JSON_CLASS_NAME_ALLOWLIST = "jsonClassNameAllowlist"
     const val ASSUME_ROLE_ARN = "assumeRoleArn"
