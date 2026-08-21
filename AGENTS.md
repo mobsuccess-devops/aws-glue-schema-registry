@@ -213,8 +213,25 @@ These all cost a red test at least once. They are listed in the order they bite.
   `git describe --match 'v[0-9]*.[0-9]*.[0-9]*'` then strips the `v`; without it, every
   release would restart from 1.0.0. That glob, and the semver check that follows it, are
   what keep a tag like `v.1.1.15` or `v1.2.08` out of the arithmetic.
-- `.mobsuccess.yml` disables the `linear`, `ms-testers`, `mobsuccess`, `closed` and `python`
-  workflows: this repository does not require a Linear ticket per pull request.
+- **`.mobsuccess.yml` is what mobsuccessbot enforces**, and it holds no comments — the file
+  is rewritten by the bot, so the reasoning lives here instead.
+  - It disables the `linear`, `ms-testers`, `mobsuccess`, `closed` and `python` workflows:
+    this repository does not require a Linear ticket per pull request.
+  - `requiredApprovingReviewCount: 0` and `isAdminEnforced: false` on `master` are
+    deliberate — an agent-driven repository, with team Core able to force a merge. Same
+    settings as panoramai.
+  - `additional-required-job-names` exists because automatic detection only knows the jobs
+    of the policy's template workflows; those of `ci.yml`, written by hand, are invisible to
+    it, and without the list a red CI still leaves a pull request mergeable. Set these here,
+    never in the branch-protection UI — the next policy run overwrites the UI.
+  - The list names **resolved** job names, so the matrix appears as `Tests on JDK 21` and
+    `Tests on JDK 25`. Both are required because `Gradle Build` runs on 17 only: they carry
+    the guarantee that JSON Schema output does not depend on the JDK that produced it, and
+    without them a regression visible only on 21 or 25 merges green.
+  - `Analyze java-kotlin` is required **only because `ENABLE_CODEQL` is set** as a
+    repository variable. The job is gated on that variable, and a required check that skips
+    counts as green — so listing it while the variable is unset would look like a security
+    gate without being one. Unset the variable and the entry has to go with it.
 
 ## Supply chain
 
