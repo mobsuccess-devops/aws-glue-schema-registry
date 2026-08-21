@@ -257,3 +257,19 @@ Java.
   `JsonSchemaConfig.nullableJsonSchemaDraft4()`, which emits `oneOf [null, type]` for those
   fields. It defaults to false because turning it on changes the schema text, and therefore
   registers a new schema version. This is upstream PR #529 (upstream issue #73).
+- **JSON schema compatibility can be checked on the client.** Glue enforces the compatibility
+  mode of a schema for Avro and Protobuf but not for JSON, so a JSON schema version that breaks
+  its declared mode is accepted by `RegisterSchemaVersion` and the breakage surfaces in a
+  consumer instead of in the producer that caused it. The new
+  `jsonSchemaCompatibilityCheckEnabled` property makes `AWSSchemaRegistryClient` read the latest
+  version of the schema before registering a new one and compare the two through
+  `JsonSchemaCompatibilityChecker`. What is compared is the `required` contract, at the top level
+  and inside each named entry of `definitions` or `$defs`; nothing else a schema can say is
+  compared, so a clean result means "no broken `required` contract" rather than "compatible".
+  This is upstream PR #494, with two deliberate changes. It is **opt-in**: upstream enabled it
+  whenever the compatibility mode was neither absent nor `NONE`, which is every JSON producer,
+  since the default mode is `BACKWARD` — an incomplete check that can refuse a registration is
+  not something to switch on under everyone by default, and it costs one extra `GetSchemaVersion`
+  call per newly registered schema definition. And the modes are read from the enum rather than
+  from the prefix of its name, so `DISABLED` disables the check as `NONE` does; upstream's
+  string test let `DISABLED` through.

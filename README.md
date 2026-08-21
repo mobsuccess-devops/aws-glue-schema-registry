@@ -603,6 +603,30 @@ properties[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = true
 
 It is off by default because it changes the schema text, and therefore registers a new schema
 version for a POJO that was already in the registry.
+### Checking JSON Schema compatibility on the client
+
+Glue enforces the compatibility mode of a schema for Avro and Protobuf, but **not for JSON**: a
+JSON schema version that breaks its declared mode is accepted by `RegisterSchemaVersion`, and the
+breakage surfaces in a consumer instead of in the producer that caused it.
+
+Set this property on the producer to have the library check before it registers:
+
+```kotlin
+// Defaults to false.
+properties[AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED] = true
+```
+
+When it is on, registering a new JSON schema version first reads the latest version of that
+schema and compares the two against the configured `compatibility`. An incompatibility raises an
+`AWSSchemaRegistryException` naming the field, and nothing is registered. A schema with no
+previous version is registered without a check.
+
+What is compared is the **`required` contract**, at the top level and inside each named entry of
+`definitions` or `$defs`: under `BACKWARD` a field may not become required, under `FORWARD` a
+required field may not stop being required, and `FULL` applies both. Types, formats, enumerations
+and `additionalProperties` are _not_ compared — a clean result means "no broken `required`
+contract", not "compatible". It is off by default for that reason, and because it costs one extra
+`GetSchemaVersion` call per newly registered schema definition.
 
 ### Deserializing JSON into a Java POJO (className resolution)
 

@@ -170,6 +170,11 @@ public class com/amazonaws/services/schemaregistry/common/SchemaByDefinitionFetc
 	public fun getORRegisterSchemaVersionId (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Ljava/util/UUID;
 }
 
+public final class com/amazonaws/services/schemaregistry/common/compatibility/JsonSchemaCompatibilityChecker {
+	public fun <init> ()V
+	public final fun checkCompatibility (Ljava/lang/String;Ljava/lang/String;Lsoftware/amazon/awssdk/services/glue/model/Compatibility;)Ljava/util/List;
+}
+
 public final class com/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration {
 	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration$Companion;
 	public fun <init> (Ljava/lang/String;)V
@@ -198,6 +203,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun isClassNameAllowed (Ljava/lang/String;)Z
 	public final fun isJsonClassNameResolutionEnabled ()Z
 	public final fun isJsonSchemaNullableEnabled ()Z
+	public final fun isJsonSchemaCompatibilityCheckEnabled ()Z
 	public final fun isSchemaAutoRegistrationEnabled ()Z
 	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
 	public final fun setCacheSize (I)V
@@ -210,6 +216,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun setJsonClassNameAllowlist (Ljava/util/Set;)V
 	public final fun setJsonClassNameResolutionEnabled (Z)V
 	public final fun setJsonSchemaNullableEnabled (Z)V
+	public final fun setJsonSchemaCompatibilityCheckEnabled (Z)V
 	public final fun setMetadata (Ljava/util/Map;)V
 	public final fun setProtobufMessageType (Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;)V
 	public final fun setProxyUrl (Ljava/net/URI;)V
@@ -287,6 +294,7 @@ public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistry
 	public static final field JSON_CLASS_NAME_ALLOWLIST Ljava/lang/String;
 	public static final field JSON_CLASS_NAME_RESOLUTION_ENABLED Ljava/lang/String;
 	public static final field JSON_SCHEMA_NULLABLE_ENABLED Ljava/lang/String;
+	public static final field JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED Ljava/lang/String;
 	public static final field METADATA Ljava/lang/String;
 	public static final field PROTOBUF_MESSAGE_TYPE Ljava/lang/String;
 	public static final field PROXY_URL Ljava/lang/String;

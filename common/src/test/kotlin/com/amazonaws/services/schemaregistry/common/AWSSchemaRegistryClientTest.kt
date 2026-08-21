@@ -44,6 +44,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.services.glue.GlueClient
+import software.amazon.awssdk.services.glue.model.Compatibility
 import software.amazon.awssdk.services.glue.model.CreateSchemaRequest
 import software.amazon.awssdk.services.glue.model.CreateSchemaResponse
 import software.amazon.awssdk.services.glue.model.DataFormat
@@ -62,6 +63,7 @@ import software.amazon.awssdk.services.glue.model.RegisterSchemaVersionRequest
 import software.amazon.awssdk.services.glue.model.RegisterSchemaVersionResponse
 import software.amazon.awssdk.services.glue.model.RegistryId
 import software.amazon.awssdk.services.glue.model.SchemaId
+import software.amazon.awssdk.services.glue.model.SchemaVersionNumber
 import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
@@ -960,6 +962,125 @@ class AWSSchemaRegistryClientTest {
         .metadataValue(metadataKeyValuePair.metadataValue())
         .build()
 
+    @Test
+    fun testRegisterSchemaVersion_jsonCompatibilityCheckDisabled_doesNotReadTheLatestVersion() {
+        val client = jsonClientWith(compatibilityCheckEnabled = false)
+
+        stubRegisterSchemaVersion(INCOMPATIBLE_JSON_SCHEMA)
+
+        assertEquals(
+            SCHEMA_ID_FOR_TESTING.toString(),
+            client
+                .registerSchemaVersion(INCOMPATIBLE_JSON_SCHEMA, JSON_SCHEMA_NAME, DataFormat.JSON.name)
+                .schemaVersionId(),
+        )
+        verify(mockGlueClient!!, times(0)).getSchemaVersion(latestVersionRequest())
+    }
+
+    @Test
+    fun testRegisterSchemaVersion_jsonCompatibilityCheckEnabled_rejectsAnIncompatibleSchema() {
+        val client = jsonClientWith(compatibilityCheckEnabled = true)
+
+        whenever(mockGlueClient!!.getSchemaVersion(latestVersionRequest()))
+            .thenReturn(GetSchemaVersionResponse.builder().schemaDefinition(BASE_JSON_SCHEMA).build())
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) {
+                client.registerSchemaVersion(INCOMPATIBLE_JSON_SCHEMA, JSON_SCHEMA_NAME, DataFormat.JSON.name)
+            }
+
+        assertTrue(exception.message!!.contains("BACKWARD incompatible"))
+        assertTrue(exception.message!!.contains("'age'"))
+        verify(mockGlueClient!!, times(0)).registerSchemaVersion(any<RegisterSchemaVersionRequest>())
+    }
+
+    @Test
+    fun testRegisterSchemaVersion_jsonCompatibilityCheckEnabled_acceptsACompatibleSchema() {
+        val client = jsonClientWith(compatibilityCheckEnabled = true)
+
+        whenever(mockGlueClient!!.getSchemaVersion(latestVersionRequest()))
+            .thenReturn(GetSchemaVersionResponse.builder().schemaDefinition(BASE_JSON_SCHEMA).build())
+        stubRegisterSchemaVersion(COMPATIBLE_JSON_SCHEMA)
+
+        assertEquals(
+            SCHEMA_ID_FOR_TESTING.toString(),
+            client
+                .registerSchemaVersion(COMPATIBLE_JSON_SCHEMA, JSON_SCHEMA_NAME, DataFormat.JSON.name)
+                .schemaVersionId(),
+        )
+    }
+
+    @Test
+    fun testRegisterSchemaVersion_jsonCompatibilityCheckEnabled_registersTheFirstVersion() {
+        val client = jsonClientWith(compatibilityCheckEnabled = true)
+
+        whenever(mockGlueClient!!.getSchemaVersion(latestVersionRequest()))
+            .thenThrow(EntityNotFoundException.builder().message("Schema is not found.").build())
+        stubRegisterSchemaVersion(INCOMPATIBLE_JSON_SCHEMA)
+
+        assertEquals(
+            SCHEMA_ID_FOR_TESTING.toString(),
+            client
+                .registerSchemaVersion(INCOMPATIBLE_JSON_SCHEMA, JSON_SCHEMA_NAME, DataFormat.JSON.name)
+                .schemaVersionId(),
+        )
+    }
+
+    @Test
+    fun testRegisterSchemaVersion_jsonCompatibilityCheckEnabled_leavesOtherDataFormatsAlone() {
+        val client = jsonClientWith(compatibilityCheckEnabled = true)
+
+        stubRegisterSchemaVersion(INCOMPATIBLE_JSON_SCHEMA)
+
+        assertEquals(
+            SCHEMA_ID_FOR_TESTING.toString(),
+            client
+                .registerSchemaVersion(INCOMPATIBLE_JSON_SCHEMA, JSON_SCHEMA_NAME, DataFormat.AVRO.name)
+                .schemaVersionId(),
+        )
+        verify(mockGlueClient!!, times(0)).getSchemaVersion(latestVersionRequest())
+    }
+
+    private fun jsonClientWith(compatibilityCheckEnabled: Boolean): AWSSchemaRegistryClient {
+        val localConfigs = HashMap<String, String>()
+        localConfigs[AWSSchemaRegistryConstants.AWS_REGION] = "us-west-2"
+        localConfigs[AWSSchemaRegistryConstants.SCHEMA_NAME] = JSON_SCHEMA_NAME
+        localConfigs[AWSSchemaRegistryConstants.REGISTRY_NAME] = JSON_REGISTRY_NAME
+        localConfigs[AWSSchemaRegistryConstants.COMPATIBILITY_SETTING] = Compatibility.BACKWARD.toString()
+        localConfigs[AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED] =
+            compatibilityCheckEnabled.toString()
+
+        return configureAWSSchemaRegistryClientWithSerdeConfig(
+            AWSSchemaRegistryClient(mockGlueClient!!),
+            GlueSchemaRegistryConfiguration(localConfigs),
+        )
+    }
+
+    private fun latestVersionRequest(): GetSchemaVersionRequest = GetSchemaVersionRequest
+        .builder()
+        .schemaId(SchemaId.builder().schemaName(JSON_SCHEMA_NAME).registryName(JSON_REGISTRY_NAME).build())
+        .schemaVersionNumber(SchemaVersionNumber.builder().latestVersion(true).build())
+        .build()
+
+    private fun stubRegisterSchemaVersion(schemaDefinition: String) {
+        val request =
+            RegisterSchemaVersionRequest
+                .builder()
+                .schemaDefinition(schemaDefinition)
+                .schemaId(
+                    SchemaId.builder().schemaName(JSON_SCHEMA_NAME).registryName(JSON_REGISTRY_NAME).build(),
+                ).build()
+        whenever(mockGlueClient!!.registerSchemaVersion(request))
+            .thenReturn(
+                RegisterSchemaVersionResponse
+                    .builder()
+                    .schemaVersionId(SCHEMA_ID_FOR_TESTING.toString())
+                    .versionNumber(1L)
+                    .status(AWSSchemaRegistryConstants.SchemaVersionStatus.AVAILABLE.toString())
+                    .build(),
+            )
+    }
+
     private fun configureAWSSchemaRegistryClientWithSerdeConfig(
         awsSchemaRegistryClient: AWSSchemaRegistryClient,
         glueSchemaRegistryConfiguration: GlueSchemaRegistryConfiguration,
@@ -973,6 +1094,17 @@ class AWSSchemaRegistryClientTest {
     }
 
     companion object {
+        private const val JSON_SCHEMA_NAME = "Json-Topic"
+        private const val JSON_REGISTRY_NAME = "Json-Registry"
+        private const val BASE_JSON_SCHEMA =
+            """{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}"""
+        private const val COMPATIBLE_JSON_SCHEMA =
+            """{"type":"object","properties":{"name":{"type":"string"},"age":{"type":"integer"}},""" +
+                """"required":["name"]}"""
+        private const val INCOMPATIBLE_JSON_SCHEMA =
+            """{"type":"object","properties":{"name":{"type":"string"},"age":{"type":"integer"}},""" +
+                """"required":["name","age"]}"""
+
         private val SCHEMA_ID_FOR_TESTING = UUID.fromString("b7b4a7f0-9c96-4e4a-a687-fb5de9ef0c63")
         const val AVRO_USER_SCHEMA_FILE = "src/test/java/resources/avro/user.avsc"
     }

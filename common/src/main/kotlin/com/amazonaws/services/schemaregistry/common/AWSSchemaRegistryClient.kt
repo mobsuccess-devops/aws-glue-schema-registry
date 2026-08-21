@@ -15,6 +15,7 @@
 
 package com.amazonaws.services.schemaregistry.common
 
+import com.amazonaws.services.schemaregistry.common.compatibility.JsonSchemaCompatibilityChecker
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
@@ -37,6 +38,7 @@ import software.amazon.awssdk.services.glue.GlueClient
 import software.amazon.awssdk.services.glue.model.AlreadyExistsException
 import software.amazon.awssdk.services.glue.model.CreateSchemaRequest
 import software.amazon.awssdk.services.glue.model.DataFormat
+import software.amazon.awssdk.services.glue.model.EntityNotFoundException
 import software.amazon.awssdk.services.glue.model.GetSchemaByDefinitionRequest
 import software.amazon.awssdk.services.glue.model.GetSchemaByDefinitionResponse
 import software.amazon.awssdk.services.glue.model.GetSchemaVersionRequest
@@ -53,6 +55,7 @@ import software.amazon.awssdk.services.glue.model.RegisterSchemaVersionRequest
 import software.amazon.awssdk.services.glue.model.RegisterSchemaVersionResponse
 import software.amazon.awssdk.services.glue.model.RegistryId
 import software.amazon.awssdk.services.glue.model.SchemaId
+import software.amazon.awssdk.services.glue.model.SchemaVersionNumber
 import java.net.URI
 import java.net.URISyntaxException
 import java.util.StringJoiner
@@ -130,6 +133,8 @@ open class AWSSchemaRegistryClient {
 
     private val configuration: GlueSchemaRegistryConfiguration
         get() = glueSchemaRegistryConfiguration!!
+
+    private val jsonSchemaCompatibilityChecker = JsonSchemaCompatibilityChecker()
 
     /**
      * Get Schema Version ID by passing the schema definition.
@@ -280,6 +285,8 @@ open class AWSSchemaRegistryClient {
         schemaName: String,
         dataFormat: String,
     ): GetSchemaVersionResponse {
+        checkJsonSchemaCompatibility(schemaDefinition, schemaName, dataFormat)
+
         try {
             val registerSchemaVersionResponse =
                 client.registerSchemaVersion(getRegisterSchemaVersionRequest(schemaDefinition, schemaName))
@@ -341,6 +348,58 @@ open class AWSSchemaRegistryClient {
         .builder()
         .schemaDefinition(schemaDefinition)
         .schemaId(getSchemaIdRequestObject(schemaName, configuration.registryName))
+        .build()
+
+    private fun checkJsonSchemaCompatibility(
+        schemaDefinition: String,
+        schemaName: String,
+        dataFormat: String,
+    ) {
+        val configuration = glueSchemaRegistryConfiguration ?: return
+        if (!configuration.isJsonSchemaCompatibilityCheckEnabled ||
+            !DataFormat.JSON.toString().equals(dataFormat, ignoreCase = true)
+        ) {
+            return
+        }
+
+        val previousSchemaDefinition =
+            try {
+                client
+                    .getSchemaVersion(getLatestSchemaVersionRequest(schemaName, configuration.registryName))
+                    .schemaDefinition()
+            } catch (e: EntityNotFoundException) {
+                log.debug("No previous version of schema {} to check compatibility against", schemaName, e)
+                return
+            } catch (e: Exception) {
+                log.warn(
+                    "Could not read the latest version of schema {}; skipping the client-side compatibility check",
+                    schemaName,
+                    e,
+                )
+                return
+            }
+
+        val errors =
+            jsonSchemaCompatibilityChecker.checkCompatibility(
+                schemaDefinition,
+                previousSchemaDefinition,
+                configuration.compatibilitySetting,
+            )
+        if (errors.isNotEmpty()) {
+            throw AWSSchemaRegistryException(
+                "Schema compatibility check failed for schema $schemaName under " +
+                    "${configuration.compatibilitySetting} compatibility : ${errors.joinToString("; ")}",
+            )
+        }
+    }
+
+    private fun getLatestSchemaVersionRequest(
+        schemaName: String,
+        registryName: String?,
+    ): GetSchemaVersionRequest = GetSchemaVersionRequest
+        .builder()
+        .schemaId(getSchemaIdRequestObject(schemaName, registryName))
+        .schemaVersionNumber(SchemaVersionNumber.builder().latestVersion(true).build())
         .build()
 
     private fun getSchemaIdRequestObject(
