@@ -28,6 +28,7 @@ import org.apache.flink.formats.avro.utils.MutableByteArrayInputStream
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.instanceOf
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -123,6 +124,34 @@ class GlueSchemaRegistryInputStreamDeserializerTest {
         val resultSchema = deserializer.getSchemaAndDeserializedStream(mutableByteArrayInputStream)
 
         assertThat(resultSchema.toString(), equalTo(glueSchema.schemaDefinition))
+    }
+
+    /**
+     * Test that the Avro schema is parsed once per schema definition and reused afterwards.
+     */
+    @Test
+    fun testGetSchemaAndDeserializedStream_sameSchemaDefinition_reusesTheParsedSchema() {
+        val byteArrayOutputStream =
+            buildByteArrayOutputStream(
+                AWSSchemaRegistryConstants.HEADER_VERSION_BYTE,
+                AWSSchemaRegistryConstants.COMPRESSION_DEFAULT_BYTE,
+            )
+        val encoded = encodeData(userDefinedPojo, SpecificDatumWriter(userSchema))
+        val bytes = writeToExistingStream(byteArrayOutputStream, encoded)
+
+        val mutableByteArrayInputStream = MutableByteArrayInputStream()
+        mutableByteArrayInputStream.setBuffer(bytes)
+
+        whenever(mockDeserializer.getSchema(any())).thenReturn(glueSchema)
+        whenever(mockDeserializer.getActualData(any())).thenReturn(bytes)
+        val deserializer = GlueSchemaRegistryInputStreamDeserializer(mockDeserializer)
+
+        val first = deserializer.getSchemaAndDeserializedStream(mutableByteArrayInputStream)
+        mutableByteArrayInputStream.setBuffer(bytes)
+        val second = deserializer.getSchemaAndDeserializedStream(mutableByteArrayInputStream)
+
+        assertThat(first.toString(), equalTo(glueSchema.schemaDefinition))
+        assertSame(first, second)
     }
 
     /**

@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -51,6 +52,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
@@ -279,6 +281,33 @@ class AWSKafkaAvroConverterTest {
         // Verify that GSR schema extraction was used
         verify(awsKafkaAvroDeserializer.glueSchemaRegistryDeserializationFacade!!).canDeserialize(GENERIC_BYTES)
         verify(awsKafkaAvroDeserializer.glueSchemaRegistryDeserializationFacade!!)
+            .getSchemaDefinition(eq(GENERIC_BYTES))
+    }
+
+    /**
+     * Test that the Avro schema is parsed once per schema definition and reused afterwards,
+     * while the registry lookup still happens on every record.
+     */
+    @Test
+    fun testConverter_extractAvroSchema_reusesTheParsedSchema() {
+        val expected = createStructRecord()
+        val avroSchemaDefinition = avroData.fromConnectSchema(expected.schema()).toString()
+        val avroRecord = this.avroData.fromConnectData(expected.schema(), expected)
+
+        val awsKafkaAvroSerializer = createSerializer(avroSchemaDefinition, SCHEMA_VERSION_ID_FOR_TESTING)
+        val awsKafkaAvroDeserializer = createDeserializer(avroRecord, GENERIC_BYTES, avroSchemaDefinition)
+
+        whenever(awsKafkaAvroDeserializer.glueSchemaRegistryDeserializationFacade!!.canDeserialize(GENERIC_BYTES))
+            .thenReturn(true)
+
+        converter = AWSKafkaAvroConverter(awsKafkaAvroSerializer, awsKafkaAvroDeserializer, this.avroData)
+
+        val first = converter.extractAvroSchema(GENERIC_BYTES, avroRecord)
+        val second = converter.extractAvroSchema(GENERIC_BYTES, avroRecord)
+
+        assertEquals(avroSchemaDefinition, first.toString())
+        assertSame(first, second)
+        verify(awsKafkaAvroDeserializer.glueSchemaRegistryDeserializationFacade!!, times(2))
             .getSchemaDefinition(eq(GENERIC_BYTES))
     }
 

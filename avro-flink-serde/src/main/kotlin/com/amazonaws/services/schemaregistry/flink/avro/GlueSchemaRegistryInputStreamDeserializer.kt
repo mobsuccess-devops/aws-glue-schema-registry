@@ -19,6 +19,9 @@ import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryCo
 import com.amazonaws.services.schemaregistry.common.configs.UserAgents
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializationFacade
 import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
+import com.google.common.annotations.VisibleForTesting
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
 import org.apache.avro.Schema
 import org.apache.avro.SchemaParseException
 import org.apache.flink.formats.avro.utils.MutableByteArrayInputStream
@@ -34,6 +37,13 @@ import java.io.InputStream
 open class GlueSchemaRegistryInputStreamDeserializer(
     private val glueSchemaRegistryDeserializationFacade: GlueSchemaRegistryDeserializationFacade,
 ) {
+    @VisibleForTesting
+    internal val parsedSchemaCache: Cache<String, Schema> =
+        CacheBuilder
+            .newBuilder()
+            .maximumSize(MAX_PARSED_SCHEMA_CACHE_SIZE)
+            .build()
+
     /**
      * Constructor accepting the configuration map for the AWS deserializer.
      */
@@ -57,10 +67,16 @@ open class GlueSchemaRegistryInputStreamDeserializer(
         val schemaDefinition = glueSchemaRegistryDeserializationFacade.getSchema(inputBytes).schemaDefinition
         mutableByteArrayInputStream.setBuffer(glueSchemaRegistryDeserializationFacade.getActualData(inputBytes))
 
+        parsedSchemaCache.getIfPresent(schemaDefinition)?.let { return it }
+
         return try {
-            Schema.Parser().parse(schemaDefinition)
+            Schema.Parser().parse(schemaDefinition).also { parsedSchemaCache.put(schemaDefinition, it) }
         } catch (e: SchemaParseException) {
             throw AWSSchemaRegistryException("Error occurred while parsing schema, see inner exception for details.", e)
         }
+    }
+
+    private companion object {
+        private const val MAX_PARSED_SCHEMA_CACHE_SIZE = 100L
     }
 }

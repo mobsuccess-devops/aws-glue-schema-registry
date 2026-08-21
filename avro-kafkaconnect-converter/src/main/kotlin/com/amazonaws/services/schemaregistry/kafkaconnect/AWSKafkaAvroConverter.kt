@@ -23,6 +23,8 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.avrodata.AvroDataConfi
 import com.amazonaws.services.schemaregistry.serializers.avro.AWSKafkaAvroSerializer
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.google.common.annotations.VisibleForTesting
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
 import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaAndValue
@@ -44,6 +46,13 @@ open class AWSKafkaAvroConverter(
     var avroData: AvroData?,
 ) : Converter {
     var isKey: Boolean = false
+
+    @VisibleForTesting
+    internal val parsedSchemaCache: Cache<String, org.apache.avro.Schema> =
+        CacheBuilder
+            .newBuilder()
+            .maximumSize(MAX_PARSED_SCHEMA_CACHE_SIZE)
+            .build()
 
     /**
      * Constructor used by Kafka Connect user.
@@ -138,9 +147,13 @@ open class AWSKafkaAvroConverter(
             try {
                 val schemaDefinition =
                     deserializer.glueSchemaRegistryDeserializationFacade!!.getSchemaDefinition(value)
-                return org.apache.avro.Schema
-                    .Parser()
-                    .parse(schemaDefinition)
+                parsedSchemaCache.getIfPresent(schemaDefinition)?.let { return it }
+                val parsed =
+                    org.apache.avro.Schema
+                        .Parser()
+                        .parse(schemaDefinition)
+                parsedSchemaCache.put(schemaDefinition, parsed)
+                return parsed
             } catch (e: Exception) {
                 throw DataException("Failed to extract schema from GSR metadata", e)
             }
@@ -180,5 +193,9 @@ open class AWSKafkaAvroConverter(
                 assumeRoleRequest.roleArn(roleArn).roleSessionName(sessionName)
             }.stsClient(stsClient)
             .build()
+    }
+
+    private companion object {
+        private const val MAX_PARSED_SCHEMA_CACHE_SIZE = 100L
     }
 }
