@@ -60,7 +60,7 @@ class GlueSchemaRegistryConfiguration {
      * Name of the application using the serializer/deserializer.
      * Ex: Kafka, KafkaConnect, KPL etc.
      */
-    var userAgentApp: String = "default"
+    var userAgentApp: String? = "default"
 
     var jacksonSerializationFeatures: List<SerializationFeature>? = null
     var jacksonDeserializationFeatures: List<DeserializationFeature>? = null
@@ -121,7 +121,7 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetUserAgent(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.USER_AGENT_APP)) {
-            userAgentApp = configs[AWSSchemaRegistryConstants.USER_AGENT_APP] as String
+            userAgentApp = configs[AWSSchemaRegistryConstants.USER_AGENT_APP] as String?
         }
     }
 

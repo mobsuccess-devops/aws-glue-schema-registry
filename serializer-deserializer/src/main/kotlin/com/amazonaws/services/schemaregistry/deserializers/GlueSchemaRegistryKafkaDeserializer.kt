@@ -64,7 +64,7 @@ open class GlueSchemaRegistryKafkaDeserializer(
         }
         if (glueSchemaRegistryDeserializationFacade == null) {
             val glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(configs)
-            glueSchemaRegistryConfiguration.userAgentApp = userAgentApp!!
+            glueSchemaRegistryConfiguration.userAgentApp = userAgentApp
             glueSchemaRegistryDeserializationFacade =
                 GlueSchemaRegistryDeserializationFacade(glueSchemaRegistryConfiguration, credentialProvider!!)
         }

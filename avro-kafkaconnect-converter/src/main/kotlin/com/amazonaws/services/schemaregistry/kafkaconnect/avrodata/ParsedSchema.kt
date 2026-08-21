@@ -19,10 +19,10 @@ interface ParsedSchema {
     fun name(): String?
 
     /** Returns a canonical string representation of the schema. */
-    fun canonicalString(): String
+    fun canonicalString(): String?
 
     /** Returns a formatted string according to a type-specific format. */
-    fun formattedString(format: String?): String {
+    fun formattedString(format: String?): String? {
         if (format == null || format.trim().isEmpty()) {
             return canonicalString()
         }

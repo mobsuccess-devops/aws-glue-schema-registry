@@ -69,7 +69,7 @@ open class GlueSchemaRegistryKafkaSerializer(
                 // Set it to kafka if not set by upstream serializers / deserializers
                 userAgentApp = UserAgents.KAFKA
             }
-            glueSchemaRegistryConfiguration.userAgentApp = userAgentApp!!
+            glueSchemaRegistryConfiguration.userAgentApp = userAgentApp
             glueSchemaRegistrySerializationFacade =
                 GlueSchemaRegistrySerializationFacade
                     .builder()

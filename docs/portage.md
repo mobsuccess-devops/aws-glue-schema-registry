@@ -89,6 +89,11 @@ Java.
   uber-jars — the only artifacts that physically embed third-party code. Generating it
   per build is what keeps it from drifting a second time. The report's generation
   timestamp is stripped so that two builds of the same commit produce identical jars.
+- **`AvroSchema.toString()` renders a null canonical string as `"null"`.** The Java source
+  returned `canonicalString()` straight from `toString()`, and that method returns null for a
+  schema carrying no Avro object. Kotlin forbids a nullable return type on `toString()`, so the
+  null is rendered instead of propagated. Every caller that interpolated or concatenated the
+  schema already observed `"null"`; only a direct `toString()` call differs.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes
