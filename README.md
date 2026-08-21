@@ -9,15 +9,23 @@ Mobsuccess fork of [`awslabs/aws-glue-schema-registry`](https://github.com/awsla
 
 **AWS Glue Schema Registry** lets you centrally discover, control and evolve schemas while
 ensuring produced data was validated against a registered schema. This library provides the
-serializers and deserializers that plug into it.
+serializers and deserializers that plug into it — for Kafka, Kafka Streams, Kafka Connect and
+Kinesis — in AVRO, JSON Schema and Protobuf.
+
+- Records are serialized producer-side and deserialized consumer-side through
+  `schema-registry-serde`.
+- Three data formats: AVRO, JSON (via [JSON Schema](https://json-schema.org/) Draft04,
+  Draft06 and Draft07) and Protocol Buffers (syntax 2 and 3).
+- Optional auto-registration of new schemas, with an evolution check on registration.
+- Optional record compression, and a built-in in-memory cache — the schema version id
+  producer-side, the schema itself consumer-side.
+- A migration path from a third-party schema registry.
 
 ## How this fork differs
 
 The library behaviour is unchanged — the inherited test suite passes in full, and the first
-commit of this repository is the upstream source verbatim, so every deviation is visible
-with `git diff eed1506`.
-
-What changed is everything around the code:
+commit of this repository is the upstream source verbatim, so every deviation is visible with
+`git diff eed1506`. What changed is everything around the code:
 
 |              | Upstream               | This fork                          |
 | ------------ | ---------------------- | ---------------------------------- |
@@ -28,64 +36,43 @@ What changed is everything around the code:
 | JVM target   | 8                      | 17                                 |
 
 The C# binding and its native (GraalVM) layer were removed: without a binding, the native
-layer had no consumer. Artifact names are unchanged. The group differs on purpose, so that
-an artifact from this fork can never silently substitute for the Maven Central one.
+layer had no consumer. Artifact names are unchanged. The group differs on purpose, so that an
+artifact from this fork can never silently substitute for the Maven Central one.
 
-Deviations are documented in [docs/portage.md](docs/portage.md); agent-facing notes live in
-[AGENTS.md](AGENTS.md).
+Every deviation is documented in [docs/portage.md](docs/portage.md); agent-facing notes live
+in [AGENTS.md](AGENTS.md).
 
-## Getting started
+## Packages
 
-1. **Sign up for AWS** — see [AWS Account and Credentials](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/home.html)
-   in the AWS SDK for Java Developer Guide.
-2. **Sign up for AWS Glue Schema Registry** — see [Getting Started with Glue Schema Registry](https://docs.aws.amazon.com/glue/latest/dg/schema-registry-gs.html)
-   in the AWS Glue Developer Guide.
-3. **Minimum requirement** — JVM 17 or later.
+| Artifact                                 | Purpose                                       |
+| ---------------------------------------- | --------------------------------------------- |
+| `schema-registry-common`                 | Glue client, cache, exceptions                |
+| `schema-registry-serde`                  | Core SerDe (AVRO, JSON Schema, Protobuf)      |
+| `schema-registry-serde-kotlin`           | Kotlin configuration DSL and typed `Serde<T>` |
+| `schema-registry-serde-msk-iam`          | Uber-jar bundling the SerDe with MSK IAM auth |
+| `schema-registry-kafkastreams-serde`     | Kafka Streams integration                     |
+| `schema-registry-kafkaconnect-converter` | Kafka Connect AVRO converter                  |
+| `jsonschema-kafkaconnect-converter`      | Kafka Connect JSON Schema converter           |
+| `protobuf-kafkaconnect-converter`        | Kafka Connect Protobuf converter              |
+| `schema-registry-flink-serde`            | Flink serialization schemas                   |
 
-## Features
-
-- Records are serialized on the producer side and deserialized on the consumer side through
-  `schema-registry-serde`.
-- Three data formats: AVRO, JSON (via [JSON Schema](https://json-schema.org/) Draft04,
-  Draft06 and Draft07) and Protocol Buffers (syntax 2 and 3).
-- Kafka Streams, Kafka Connect and [Flink](https://ci.apache.org/projects/flink/flink-docs-release-1.14/docs/connectors/datastream/kafka/)
-  integrations.
-- Optional record compression to reduce message size.
-- Built-in in-memory cache: the schema version id is cached producer-side, the schema itself
-  consumer-side.
-- Optional auto-registration of new schemas, with an evolution check on registration.
-- Migration path from a third-party schema registry.
+Most applications only need `schema-registry-serde`. The four Kafka Connect / MSK IAM
+artifacts are shaded uber-jars, meant to be dropped onto a Connect plugin path.
 
 ## Installation
 
-Artifacts are published to **GitHub Packages**, not to Maven Central.
+You need an AWS account with the [Glue Schema Registry set up](https://docs.aws.amazon.com/glue/latest/dg/schema-registry-gs.html),
+[credentials the AWS SDK can resolve](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/home.html),
+and JVM 17 or later.
 
-> **GitHub Packages requires a token even to read a public repository.** This is a GitHub
-> limitation, not a choice of this project: anonymous reads of the Maven registry are not
-> supported for any repository, public or private. Publishing to Maven Central, which would
-> remove that step, is planned but not done.
-
-### 1. Create a token
-
-GitHub Packages' Maven and Gradle registries only accept a **personal access token
-(classic)** — [fine-grained tokens are not
-supported](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry).
-
-Create one at [**Settings → Developer settings → Personal access tokens (classic)**](https://github.com/settings/tokens/new?scopes=read:packages&description=aws-glue-schema-registry),
-with the single scope `read:packages`, and export it:
+Artifacts are published to **GitHub Packages**, which requires a GitHub personal access token
+(classic, scope `read:packages`) even to read a public repository. Export it, then declare the
+repository:
 
 ```bash
 export GITHUB_ACTOR=your-github-username
 export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 ```
-
-The token is what authenticates; the username only has to be a real GitHub login. Keep the
-token out of the build files — pass it through the environment or `~/.gradle/gradle.properties`.
-
-### 2. Declare the repository
-
-**Gradle (Kotlin DSL)** — in `settings.gradle.kts` under `dependencyResolutionManagement`,
-or in `build.gradle.kts`:
 
 ```kotlin
 repositories {
@@ -107,202 +94,65 @@ dependencies {
 }
 ```
 
-**Gradle (Groovy DSL)**:
+The latest version is on the
+[releases page](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest).
 
-```groovy
-repositories {
-    mavenCentral()
-    maven {
-        name = 'GitHubPackages'
-        url = 'https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry'
-        credentials {
-            username = findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
-            password = findProperty('gpr.token') ?: System.getenv('GITHUB_TOKEN')
-        }
+Maven and Groovy DSL setups, CI credentials, the version compatibility matrix, the move from
+the `software.amazon.glue` artifact and a troubleshooting table are in
+**[docs/installation.md](docs/installation.md)**.
+
+## Basic usage
+
+Producing Avro records to Kafka takes two properties beyond the usual producer configuration
+— the serializer class and the data format:
+
+```kotlin
+properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaSerializer::class.java.name
+properties[AWSSchemaRegistryConstants.DATA_FORMAT] = DataFormat.AVRO.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry"
+properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "my-schema"
+
+KafkaProducer<String, GenericRecord>(properties).use { producer ->
+    producer.send(ProducerRecord(topic, record.get("id").toString(), record))
+}
+```
+
+The consumer reads the format from the record header, so it only needs the deserializer:
+
+```kotlin
+properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaDeserializer::class.java.name
+properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+properties[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] = AvroRecordType.GENERIC_RECORD.getName()
+
+KafkaConsumer<String, GenericRecord>(properties).use { consumer ->
+    consumer.subscribe(listOf(topic))
+    while (true) {
+        consumer.poll(Duration.ofMillis(100)).forEach { record -> process(record.value()) }
     }
 }
 ```
 
-**Maven** — the repository goes in `pom.xml`, the credentials in `~/.m2/settings.xml`, keyed
-by the same `<id>`:
+The schema has to exist in the registry, unless auto-registration is enabled. JSON and
+Protobuf, POJOs, compression, caching and the rest are in
+**[docs/usage.md](docs/usage.md)**.
 
-```xml
-<!-- pom.xml -->
-<repositories>
-  <repository>
-    <id>github-mobsuccess</id>
-    <url>https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry</url>
-  </repository>
-</repositories>
+## Documentation
 
-<dependencies>
-  <dependency>
-    <groupId>com.mobsuccess</groupId>
-    <artifactId>schema-registry-serde</artifactId>
-    <version><!-- version --></version>
-  </dependency>
-</dependencies>
-```
-
-```xml
-<!-- ~/.m2/settings.xml -->
-<servers>
-  <server>
-    <id>github-mobsuccess</id>
-    <username>your-github-username</username>
-    <password>${env.GITHUB_TOKEN}</password>
-  </server>
-</servers>
-```
-
-**In CI**, store the classic token as a secret and export it as `GITHUB_TOKEN`. The
-automatic `GITHUB_TOKEN` of a workflow in _another_ repository does not carry read access to
-this one's packages unless that access has been granted explicitly, so a workflow secret is
-the reliable path.
-
-### 3. Pick a version
-
-The latest release is on the [releases page](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest);
-every published version is listed under the repository's
-[Packages](https://github.com/orgs/mobsuccess-devops/packages?repo_name=aws-glue-schema-registry).
-Each push to `master` also publishes a `<next-version>-SNAPSHOT`; releases are what you want
-in production.
-
-### Troubleshooting
-
-| Symptom                                                            | Cause                                                                                         |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `401 Unauthorized`                                                 | No token, an expired token, or a fine-grained token — the Maven registry needs a classic one. |
-| `403 Forbidden`                                                    | The token exists but lacks the `read:packages` scope.                                         |
-| `Could not find com.mobsuccess:...`                                | The repository block is missing, or the version does not exist.                               |
-| `Unsupported class file major version` / `UnsupportedClassVersion` | The runtime is older than JVM 17.                                                             |
-
-Available artifacts:
-
-| Artifact                                 | Purpose                                       |
-| ---------------------------------------- | --------------------------------------------- |
-| `schema-registry-common`                 | Glue client, cache, exceptions                |
-| `schema-registry-serde`                  | Core SerDe (AVRO, JSON Schema, Protobuf)      |
-| `schema-registry-serde-kotlin`           | Kotlin configuration DSL and typed `Serde<T>` |
-| `schema-registry-serde-msk-iam`          | Uber-jar bundling the SerDe with MSK IAM auth |
-| `schema-registry-kafkastreams-serde`     | Kafka Streams integration                     |
-| `schema-registry-kafkaconnect-converter` | Kafka Connect AVRO converter                  |
-| `jsonschema-kafkaconnect-converter`      | Kafka Connect JSON Schema converter           |
-| `protobuf-kafkaconnect-converter`        | Kafka Connect Protobuf converter              |
-| `schema-registry-flink-serde`            | Flink serialization schemas                   |
-
-The four Kafka Connect / MSK IAM artifacts are shaded uber-jars, meant to be dropped onto a
-Connect plugin path.
-
-## Compatibility
-
-The versions the artifacts are built and tested against. Everything except the JVM row comes
-from `gradle/libs.versions.toml`, which is the single source of truth for the build.
-
-| Component           | Version            | Notes                                                                                                                             |
-| ------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| JVM                 | 17 or later        | Bytecode target is 17, so a JVM 8 or 11 runtime cannot load these artifacts.                                                      |
-| Apache Kafka        | 3.9.x              | `kafka-clients`, `kafka-streams`, `connect-api`, `connect-json`. Shaded into the uber-jars: a consumer cannot override that copy. |
-| Apache Avro         | 1.11.4             |                                                                                                                                   |
-| Protocol Buffers    | 3.25.5             | `protobuf-java`; syntax 2 and 3.                                                                                                  |
-| AWS SDK for Java v2 | 2.53.1             | Imported as a BOM, so the whole SDK moves together.                                                                               |
-| MSK IAM auth        | 2.3.7              | `schema-registry-serde-msk-iam` only.                                                                                             |
-| Apache Flink        | 1.12.2, Scala 2.11 | **Not recommended** — see below.                                                                                                  |
-
-The Flink connector is carried over from upstream unchanged and is pinned to Flink 1.12.2 with
-`flink-streaming-java_2.11`, a Scala 2.11 coordinate that Flink stopped publishing after 1.14.
-It is kept so the fork stays behaviour-identical to its source, not because it is a reasonable
-dependency to take today. New Flink work should use the Glue Schema Registry formats that ship
-with [Apache Flink itself](https://github.com/apache/flink/tree/master/flink-formats).
-
-## Configuration reference
-
-Every property below is read from the `Map` handed to `configure(...)`, from the `Properties`
-given to a facade, or from a Kafka Connect connector configuration. The key names are the
-constants of
-[`AWSSchemaRegistryConstants`](common/src/main/kotlin/com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants.kt);
-their semantics live in
-[`GlueSchemaRegistryConfiguration`](common/src/main/kotlin/com/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration.kt).
-
-"Scope" is the side that reads the property: a producer-only property on a consumer is simply
-ignored.
-
-| Key                                   | Type                           | Default                                   | Scope                  | Notes                                                                                                                                                                                                                                              |
-| ------------------------------------- | ------------------------------ | ----------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `region`                              | string                         | default AWS region chain                  | both                   | Configuration fails when neither this nor the provider chain resolves a region.                                                                                                                                                                    |
-| `endpoint`                            | string                         | regional Glue endpoint                    | both                   | Endpoint override, mostly for LocalStack and VPC endpoints.                                                                                                                                                                                        |
-| `proxyUrl`                            | string (URI)                   | none                                      | both                   | Rejected with a named error when it is not a valid URI.                                                                                                                                                                                            |
-| `registry.name`                       | string                         | `default-registry`                        | serializer             | The consumer resolves a schema by version id, so it needs no registry name.                                                                                                                                                                        |
-| `schemaName`                          | string                         | from the naming strategy                  | serializer             | The default strategy derives the name from the topic.                                                                                                                                                                                              |
-| `schemaNameGenerationClass`           | string (class name)            | topic-name strategy                       | serializer             | Must implement `AWSSchemaNamingStrategy`. An unloadable name falls back to the default strategy.                                                                                                                                                   |
-| `schemaAutoRegistrationEnabled`       | boolean                        | `false`                                   | serializer             | When `false`, an unknown schema fails serialization instead of being registered.                                                                                                                                                                   |
-| `compatibility`                       | string (enum)                  | `BACKWARD`                                | serializer             | Only read when auto-registration creates the schema. Accepted values: `Compatibility.knownValues()`.                                                                                                                                               |
-| `description`                         | string                         | `DEFAULT-DESCRIPTION-<region>-<registry>` | serializer             | Attached to a schema this library registers.                                                                                                                                                                                                       |
-| `tags`                                | `Map<String, String>`          | empty                                     | serializer             | Applied when the registry entry is created. Not declared in the Connect `ConfigDef` — see below.                                                                                                                                                   |
-| `metadata`                            | `Map<String, String>`          | none                                      | serializer             | Attached to the schema version. Not declared in the Connect `ConfigDef` — see below.                                                                                                                                                               |
-| `compression`                         | string (enum)                  | `NONE`                                    | serializer             | `NONE` or `ZLIB`. The consumer reads either: the choice is recorded in the record header.                                                                                                                                                          |
-| `dataFormat`                          | string (enum)                  | none                                      | serializer             | `AVRO`, `JSON` or `PROTOBUF`. A producer on the format-agnostic serializer has to set it; a consumer reads the format from the record header. Each Connect converter accepts only its own format.                                                  |
-| `avroRecordType`                      | string (enum)                  | `GENERIC_RECORD`                          | deserializer           | `GENERIC_RECORD` or `SPECIFIC_RECORD`. Case-sensitive.                                                                                                                                                                                             |
-| `protobufMessageType`                 | string (enum)                  | none                                      | deserializer           | `DYNAMIC_MESSAGE` or `POJO`. Case-sensitive.                                                                                                                                                                                                       |
-| `jsonSchemaNullableEnabled`           | boolean                        | `false`                                   | serializer             | Generates `oneOf [null, type]` for an optional field when a schema is **derived from a POJO**. No effect through the Kafka Connect converter, which supplies its own schema. Off by default: it changes the schema text, hence the schema version. |
-| `jsonSchemaCompatibilityCheckEnabled` | boolean                        | `false`                                   | serializer             | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only. Costs one `GetSchemaVersion` call per newly registered definition.          |
-| `jsonClassNameResolutionEnabled`      | boolean                        | `false`                                   | deserializer           | Opt-in: it turns a registry field into a class name to load. See the className section above.                                                                                                                                                      |
-| `jsonClassNameAllowlist`              | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected.                                                                                                                                        |
-| `jacksonSerializationFeatures`        | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries to enable.                                                                                                                                                                           |
-| `jacksonDeserializationFeatures`      | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.DeserializationFeature` entries to enable.                                                                                                                                                                         |
-| `secondaryDeserializer`               | string (class name) or `Class` | none                                      | deserializer           | Fallback for records that carry no Glue Schema Registry header.                                                                                                                                                                                    |
-| `timeToLiveMillis`                    | long                           | `86400000` (24 h)                         | both                   | Time to live of a cache entry.                                                                                                                                                                                                                     |
-| `cacheSize`                           | int                            | `200`                                     | both                   | Maximum number of cached schemas.                                                                                                                                                                                                                  |
-| `userAgentApp`                        | string                         | `default`                                 | both                   | Reported in the User-Agent of the Glue calls. Ignored by the Connect converters, which always report `kafkaconnect`.                                                                                                                               |
-| `assumeRoleArn`                       | string                         | none                                      | Avro Connect converter | Role assumed through STS before calling Glue.                                                                                                                                                                                                      |
-| `assumeRoleSessionName`               | string                         | `kafka-connect-session`                   | Avro Connect converter | Only read when `assumeRoleArn` is set.                                                                                                                                                                                                             |
-
-The three Kafka Connect converters publish these keys through `Converter.config()`, so
-`PUT /connector-plugins/{plugin}/config/validate` reports them, a Connect UI renders them, and an
-impossible **value** — `compression=GZIP`, `dataFormat=AVRO` on the JSON converter, an unknown
-Jackson feature name, a bare `*` in the allowlist — is refused when the connector is created
-rather than at the first record. A misspelled **key** is still ignored in silence:
-`AbstractConfig` parses the keys it knows and passes the rest through untouched, which is what
-lets `tags` and `metadata` keep working. The converters also accept the keys of `AvroDataConfig`
-(`enhanced.avro.schema.support`, `connect.meta.data`, `schemas.cache.config`) and of
-`JsonSchemaDataConfig` (the same two plus `decimal.format`).
-
-Where a key takes a list, a Connect worker can give it as a comma-separated string: the converters
-split it before handing it on, so `jacksonSerializationFeatures=INDENT_OUTPUT,WRAP_ROOT_VALUE`
-works from a worker properties file.
-
-`tags` and `metadata` are deliberately left out of that `ConfigDef`: their values are maps, a
-shape Kafka's `ConfigDef` has no type for. They keep working when a converter is configured
-programmatically, and a Connect worker could not have passed them anyway.
-
-## Migrating from the AWS artifact
-
-Coming from `software.amazon.glue` on Maven Central, the swap is a coordinate change: the
-artifactIds, the package names and the class names are all unchanged.
-
-```diff
-- implementation("software.amazon.glue:schema-registry-serde:1.1.x")
-+ implementation("com.mobsuccess:schema-registry-serde:<version>")
-```
-
-Three things to check on the way:
-
-1. **The repository.** GitHub Packages requires authentication even to read a public
-   repository, and its Maven registry only accepts a _classic_ personal access token. Add
-   the repository block and the token from [Installation](#installation) — this is the one
-   step that has no equivalent when consuming from Maven Central.
-2. **The JVM.** Upstream targeted 8, this fork targets 17.
-3. **Two behaviour deltas**, both deliberate:
-   - A `@NonNull` violation raises a `NullPointerException` rather than the
-     `IllegalArgumentException` upstream's `lombok.config` produced. A null argument is still
-     rejected, at the same point; only the exception type differs. See
-     [docs/portage.md](docs/portage.md).
-   - Since **2.0.0**, the JSON deserializer no longer resolves a schema's `className` into a
-     POJO by default and returns `JsonDataWithSchema` instead. Restoring the old behaviour
-     takes both `jsonClassNameResolutionEnabled=true` and an explicit
-     `jsonClassNameAllowlist`. It is inherited from upstream rather than introduced here —
-     see [Deserializing JSON into a Java POJO](#deserializing-json-into-a-java-pojo-classname-resolution)
-     and [docs/upstream-history.md](docs/upstream-history.md).
+| Document                                         | What is in it                                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| [Installation](docs/installation.md)             | GitHub Packages setup, compatibility matrix, migration from the AWS artifact   |
+| [Usage](docs/usage.md)                           | Kafka producers and consumers for the three formats, Kinesis, Kafka Streams    |
+| [Kotlin DSL](serde-kotlin/README.md)             | `schema-registry-serde-kotlin`: the configuration DSL and the typed `Serde<T>` |
+| [Configuration reference](docs/configuration.md) | Every property, its default and the side that reads it                         |
+| [Kafka Connect](docs/kafka-connect.md)           | The three converters, plugin path, worker configuration, cross-account role    |
+| [Flink](docs/flink.md)                           | The Flink serialization schemas, and why they are not recommended              |
+| [Build](docs/build.md)                           | The Gradle build: toolchain, conventions, ABI dumps, code generation           |
+| [CI and supply chain](docs/ci.md)                | Releases, workflow permissions, pinning, dependency policy                     |
+| [Java interop](docs/kotlin-interop.md)           | Where Kotlin and Java do not line up, for anyone writing Kotlin here           |
+| [Port notes](docs/portage.md)                    | Maven → Gradle → Kotlin, and the accepted deviations from upstream             |
+| [Upstream history](docs/upstream-history.md)     | Releases of `awslabs/aws-glue-schema-registry` from before the fork            |
+| [Contributing](CONTRIBUTING.md)                  | Building, testing, house style, pull requests, releases                        |
 
 ## Building from source
 
@@ -314,736 +164,17 @@ Three things to check on the way:
 
 Gradle resolves a JVM 17 toolchain on its own; no local Maven or JDK pinning is needed.
 
-## Testing
-
-The `integration-tests` module requires real AWS resources. Its `*IntegrationTest` classes
-are excluded from the unit run and are not executed in CI.
-
-## Using the AWS Glue Schema Registry Library Serializer / Deserializer
-
-The recommended way to use the AWS Glue Schema Registry Library is to consume the published artifact from GitHub Packages, as described in [Installation](#installation).
-
-**Using AWS Glue Schema Registry with Amazon MSK** &mdash; To set-up Amazon Managed Streaming for Apache Kafka see
-[Getting started with Amazon MSK.](https://docs.aws.amazon.com/msk/latest/developerguide/getting-started.html)
-
-### Gradle dependency
-
-```kotlin
-implementation("com.mobsuccess:schema-registry-serde:<version>")
-```
-
-### Code Example
-
-#### Producer for Kafka with AVRO format
-
-```kotlin
-properties[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaSerializer::class.java.name
-properties[AWSSchemaRegistryConstants.DATA_FORMAT] = DataFormat.AVRO.name
-properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
-properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry"
-properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "my-schema"
-
-val paymentSchema = Schema.Parser().parse(File("src/main/resources/avro/com/tutorial/Payment.avsc"))
-
-val musical = GenericData.Record(paymentSchema)
-musical.put("id", "entertainment_2")
-musical.put("amount", 105.0)
-
-val misc = listOf<GenericRecord>(musical)
-
-try {
-    KafkaProducer<String, GenericRecord>(properties).use { producer ->
-        misc.forEachIndexed { i, r ->
-            producer.send(ProducerRecord(topic, r.get("id").toString(), r))
-            println("Sent message $i")
-            Thread.sleep(1000L)
-        }
-        producer.flush()
-        println("Successfully produced ${misc.size} messages to a topic called $topic")
-    }
-} catch (e: InterruptedException) {
-    e.printStackTrace()
-} catch (e: SerializationException) {
-    e.printStackTrace()
-}
-```
-
-#### Consumer for Kafka with AVRO format
-
-```kotlin
-properties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
-properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaDeserializer::class.java.name
-properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
-properties[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] = AvroRecordType.GENERIC_RECORD.getName()
-
-KafkaConsumer<String, GenericRecord>(properties).use { consumer ->
-    consumer.subscribe(listOf(topic))
-
-    while (true) {
-        val records = consumer.poll(Duration.ofMillis(100))
-        for (record in records) {
-            val key = record.key()
-            val value = record.value()
-            println("Received message: key = $key, value = $value")
-        }
-    }
-}
-```
-
-#### Producer for Kafka with JSON format
-
-```kotlin
-properties[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaSerializer::class.java.name
-properties[AWSSchemaRegistryConstants.DATA_FORMAT] = DataFormat.JSON.name
-properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
-properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry"
-properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "my-schema"
-
-val jsonSchema =
-    """
-    {
-      "${'$'}schema": "http://json-schema.org/draft-04/schema#",
-      "type": "object",
-      "properties": {
-        "employee": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "age": { "type": "integer" },
-            "city": { "type": "string" }
-          },
-          "required": ["name", "age", "city"]
-        }
-      },
-      "required": ["employee"]
-    }
-    """.trimIndent()
-
-val jsonPayload =
-    """
-    {
-      "employee": {
-        "name": "John",
-        "age": 30,
-        "city": "New York"
-      }
-    }
-    """.trimIndent()
-
-val jsonSchemaWithData = JsonDataWithSchema.builder(jsonSchema, jsonPayload).build()
-
-val genericJsonRecords = listOf(jsonSchemaWithData)
-
-try {
-    KafkaProducer<String, JsonDataWithSchema>(properties).use { producer ->
-        genericJsonRecords.forEachIndexed { i, r ->
-            producer.send(ProducerRecord(topic, "message-$i", r))
-            println("Sent message $i")
-            Thread.sleep(1000L)
-        }
-        producer.flush()
-        println("Successfully produced ${genericJsonRecords.size} messages to a topic called $topic")
-    }
-} catch (e: InterruptedException) {
-    e.printStackTrace()
-} catch (e: SerializationException) {
-    e.printStackTrace()
-}
-```
-
-#### Consumer for Kafka with JSON format
-
-```kotlin
-properties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
-properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaDeserializer::class.java.name
-properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
-
-KafkaConsumer<String, JsonDataWithSchema>(properties).use { consumer ->
-    consumer.subscribe(listOf(topic))
-
-    while (true) {
-        val records = consumer.poll(Duration.ofMillis(100))
-        for (record in records) {
-            val key = record.key()
-            val value = record.value()
-            println("Received message: key = $key, value = $value")
-        }
-    }
-}
-```
-
-#### Producer for Kafka with PROTOBUF format
-
-```kotlin
-properties[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaSerializer::class.java.name
-properties[AWSSchemaRegistryConstants.DATA_FORMAT] = DataFormat.PROTOBUF.name
-properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
-properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry"
-properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "protobuf-file-name.proto"
-
-// POJO production
-
-// CustomerAddress is the generated Protocol Buffers class based on the given Protobuf schema definition
-val customerAddress = CustomerAddress.newBuilder().build()
-
-val pojoProducer = KafkaProducer<String, CustomerAddress>(properties)
-
-pojoProducer.send(ProducerRecord(topic, customerAddress))
-
-// DynamicMessage production
-
-val customerDynamicMessage = DynamicMessage.newBuilder(CustomerAddress.getDescriptor()).build()
-
-val dynamicMessageProducer = KafkaProducer<String, DynamicMessage>(properties)
-
-dynamicMessageProducer.send(ProducerRecord(topic, customerDynamicMessage))
-```
-
-#### Consumer for Kafka with PROTOBUF format
-
-```kotlin
-properties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
-properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GlueSchemaRegistryKafkaDeserializer::class.java.name
-properties[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
-
-// POJO consumption
-
-properties[AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE] = ProtobufMessageType.POJO.getName()
-
-val pojoConsumer = KafkaConsumer<String, CustomerAddress>(properties)
-
-pojoConsumer.subscribe(listOf(topic))
-
-val pojoRecords = pojoConsumer.poll(Duration.ofMillis(10))
-pojoRecords.forEach { record -> processRecord(record) }
-
-// DynamicMessage consumption
-
-// This is optional. By default AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE is set as ProtobufMessageType.DYNAMIC_MESSAGE.getName()
-properties[AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE] = ProtobufMessageType.DYNAMIC_MESSAGE.getName()
-
-val dynamicMessageConsumer = KafkaConsumer<String, DynamicMessage>(properties)
-
-dynamicMessageConsumer.subscribe(listOf(topic))
-
-val dynamicMessageRecords = dynamicMessageConsumer.poll(Duration.ofMillis(10))
-dynamicMessageRecords.forEach { record -> processRecord(record) }
-```
-
-### Dealing with Specific Record (JAVA POJO) for JSON
-
-You could use a POJO and pass the object as a record.
-We use [mbknor-jackson-jsonschema](https://github.com/mbknor/mbknor-jackson-jsonSchema) to generate a JSON Schema for
-the POJO passed. This library can also inject additional information in the JSON Schema.
-
-**GSR Library uses the "className" fully qualified class name to deserialize back to an Object of the POJO.
-Introduced in 2.0.0; disabled by default — see
-[Deserializing JSON into a Java POJO (className resolution)](#deserializing-json-into-a-java-pojo-classname-resolution).
-Until you enable it, the deserializer returns a `JsonDataWithSchema` even when the schema carries a `className`.**
-
-Example class :
-
-```kotlin
-// List of annotations to help infer JSON Schema are defined by https://github.com/mbknor/mbknor-jackson-jsonSchema
-@JsonSchemaDescription("This is a car")
-@JsonSchemaTitle("Simple Car Schema")
-// Fully qualified class name to be added to an additionally injected property
-// called className for deserializer to determine which class to deserialize
-// the bytes into
-@JsonSchemaInject(
-    strings = [
-        JsonSchemaString(
-            path = "className",
-            value = "com.amazonaws.services.schemaregistry.integrationtests.generators.Car",
-        ),
-    ],
-)
-// A default on every property makes Kotlin emit the no-arg constructor Jackson
-// needs to deserialize bytes into an object of this class
-class Car(
-    @JsonProperty(required = true)
-    val make: String? = null,
-    @JsonProperty(required = true)
-    val model: String? = null,
-    @JsonSchemaDefault("true")
-    @JsonProperty
-    val used: Boolean = false,
-    @JsonSchemaInject(ints = [JsonSchemaInt(path = "multipleOf", value = 1000)])
-    @Max(200000)
-    @JsonProperty
-    val miles: Int = 0,
-    @Min(2000)
-    @JsonProperty
-    val year: Int = 0,
-    @JsonProperty
-    val purchaseDate: Date? = null,
-    @JsonProperty
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    val listedDate: Date? = null,
-    @JsonProperty
-    val owners: Array<String>? = null,
-    @JsonProperty
-    val serviceChecks: Collection<Float>? = null,
-)
-```
-
-### Nullable fields in a generated JSON Schema
-
-When a schema is derived from a POJO, an optional field is typed as its type alone by default.
-A POJO whose optional field is null then serializes to `"field": null` and fails validation
-against its own generated schema, so the object cannot be sent at all.
-
-Set this property on the producer to generate `oneOf [null, type]` for those fields instead:
-
-```kotlin
-// Defaults to false.
-properties[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = true
-```
-
-It is off by default because it changes the schema text, and therefore registers a new schema
-version for a POJO that was already in the registry.
-
-### Checking JSON Schema compatibility on the client
-
-Glue enforces the compatibility mode of a schema for Avro and Protobuf, but **not for JSON**: a
-JSON schema version that breaks its declared mode is accepted by `RegisterSchemaVersion`, and the
-breakage surfaces in a consumer instead of in the producer that caused it.
-
-Set this property on the producer to have the library check before it registers:
-
-```kotlin
-// Defaults to false.
-properties[AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED] = true
-```
-
-When it is on, registering a new JSON schema version first reads the latest version of that
-schema and compares the two against the configured `compatibility`. An incompatibility raises an
-`AWSSchemaRegistryException` naming the field, and nothing is registered. A schema with no
-previous version is registered without a check.
-
-What is compared is the **`required` contract**, at the top level and inside each named entry of
-`definitions` or `$defs`: under `BACKWARD` a field may not become required, under `FORWARD` a
-required field may not stop being required, and `FULL` applies both. Types, formats, enumerations
-and `additionalProperties` are _not_ compared — a clean result means "no broken `required`
-contract", not "compatible". It is off by default for that reason, and because it costs one extra
-`GetSchemaVersion` call per newly registered schema definition.
-
-### Deserializing JSON into a Java POJO (className resolution)
-
-By default the JSON deserializer returns a `JsonDataWithSchema`, even when the schema carries a
-`className` property. Resolving that property would let the schema decide which class the
-deserializer instantiates via reflection, so it must be opted into explicitly.
-
-To deserialize into your POJO, set **both** properties on the consumer:
-
-```kotlin
-// Opt in to reading the schema's "className" property. Defaults to false.
-properties[AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED] = true
-
-// Comma-separated list of fully qualified class names the deserializer may instantiate.
-// Defaults to empty, so this must be set for the flag above to have any effect.
-properties[AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST] = "com.example.Car,com.example.Truck"
-```
-
-An entry ending in `.*` allows every class directly in that package, which avoids listing each POJO
-individually:
-
-```kotlin
-properties[AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST] = "com.example.pojos.*"
-```
-
-Notes:
-
-- Setting `JSON_CLASS_NAME_RESOLUTION_ENABLED` on its own has no effect — with an empty allowlist
-  every record still deserializes to `JsonDataWithSchema`.
-- A record whose `className` matches no allowlist entry deserializes to `JsonDataWithSchema` and
-  logs a WARN naming the class, once per distinct class name rather than once per record. Past 100
-  distinct names the deserializer logs that it is suppressing further warnings and stops, so a
-  stream of unrecognized class names can neither flood the log nor grow its dedup state without
-  bound.
-- List only the classes you actually expect on the topic. Each entry is one class the deserializer
-  is permitted to construct from data it received.
-- A package entry matches direct members only: `com.example.pojos.*` allows
-  `com.example.pojos.Car` but not `com.example.pojos.nested.Car`. Entries are matched literally,
-  not as regular expressions, and a bare `*` is rejected.
-- Prefer naming classes explicitly. A package entry also allows any class added to that package
-  later, which is a decision you make once here rather than reviewing when the class appears.
-
-**This is a breaking behavior change in 2.0.0.** Consumers that previously relied on automatic POJO
-deserialization must set both properties to keep working; otherwise they will receive
-`JsonDataWithSchema` and fail on the cast.
-
-### Using AWS Glue Schema Registry with Kinesis Data Streams
-
-**Kinesis Client library (KCL) / Kinesis Producer Library (KPL):** [Getting started with AWS Glue Schema Registry with AWS Kinesis Data Streams](https://docs.aws.amazon.com/glue/latest/dg/schema-registry-integrations.html#schema-registry-integrations-kds)
-
-If you cannot use KCL / KPL libraries for Kinesis Data Streams integration,
-see [examples](examples/) and [integration-tests](integration-tests/) for a working example with Kinesis SDK, KPL and
-KCL.
-
-### Using Auto-Registration
-
-Auto-Registration allows any record produced with new schema to be automatically registered with the AWS Glue Schema
-Registry. The Schema is registered automatically and a new schema version is created and evolution checks are performed.
-
-If the Schema already exists, but the schema version is new, the new schema version is created and evolution checks are performed.
-
-Auto-Registration is disabled by default. To enable Auto-Registration, enable setting by passing the configuration to
-the Producer as below :
-
-```kotlin
-properties[AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING] = true // If not passed, defaults to false
-```
-
-### Providing Registry Name
-
-Registry Name can be provided by setting this property -
-
-```kotlin
-properties[AWSSchemaRegistryConstants.REGISTRY_NAME] = "my-registry" // If not passed, uses "default-registry"
-```
-
-### Providing Schema Name
-
-Schema Name can be provided by setting this property -
-
-```kotlin
-properties[AWSSchemaRegistryConstants.SCHEMA_NAME] = "my-schema" // If not passed, uses transport name (topic name in case of Kafka)
-```
-
-Alternatively, a schema registry naming strategy implementation can be provided.
-
-```kotlin
-properties[AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS] =
-    "com.amazonaws.services.schemaregistry.serializers.avro.CustomerProvidedSchemaNamingStrategy"
-```
-
-An example test implementation class is [here](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/serializer-deserializer/src/test/kotlin/com/amazonaws/services/schemaregistry/serializers/avro/CustomerProvidedSchemaNamingStrategy.kt).
-
-### Providing Registry Description
-
-Registry Description can be provided by setting this property -
-
-```kotlin
-properties[AWSSchemaRegistryConstants.DESCRIPTION] = "This registry is used for several purposes." // If not passed, constructs a description
-```
-
-### Providing Compatibility Setting for Schema
-
-Registry Description can be provided by setting this property -
-
-```kotlin
-properties[AWSSchemaRegistryConstants.COMPATIBILITY_SETTING] = Compatibility.FULL // Pass a compatibility mode. If not passed, uses Compatibility.BACKWARD
-```
-
-### Using Compression
-
-Deserialized byte array can be compressed to save on data usage over the network and storage on the topic/stream. The
-Consumer side using AWS Glue Schema Registry Deserializer would be able to decompress and deserialize the byte array.
-By default, compression is disabled. Customers can choose ZLIB as compressionType by setting up below property.
-
-```kotlin
-// If not passed, defaults to no compression
-properties[AWSSchemaRegistryConstants.COMPRESSION_TYPE] = AWSSchemaRegistryConstants.COMPRESSION.ZLIB.name
-```
-
-### In-Memory Cache settings
-
-In Memory cache is used by Producer to store schema to schema version id mapping and by consumer to store schema
-version id to schema mapping. This cache allows Producers and Consumers to save time and hits on IO calls to Schema
-Registry.
-
-The cache is available by default. However, it can be fine-tuned by providing cache specific properties.
-
-```kotlin
-properties[AWSSchemaRegistryConstants.CACHE_TIME_TO_LIVE_MILLIS] = "60000" // If not passed, defaults to 24 Hours
-properties[AWSSchemaRegistryConstants.CACHE_SIZE] = "100" // Maximum number of elements in a cache - If not passed, defaults to 200
-```
-
-### Migrating from a third party Schema Registry
-
-To migrate to AWS Glue Schema Registry from a third party schema registry for AVRO data types for Kafka, add this
-property for value class along with the third party jar.
-
-```kotlin
-properties[AWSSchemaRegistryConstants.SECONDARY_DESERIALIZER] = ThirdPartyKafkaDeserializer::class.java.name
-```
-
-### Using Kafka Connect with AWS Glue Schema Registry
-
-- Clone this repo, build and copy dependencies
-
-```bash
-git clone git@github.com:mobsuccess-devops/aws-glue-schema-registry.git
-cd aws-glue-schema-registry
-./gradlew :schema-registry-kafkaconnect-converter:shadowJar
-```
-
-The resulting uber-jar under `avro-kafkaconnect-converter/build/libs/` already bundles every
-dependency, so there is no separate dependency-copy step.
-
-- Configure Kafka Connectors with following properties
-
-When configuring Kafka Connect workers or connectors, use the value of the string constant properties in the [AWSSchemaRegistryConstants](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/common/src/main/kotlin/com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants.kt) class to configure the AWSKafkaAvroConverter.
-
-```properties
-key.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
-value.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
-key.converter.region=ca-central-1
-value.converter.region=ca-central-1
-key.converter.schemaAutoRegistrationEnabled=true
-value.converter.schemaAutoRegistrationEnabled=true
-key.converter.avroRecordType=GENERIC_RECORD
-value.converter.avroRecordType=GENERIC_RECORD
-key.converter.schemaName=KeySchema
-value.converter.schemaName=ValueSchema
-```
-
-As Glue Schema Registry is a fully managed service by AWS, there is no notion of schema registry URLs. Name of the registry (within the same AWS account) can be optionally configured using following options. If not specified, default-registry is used.
-
-```properties
-key.converter.registry.name=my-registry
-value.converter.registry.name=my-registry
-```
-
-- Make the converter visible to the workers
-
-  The uber-jar is self-contained, so it only has to be on the worker's classpath. Either drop
-  it into a directory listed in the worker's `plugin.path`:
-
-  ```properties
-  plugin.path=/opt/kafka/connect-plugins
-  ```
-
-  or, for a standalone worker started through `kafka-run-class.sh`, put it on `CLASSPATH`:
-
-  ```bash
-  export CLASSPATH="$CLASSPATH:/path/to/schema-registry-kafkaconnect-converter-<version>.jar"
-  ```
-
-  Do not add `schema-registry-common` or `schema-registry-serde` alongside it: the uber-jar
-  already bundles them, and a second copy on the classpath is how duplicate-class failures
-  start.
-
-- (Optional) If you wish to test with a simple file source then clone the file source connector.
-
-  ```bash
-      git clone https://github.com/mmolimar/kafka-connect-fs.git
-      cd kafka-connect-fs/
-  ```
-
-  Under source connector configuration(config/kafka-connect-fs.properties), edit the data format to Avro, file reader
-  to AvroFileReader and update an
-  example Avro object from the file path you are reading from. For example:
-
-  ```
-      fs.uris=<path to a sample avro object>
-      policy.regexp=^.*\.avro$
-      file_reader.class=com.github.mmolimar.kafka.connect.fs.file.reader.AvroFileReader
-  ```
-
-  Install the source connector. `kafka-connect-fs` is a third-party project and builds with
-  its own Maven build:
-
-  ```bash
-  mvn clean package
-  export CLASSPATH="$CLASSPATH:$(find target/ -type f -name '*.jar' | grep -- '-package' | tr '\n' ':')"
-  ```
-
-  The commands below assume `KAFKA_HOME` points at your Apache Kafka installation.
-
-  Update the sink properties under _<your Apache Kafka installation directory>/config/connect-file-sink.properties_
-
-  ```
-  file=<output file full path>
-  topics=<my topic>
-  ```
-
-  Start Source Connector (In this example it is file source connector)
-
-  ```
-  $KAFKA_HOME/bin/connect-standalone.sh $KAFKA_HOME/config/connect-standalone.properties config/kafka-connect-fs.properties
-  ```
-
-  Run Sink Connector (In this example it is file sink connector))
-
-  ```
-  $KAFKA_HOME/bin/connect-standalone.sh $KAFKA_HOME/config/connect-standalone.properties $KAFKA_HOME/config/connect-file-sink.properties
-  ```
-
-- For more examples for running Kafka Connect with Avro, JSON, and Protobuf formats, refer script **run-local-tests.sh** under
-  **integration-tests** module.
-
-## Kotlin: configuration DSL and a typed `Serde<T>`
-
-`schema-registry-serde-kotlin` is additive: it introduces no behaviour of its own, builds the
-same objects the Java API builds, and nothing else depends on it. See
-[its README](serde-kotlin/README.md) for the full surface.
-
-```gradle
-implementation("com.mobsuccess:schema-registry-serde-kotlin:<version>")
-```
-
-One typed property per configuration key, instead of a map of string literals:
-
-```kotlin
-val properties = glueSchemaRegistryConfig {
-    region = "eu-west-1"
-    dataFormat = DataFormat.AVRO
-    autoRegistration = true
-    tags(mapOf("owner" to "data-platform"))
-}
-```
-
-Only the properties you set appear in the result, so the library's own defaults still apply, and
-`tags`/`metadata` are copied into the `HashMap` those keys require — `mapOf("a" to "b")` returns
-a `SingletonMap` and is rejected at runtime.
-
-A `Serde<T>`, where Kafka Streams gets a `Serde<Any>` today:
-
-```kotlin
-val serde = glueSchemaRegistrySerde<User> {
-    region = "eu-west-1"
-    dataFormat = DataFormat.AVRO
-    avroRecordType = AvroRecordType.SPECIFIC_RECORD
-}
-
-builder.stream("users", Consumed.with(Serdes.String(), serde))
-    .filter { _, user -> user.age > 18 }
-```
-
-The registry decides at runtime what a record deserializes to, so the type argument is checked on
-every record: a value of another type raises a `SerializationException` naming both types, where
-an unchecked cast would have failed further down the topology.
-
-### Using Kafka Streams with AWS Glue Schema Registry
-
-### Gradle dependency
-
-```kotlin
-implementation("com.mobsuccess:schema-registry-kafkastreams-serde:<version>")
-```
-
-```kotlin
-val props = Properties()
-props[StreamsConfig.APPLICATION_ID_CONFIG] = "avro-streams"
-props[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
-props[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
-props[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = Serdes.String().javaClass.name
-props[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = AWSKafkaAvroSerDe::class.java.name
-props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-
-props[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
-props[AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING] = true
-props[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] = AvroRecordType.GENERIC_RECORD.getName()
-
-val builder = StreamsBuilder()
-val source: KStream<String, GenericRecord> = builder.stream("avro-input")
-val result =
-    source
-        .filter { _, value -> "pink" != value.get("favorite_color").toString() }
-        .filter { _, value -> "15.0" != value.get("amount").toString() }
-result.to("avro-output")
-
-val streams = KafkaStreams(builder.build(), props)
-streams.start()
-```
-
-## Using the AWS Glue Schema Registry Flink Connector
-
-AWS Glue Schema Registry Flink Connector for Java in this repository is not recommended. Please check out [Apache Flink](https://github.com/apache/flink)
-repository for the latest support: [Avro SerializationSchema and DeserializationSchema](https://github.com/apache/flink/tree/master/flink-formats/flink-avro-glue-schema-registry) and [JSON SerializationSchema and DeserializationSchema](https://github.com/apache/flink/tree/master/flink-formats/flink-json-glue-schema-registry). Protobuf integration will be followed up soon.
-
-### Gradle dependency
-
-```kotlin
-implementation("com.mobsuccess:schema-registry-flink-serde:<version>")
-```
-
-### Code Example
-
-#### Flink Kafka Producer with AVRO format
-
-```kotlin
-val topic = "topic"
-val properties = Properties()
-properties.setProperty("bootstrap.servers", "localhost:9092")
-properties.setProperty("group.id", "test")
-
-val configs =
-    mapOf<String, Any>(
-        AWSSchemaRegistryConstants.AWS_REGION to "us-east-1",
-        AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING to true,
-    )
-
-val schema = Schema.Parser().parse(File("path/to/avro/file"))
-
-val producer =
-    FlinkKafkaProducer(
-        topic,
-        GlueSchemaRegistryAvroSerializationSchema.forGeneric(schema, topic, configs),
-        properties,
-    )
-stream.addSink(producer)
-```
-
-#### Flink Kafka Consumer with AVRO format
-
-```kotlin
-val topic = "topic"
-val properties = Properties()
-properties.setProperty("bootstrap.servers", "localhost:9092")
-properties.setProperty("group.id", "test")
-
-val configs =
-    mapOf<String, Any>(
-        AWSSchemaRegistryConstants.AWS_REGION to "us-east-1",
-        AWSSchemaRegistryConstants.AVRO_RECORD_TYPE to AvroRecordType.GENERIC_RECORD.getName(),
-    )
-
-val schema = Schema.Parser().parse(File("path/to/avro/file"))
-
-val consumer =
-    FlinkKafkaConsumer(
-        topic,
-        GlueSchemaRegistryAvroDeserializationSchema.forGeneric(schema, configs),
-        properties,
-    )
-val stream: DataStream<GenericRecord> = env.addSource(consumer)
-```
-
-## Cross-Account Avro Converter Support
-
-The `AWSKafkaAvroConverter` Avro converter is able to assume an IAM role in a different AWS account before accessing Glue Schema Registry. You can configure the role ARN and an optional session name.
-
-If `assumeRoleArn` is not provided, the converter will fallback to using the default credentials associated to the host.
-
-### Connector configuration
-
-Include these properties in your Kafka Connect worker or connector config:
-
-```properties
-# Define converter
-key.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
-value.converter=com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter
-
-# Specify cross-account role arn
-key.converter.assumeRoleArn="arn:aws:iam::123456789012:role/my-role"
-value.converter.assumeRoleArn="arn:aws:iam::123456789012:role/my-role"
-
-# Override default session name (optional; default is "kafka-connect-session")
-key.converter.assumeRoleSessionName=my-custom-session
-value.converter.assumeRoleSessionName=my-custom-session
-```
+The `*IntegrationTest` classes need a Kafka broker and a Glue endpoint. They stay out of the
+unit run, are reached through the separate `integrationTest` task, and run nightly through
+[integration.yml](.github/workflows/integration.yml), never on a pull request. House rules
+for contributions are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Reporting a security issue
 
 Vulnerabilities in this fork are **not** reported to AWS: the build, the dependency set and
-the Kotlin conversion are specific to it, and upstream is dormant. Use GitHub's private vulnerability reporting on this
-repository — [Report a vulnerability](https://github.com/mobsuccess-devops/aws-glue-schema-registry/security/advisories/new)
+the Kotlin conversion are specific to it, and upstream is dormant. Use GitHub's private
+vulnerability reporting on this repository —
+[Report a vulnerability](https://github.com/mobsuccess-devops/aws-glue-schema-registry/security/advisories/new)
 — and please do not open a public issue. The full policy is in [SECURITY.md](SECURITY.md).
 
 ## Contributing
@@ -1061,9 +192,9 @@ the modifications are listed in [NOTICE.txt](NOTICE.txt) and summarised in
 with Amazon.com, Inc. or its affiliates.
 
 Every published artifact carries `META-INF/LICENSE.txt` and `META-INF/NOTICE.txt`. The
-uber-jars — the Kafka Connect converters and `schema-registry-serde-msk-iam` — bundle
-their dependencies, and so also carry `META-INF/THIRD-PARTY-LICENSES.txt`, an inventory
-generated from the resolved runtime classpath at build time:
+uber-jars — the Kafka Connect converters and `schema-registry-serde-msk-iam` — bundle their
+dependencies, and so also carry `META-INF/THIRD-PARTY-LICENSES.txt`, an inventory generated
+from the resolved runtime classpath at build time:
 
 ```bash
 ./gradlew thirdPartyLicenses

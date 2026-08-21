@@ -24,7 +24,7 @@ cross-account `assumeRole` support in the Avro converter
 ([awslabs #376](https://github.com/awslabs/aws-glue-schema-registry/pull/376)). That is why a
 consumer coming from `software.amazon.glue:1.1.27` meets the `className` change as a breaking
 change in this fork's 2.0.0: it is inherited, not invented here. See
-[Deserializing JSON into a Java POJO](../README.md#deserializing-json-into-a-java-pojo-classname-resolution).
+[Deserializing JSON into a Java POJO](usage.md#deserializing-json-into-a-java-pojo-classname-resolution).
 
 Upstream has not moved since 2026-08-13.
 
