@@ -276,6 +276,41 @@ class GlueSchemaRegistryConfigurationTest {
     }
 
     /**
+     * Tests the invalid compression message lists the accepted values.
+     */
+    @Test
+    fun testBuildConfig_invalidCompressionType_listsTheAcceptedValues() {
+        val props = createTestProperties()
+        props[AWSSchemaRegistryConstants.COMPRESSION_TYPE] = "Random String"
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(props) }
+
+        assertEquals(
+            "Invalid Compression type : Random String, Accepted values are : NONE, ZLIB",
+            exception.message,
+        )
+    }
+
+    /**
+     * Tests a non-String configuration value is rejected by name rather than by ClassCastException.
+     */
+    @Test
+    fun testBuildConfig_cacheSizeAsInt_throwsNamedException() {
+        val props = createTestProperties()
+        props[AWSSchemaRegistryConstants.CACHE_SIZE] = 200
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(props) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.CACHE_SIZE} must be a String, " +
+                "not a java.lang.Integer",
+            exception.message,
+        )
+    }
+
+    /**
      * Tests valid configuration tags value.
      */
     @Test

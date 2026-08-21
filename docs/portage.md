@@ -136,6 +136,16 @@ Java.
   well-formed payload decompresses exactly as before; a caller that was hanging now gets the
   same `AWSSchemaRegistryException("Error while decompressing data")` it gets for any other
   malformed input, with the truncation as its cause.
+- **Configuration errors name the property instead of leaking a cast.**
+  `GlueSchemaRegistryConfiguration` read half its properties through a raw `as String`, so a
+  caller passing `200` rather than `"200"` for `cacheSize` — an entirely reasonable thing to
+  do with a `Map<String, Object>` — got a bare `ClassCastException` naming neither the
+  property nor the expected type. Those casts now raise an `AWSSchemaRegistryException`
+  naming the property and the type that was supplied. The value is still rejected: only the
+  exception type and the message change. The same applies to the entries of the two Jackson
+  feature lists. Separately, the "Invalid Compression type" message interpolated the result
+  of `COMPRESSION.values()`, printing `[Lcom.amazonaws…;@1b6d3586` where the accepted values
+  were meant to be; it now reads `NONE, ZLIB`.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes

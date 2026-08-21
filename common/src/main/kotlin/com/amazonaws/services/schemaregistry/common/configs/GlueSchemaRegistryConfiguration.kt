@@ -121,18 +121,16 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetUserAgent(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.USER_AGENT_APP)) {
-            userAgentApp = configs[AWSSchemaRegistryConstants.USER_AGENT_APP] as String?
+            userAgentApp = nullableStringConfig(configs, AWSSchemaRegistryConstants.USER_AGENT_APP)
         }
     }
 
     private fun validateAndSetCompressionType(configs: Map<String, *>) {
-        if (isPresent(configs, AWSSchemaRegistryConstants.COMPRESSION_TYPE) &&
-            validateCompressionType(configs[AWSSchemaRegistryConstants.COMPRESSION_TYPE] as String)
-        ) {
-            compressionType =
-                AWSSchemaRegistryConstants.COMPRESSION.valueOf(
-                    (configs[AWSSchemaRegistryConstants.COMPRESSION_TYPE] as String).uppercase(),
-                )
+        if (isPresent(configs, AWSSchemaRegistryConstants.COMPRESSION_TYPE)) {
+            val value = stringConfig(configs, AWSSchemaRegistryConstants.COMPRESSION_TYPE)
+            if (validateCompressionType(value)) {
+                compressionType = AWSSchemaRegistryConstants.COMPRESSION.valueOf(value.uppercase())
+            }
         }
     }
 
@@ -140,7 +138,7 @@ class GlueSchemaRegistryConfiguration {
         if (!EnumUtils.isValidEnum(AWSSchemaRegistryConstants.COMPRESSION::class.java, compressionType.uppercase())) {
             throw AWSSchemaRegistryException(
                 "Invalid Compression type : $compressionType, Accepted values are : " +
-                    "${AWSSchemaRegistryConstants.COMPRESSION.values()}",
+                    AWSSchemaRegistryConstants.COMPRESSION.entries.joinToString(),
             )
         }
         return true
@@ -195,7 +193,7 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetProxyUrl(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.PROXY_URL)) {
-            val value = configs[AWSSchemaRegistryConstants.PROXY_URL] as String
+            val value = stringConfig(configs, AWSSchemaRegistryConstants.PROXY_URL)
             try {
                 proxyUrl = URI.create(value)
             } catch (e: IllegalArgumentException) {
@@ -215,7 +213,7 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetCacheSize(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.CACHE_SIZE)) {
-            val value = configs[AWSSchemaRegistryConstants.CACHE_SIZE] as String
+            val value = stringConfig(configs, AWSSchemaRegistryConstants.CACHE_SIZE)
             cacheSize =
                 try {
                     value.toInt()
@@ -229,7 +227,7 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetCacheTTL(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.CACHE_TIME_TO_LIVE_MILLIS)) {
-            val value = configs[AWSSchemaRegistryConstants.CACHE_TIME_TO_LIVE_MILLIS] as String
+            val value = stringConfig(configs, AWSSchemaRegistryConstants.CACHE_TIME_TO_LIVE_MILLIS)
             timeToLiveMillis =
                 try {
                     value.toLong()
@@ -243,14 +241,17 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetAvroRecordType(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.AVRO_RECORD_TYPE)) {
-            avroRecordType = AvroRecordType.valueOf(configs[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] as String)
+            avroRecordType =
+                AvroRecordType.valueOf(stringConfig(configs, AWSSchemaRegistryConstants.AVRO_RECORD_TYPE))
         }
     }
 
     private fun validateAndSetProtobufMessageType(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE)) {
             protobufMessageType =
-                ProtobufMessageType.valueOf(configs[AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE] as String)
+                ProtobufMessageType.valueOf(
+                    stringConfig(configs, AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE),
+                )
         }
     }
 
@@ -369,7 +370,12 @@ class GlueSchemaRegistryConfiguration {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES)) {
             val value = configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES]
             if (value is List<*>) {
-                jacksonSerializationFeatures = value.map { SerializationFeature.valueOf(it as String) }
+                jacksonSerializationFeatures =
+                    value.map {
+                        SerializationFeature.valueOf(
+                            stringEntry(AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES, it),
+                        )
+                    }
             } else {
                 throw AWSSchemaRegistryException("Jackson Serialization features should be a list")
             }
@@ -380,12 +386,47 @@ class GlueSchemaRegistryConfiguration {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES)) {
             val value = configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES]
             if (value is List<*>) {
-                jacksonDeserializationFeatures = value.map { DeserializationFeature.valueOf(it as String) }
+                jacksonDeserializationFeatures =
+                    value.map {
+                        DeserializationFeature.valueOf(
+                            stringEntry(AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES, it),
+                        )
+                    }
             } else {
                 throw AWSSchemaRegistryException("Jackson Deserialization features should be a list")
             }
         }
     }
+
+    private fun stringConfig(
+        configs: Map<String, *>,
+        key: String,
+    ): String {
+        val value = configs[key]
+        if (value is String) {
+            return value
+        }
+        throw AWSSchemaRegistryException("Configuration property $key must be a String, not ${describeType(value)}")
+    }
+
+    private fun nullableStringConfig(
+        configs: Map<String, *>,
+        key: String,
+    ): String? = if (configs[key] == null) null else stringConfig(configs, key)
+
+    private fun stringEntry(
+        key: String,
+        entry: Any?,
+    ): String {
+        if (entry is String) {
+            return entry
+        }
+        throw AWSSchemaRegistryException(
+            "Configuration property $key must only contain String entries, not ${describeType(entry)}",
+        )
+    }
+
+    private fun describeType(value: Any?): String = if (value == null) "null" else "a ${value.javaClass.name}"
 
     private fun isPresent(
         configs: Map<String, *>,
