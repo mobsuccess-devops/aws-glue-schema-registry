@@ -129,6 +129,22 @@ Java.
   the compile classpath it saw before. A consumer of `schema-registry-common` on its own
   does lose them at compile time, which is the point of the change. The eight `.api` dumps
   are byte-identical before and after.
+- **Jackson is declared, no longer inherited.** `jackson-databind` was used directly by
+  `common`, `serializer-deserializer`, `avro-kafkaconnect-converter` and
+  `jsonschema-kafkaconnect-converter` while being declared by none of them: it arrived
+  through `avro` (2.14.3), `connect-json` (2.16.2) and `aws-msk-iam-auth` (2.18.3), so the
+  version a module compiled against was whatever conflict resolution happened to pick, and
+  it differed between modules. Every module that imports `com.fasterxml.jackson` now
+  declares the artifacts it uses on top of `platform(libs.jackson.bom)`, which aligns the
+  whole graph on the 2.22.2 the catalog had been pinning for `examples` alone. The scope
+  follows the rule above — `api` for `serializer-deserializer` and
+  `jsonschema-kafkaconnect-converter`, whose dumps carry `JsonNode`, `implementation` for
+  `avro-kafkaconnect-converter`, whose Jackson use is entirely private — with one exception:
+  `common` keeps it at `api` although no Jackson type appears in its dump, because
+  `GlueSchemaRegistryConfiguration` exposes
+  `List<SerializationFeature>`/`List<DeserializationFeature>` and a dump written in JVM
+  descriptors erases the type argument. The dump decides for a bare type, not for one that
+  only ever appears inside a generic.
 - **A truncated compressed payload raises instead of spinning forever.**
   `GlueSchemaRegistryCompressionHandler.writeToByteArrayOutputStream` looped on
   `while (!inflater.finished())`. On a zlib stream that ends mid-data — which the producer

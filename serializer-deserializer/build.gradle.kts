@@ -7,6 +7,7 @@ plugins {
 dependencies {
     api(project(":schema-registry-common"))
     api(platform(libs.aws.bom))
+    api(platform(libs.jackson.bom))
     api(libs.kafka.clients)
     api(libs.avro) {
         exclude(group = "org.apache.commons", module = "commons-compress")
@@ -16,12 +17,14 @@ dependencies {
     api(libs.everit.jsonSchema) {
         exclude(group = "commons-collections", module = "commons-collections")
     }
+    api(libs.jackson.databind)
     api(libs.protobuf.java)
     api(libs.wire.schema)
     api(libs.kotlin.stdlib)
     api(libs.kotlin.stdlibJdk8)
 
     implementation(libs.aws.arns)
+    implementation(libs.jackson.core)
     implementation(libs.slf4j.api)
     implementation(libs.commons.collections4)
     implementation(libs.protoGoogleCommon)
@@ -43,6 +46,7 @@ dependencies {
         exclude(group = "com.charleskorn.kaml", module = "kaml")
     }
 
+    testImplementation(libs.jackson.annotations)
     testImplementation(libs.truth.protoExtension)
 }
 

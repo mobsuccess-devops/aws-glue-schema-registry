@@ -85,6 +85,9 @@ apicurio-protobufUtils = { module = "io.apicurio:apicurio-registry-protobuf-sche
 wire-schema = { module = "com.squareup.wire:wire-schema", version.ref = "wire" }
 wire-compiler = { module = "com.squareup.wire:wire-compiler", version.ref = "wire" }
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jackson-cbor = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor" }
 mbknor-jsonSchema = { module = "com.kjetland:mbknor-jackson-jsonschema_2.12", version.ref = "mbknorJsonSchema" }
 everit-jsonSchema = { module = "com.github.erosb:everit-json-schema", version.ref = "everitJsonSchema" }

@@ -7,8 +7,10 @@ dependencies {
     api(project(":schema-registry-serde"))
     api(libs.kafka.connectApi)
 
+    implementation(platform(libs.jackson.bom))
     implementation(libs.aws.sts)
     implementation(libs.aws.urlConnectionClient)
+    implementation(libs.jackson.databind)
     implementation(libs.slf4j.api)
 
     testImplementation(libs.junit4)
