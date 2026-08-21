@@ -363,6 +363,9 @@ open class AWSSchemaRegistryClient {
 
             var current: GetSchemaVersionResponse
             do {
+                if (retries > 0) {
+                    Thread.sleep(retryWaitMillis(retries))
+                }
                 current = client.getSchemaVersion(getSchemaVersionRequest)
 
                 if (AWSSchemaRegistryConstants.SchemaVersionStatus.AVAILABLE.toString() == current.statusAsString()) {
@@ -395,6 +398,8 @@ open class AWSSchemaRegistryClient {
         }
         return response
     }
+
+    private fun retryWaitMillis(attempt: Int): Long = minOf(BASE_RETRY_WAIT_INTERVAL shl (attempt - 1), MAX_WAIT_INTERVAL)
 
     /**
      * Put metadata to schema version asynchronously.
@@ -548,6 +553,7 @@ open class AWSSchemaRegistryClient {
         private val log = LoggerFactory.getLogger(AWSSchemaRegistryClient::class.java)
         private const val MAX_ATTEMPTS = 10
         private const val MAX_WAIT_INTERVAL = 3000L
+        private const val BASE_RETRY_WAIT_INTERVAL = 100L
 
         // Held by the outer class companion: a Kotlin `inner` class cannot have a
         // companion object of its own.

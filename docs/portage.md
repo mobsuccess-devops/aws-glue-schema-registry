@@ -146,6 +146,16 @@ Java.
   feature lists. Separately, the "Invalid Compression type" message interpolated the result
   of `COMPRESSION.values()`, printing `[Lcom.amazonaws…;@1b6d3586` where the accepted values
   were meant to be; it now reads `NONE, ZLIB`.
+- **The schema-evolution poll waits between attempts.** `waitForSchemaEvolutionCheckToComplete`
+  slept three seconds once, then issued its ten `GetSchemaVersion` calls back to back with
+  nothing between them. Ten calls fired inside a few hundred milliseconds is both a burst
+  against a throttled API and a retry loop that gives the check no more time to finish than
+  a single attempt would have. The gap between attempts is now exponential, from 100 ms and
+  doubling up to the same three-second `MAX_WAIT_INTERVAL` the initial sleep already used,
+  so the ten attempts span about eighteen seconds instead of three. Nothing else changes:
+  the attempt count, the statuses accepted, and the two exceptions raised are the same. A
+  caller that registers a schema whose evolution check is slow now blocks longer — and
+  succeeds where it used to exhaust its retries.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes

@@ -795,6 +795,52 @@ class AWSSchemaRegistryClientTest {
     }
 
     @Test
+    fun testWaitForSchemaEvolutionCheckToComplete_pendingThenAvailable_waitsBetweenAttempts() {
+        val getSchemaVersionRequest =
+            GetSchemaVersionRequest
+                .builder()
+                .schemaVersionId(SCHEMA_ID_FOR_TESTING.toString())
+                .build()
+        val pendingResponse =
+            GetSchemaVersionResponse
+                .builder()
+                .schemaVersionId(SCHEMA_ID_FOR_TESTING.toString())
+                .schemaDefinition(userSchemaDefinition)
+                .status(AWSSchemaRegistryConstants.SchemaVersionStatus.PENDING.toString())
+                .build()
+        val availableResponse =
+            GetSchemaVersionResponse
+                .builder()
+                .schemaVersionId(SCHEMA_ID_FOR_TESTING.toString())
+                .schemaDefinition(userSchemaDefinition)
+                .status(AWSSchemaRegistryConstants.SchemaVersionStatus.AVAILABLE.toString())
+                .build()
+
+        whenever(mockGlueClient!!.getSchemaVersion(getSchemaVersionRequest))
+            .thenReturn(pendingResponse, availableResponse)
+        val waitForSchemaEvolutionCheckToCompleteMethod =
+            AWSSchemaRegistryClient::class.java.getDeclaredMethod(
+                "waitForSchemaEvolutionCheckToComplete",
+                GetSchemaVersionRequest::class.java,
+            )
+        waitForSchemaEvolutionCheckToCompleteMethod.isAccessible = true
+
+        val startedAt = System.nanoTime()
+        val resultResponse =
+            assertDoesNotThrow<Any> {
+                waitForSchemaEvolutionCheckToCompleteMethod.invoke(awsSchemaRegistryClient, getSchemaVersionRequest)
+            } as GetSchemaVersionResponse
+        val elapsedMillis = (System.nanoTime() - startedAt) / 1_000_000
+
+        assertEquals(SCHEMA_ID_FOR_TESTING.toString(), resultResponse.schemaVersionId())
+        verify(mockGlueClient!!, times(2)).getSchemaVersion(getSchemaVersionRequest)
+        assertTrue(
+            elapsedMillis >= 3100,
+            "Expected the second attempt to be delayed, took $elapsedMillis ms",
+        )
+    }
+
+    @Test
     fun testWaitForSchemaEvolutionCheckToComplete_clientThrowsException_throwsException() {
         val getSchemaVersionRequest =
             GetSchemaVersionRequest
