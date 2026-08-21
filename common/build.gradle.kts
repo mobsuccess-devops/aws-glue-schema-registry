@@ -5,7 +5,9 @@ plugins {
 
 dependencies {
     api(platform(libs.aws.bom))
+    api(platform(libs.jackson.bom))
     api(libs.aws.glue)
+    api(libs.jackson.databind)
     implementation(libs.aws.urlConnectionClient)
     implementation(libs.avro) {
         exclude(group = "org.apache.commons", module = "commons-compress")

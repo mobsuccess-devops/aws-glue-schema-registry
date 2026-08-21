@@ -8,6 +8,7 @@ dependencies {
     testImplementation(project(":schema-registry-serde"))
     testImplementation(project(":schema-registry-kafkastreams-serde"))
     testImplementation(platform(libs.aws.bom))
+    testImplementation(platform(libs.jackson.bom))
     testImplementation(libs.aws.kinesis)
     testImplementation(libs.aws.auth)
     testImplementation(libs.kinesis.client) {
@@ -31,6 +32,8 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.hamcrest)
     testImplementation(libs.jaxb.api)
+    testImplementation(libs.jackson.annotations)
+    testImplementation(libs.jackson.databind)
 
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
