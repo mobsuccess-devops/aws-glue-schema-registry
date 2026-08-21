@@ -892,15 +892,15 @@ object FileDescriptorUtils {
             options.add(OptionElement(OPTIMIZE_FOR_OPTION, enumKind, file.options.optimizeFor, false))
         }
         return ProtoFileElement(
-            DEFAULT_LOCATION,
-            packageName,
-            syntax,
-            imports.build(),
-            publicImports.build(),
-            types.build(),
-            services.build(),
-            Collections.emptyList(),
-            options.build(),
+            location = DEFAULT_LOCATION,
+            packageName = packageName,
+            syntax = syntax,
+            imports = imports.build(),
+            publicImports = publicImports.build(),
+            types = types.build(),
+            services = services.build(),
+            extendDeclarations = Collections.emptyList(),
+            options = options.build(),
         )
     }
 

@@ -156,6 +156,12 @@ Java.
   the attempt count, the statuses accepted, and the two exceptions raised are the same. A
   caller that registers a schema whose evolution check is slow now blocks longer — and
   succeeds where it used to exhaust its retries.
+- **`ProtoFileElement` built with named arguments.** Wire 6 inserted a `weakImports`
+  parameter between `publicImports` and `types`. The call in `FileDescriptorUtils` passed
+  its nine arguments positionally, so the insertion shifted every argument after the fifth
+  onto the wrong parameter — caught by the compiler here only because the types differ.
+  The call now names its arguments and lets `weakImports` take its default, so the next
+  parameter Wire inserts cannot silently land in the wrong slot.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes
