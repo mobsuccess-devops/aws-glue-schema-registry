@@ -87,19 +87,19 @@ class ProtobufSchemaConverter(
         val schemaCache = checkNotNull(fromConnectSchemaCache) { NOT_CONFIGURED }
         val schemaConverter = checkNotNull(connectSchemaToProtobufSchemaConverter) { NOT_CONFIGURED }
         val dataConverter = checkNotNull(connectDataToProtobufDataConverter) { NOT_CONFIGURED }
-        val data = checkNotNull(value) { "A Protobuf record carries no value" }
+        val data = value!!
 
         val cachedProtobufSchema = schemaCache.get(schema)
         if (cachedProtobufSchema != null) {
             val message = dataConverter.convert(cachedProtobufSchema, schema, data)
-            return checkNotNull(serializer.serialize(topic, message)) { SERIALIZED_NOTHING }
+            return serializer.serialize(topic, message)!!
         }
 
         val fileDescriptor = schemaConverter.convert(schema)
         schemaCache.put(schema, fileDescriptor)
         val message = dataConverter.convert(fileDescriptor, schema, data)
 
-        return checkNotNull(serializer.serialize(topic, message)) { SERIALIZED_NOTHING }
+        return serializer.serialize(topic, message)!!
     }
 
     override fun toConnectData(
@@ -127,7 +127,5 @@ class ProtobufSchemaConverter(
 
         private const val NOT_CONFIGURED =
             "configure() has not been called, so this converter is not ready to convert anything"
-
-        private const val SERIALIZED_NOTHING = "The Protobuf serializer produced no bytes for a non-null record"
     }
 }

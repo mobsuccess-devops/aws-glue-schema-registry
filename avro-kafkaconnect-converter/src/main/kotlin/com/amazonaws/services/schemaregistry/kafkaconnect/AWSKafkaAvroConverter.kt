@@ -148,8 +148,8 @@ open class AWSKafkaAvroConverter(
         deserialized: Any?,
     ): org.apache.avro.Schema {
         // Check if this is GSR data that can be processed by the GSR deserialization facade.
-        val facade = deserializer.glueSchemaRegistryDeserializationFacade
-        if (facade != null && facade.canDeserialize(value)) {
+        val facade = checkNotNull(deserializer.glueSchemaRegistryDeserializationFacade) { NOT_CONFIGURED }
+        if (facade.canDeserialize(value)) {
             try {
                 val schemaDefinition =
                     facade.getSchemaDefinition(value)

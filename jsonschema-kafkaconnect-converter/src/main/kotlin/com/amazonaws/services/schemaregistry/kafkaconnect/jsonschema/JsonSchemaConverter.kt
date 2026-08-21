@@ -122,7 +122,7 @@ class JsonSchemaConverter(
 
             val jsonSchemaWithData =
                 JsonDataWithSchema.builder(canonicalize(jsonSchema.toString()), jsonPayload).build()
-            return checkNotNull(serializer.serialize(topic, jsonSchemaWithData)) { SERIALIZED_NOTHING }
+            return serializer.serialize(topic, jsonSchemaWithData)!!
         } catch (e: SerializationException) {
             throw DataException("Converting Kafka Connect data to byte[] failed due to serialization error: ", e)
         } catch (e: AWSSchemaRegistryException) {
@@ -151,7 +151,7 @@ class JsonSchemaConverter(
         val facade =
             checkNotNull(deserializer.glueSchemaRegistryDeserializationFacade) { NOT_CONFIGURED }
         val jsonSchemaString =
-            facade.getSchemaDefinition(checkNotNull(value) { "A JSON record carries no bytes" })
+            facade.getSchemaDefinition(value!!)
 
         val jsonSchema =
             try {
@@ -188,8 +188,6 @@ class JsonSchemaConverter(
     companion object {
         private const val NOT_CONFIGURED =
             "configure() has not been called, so this converter is not ready to convert anything"
-
-        private const val SERIALIZED_NOTHING = "The JSON serializer produced no bytes for a non-null record"
 
         private val CANONICAL_MAPPER =
             ObjectMapper().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)

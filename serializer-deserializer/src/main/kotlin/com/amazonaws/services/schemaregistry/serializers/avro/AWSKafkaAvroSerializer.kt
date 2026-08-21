@@ -95,16 +95,17 @@ open class AWSKafkaAvroSerializer(
             return null
         }
 
+        val facade = configuredFacade()
         val schemaVersionIdFromRegistry =
             if (schemaVersionId == null) {
                 log.debug("Schema Version Id is null. Trying to register the schema.")
-                configuredFacade().getOrRegisterSchemaVersion(prepareInput(data, topic, isKey))
+                facade.getOrRegisterSchemaVersion(prepareInput(data, topic, isKey))
             } else {
                 schemaVersionId
             }
 
         log.debug("Schema Version Id received from the from schema registry: {}", schemaVersionIdFromRegistry)
-        return configuredFacade().serialize(DATA_FORMAT, data, schemaVersionIdFromRegistry)
+        return facade.serialize(DATA_FORMAT, data, schemaVersionIdFromRegistry)
     }
 
     override fun close() {
@@ -121,7 +122,7 @@ open class AWSKafkaAvroSerializer(
         data: Any,
         isKey: Boolean?,
     ): String? = schemaName ?: checkNotNull(schemaNamingStrategy) { NO_NAMING_STRATEGY }
-        .getSchemaName(topic, data, checkNotNull(isKey) { "isKey must be given" })
+        .getSchemaName(topic, data, isKey!!)
 
     // isKey stays boxed: the Java signature used Boolean and the tests look this method up
     // reflectively by that exact signature.
