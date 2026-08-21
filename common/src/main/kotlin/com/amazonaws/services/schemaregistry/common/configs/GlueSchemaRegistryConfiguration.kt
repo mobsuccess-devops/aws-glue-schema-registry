@@ -271,18 +271,8 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetJsonClassNameResolutionSetting(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED)) {
-            val value = configs[AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED].toString()
-            // toBoolean maps anything that is not "true" to false, so a typo such as "ture" would
-            // silently leave resolution off. Call that out rather than letting the user believe
-            // they opted in.
-            if (!value.equals("true", ignoreCase = true) && !value.equals("false", ignoreCase = true)) {
-                log.warn(
-                    "Unrecognized value '{}' for {}; interpreting it as false.",
-                    value,
-                    AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED,
-                )
-            }
-            isJsonClassNameResolutionEnabled = value.toBoolean()
+            isJsonClassNameResolutionEnabled =
+                booleanConfig(configs, AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED)
         } else {
             log.info(
                 "jsonClassNameResolutionEnabled is not defined in the properties. Using the default value {}",
@@ -371,8 +361,19 @@ class GlueSchemaRegistryConfiguration {
     private fun validateAndSetJsonSchemaNullableSetting(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED)) {
             isJsonSchemaNullableEnabled =
-                configs[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED].toString().toBoolean()
+                booleanConfig(configs, AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED)
         }
+    }
+
+    private fun booleanConfig(
+        configs: Map<String, *>,
+        key: String,
+    ): Boolean {
+        val value = configs[key].toString()
+        if (!value.equals("true", ignoreCase = true) && !value.equals("false", ignoreCase = true)) {
+            log.warn("Unrecognized value '{}' for {}; interpreting it as false.", value, key)
+        }
+        return value.toBoolean()
     }
 
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
