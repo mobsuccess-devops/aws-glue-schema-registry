@@ -45,9 +45,8 @@ tasks.withType<AbstractArchiveTask>().configureEach {
     isReproducibleFileOrder = true
 }
 
-// Java and Kotlin coexist for the duration of the conversion: Kotlin compiles first,
-// then javac sees its classes. The sources still in Java therefore validate the code
-// already converted, without the tests having been touched.
+// Kotlin compiles first, then javac sees its classes. The only Java left is the Avro
+// classes generated into the test trees, which reference nothing Kotlin.
 kotlin {
     explicitApiWarning()
     compilerOptions {
