@@ -9,16 +9,15 @@
 #   VERSION=1.2.0
 #
 # Conventional commits rules:
-#   fix:           → patch
-#   feat:          → minor
-#   feat!: / fix!: → major
+#   fix:                          → patch
+#   feat:                         → minor
+#   feat!: / fix!:                → major
 #   BREAKING CHANGE in commit body → major
 #   chore:/docs:/ci:/etc.         → patch
 
 set -euo pipefail
 
-# Get latest tag
-LATEST_TAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo "")
+LATEST_TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "")
 
 # If no tag exists, first release is 1.0.0
 if [ -z "$LATEST_TAG" ]; then
@@ -28,32 +27,33 @@ if [ -z "$LATEST_TAG" ]; then
 fi
 
 CURRENT="${LATEST_TAG#v}"
+
+if [[ ! "$CURRENT" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+  echo "version.sh: latest tag '${LATEST_TAG}' is not a v<major>.<minor>.<patch> release tag." >&2
+  exit 1
+fi
+
 IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
-# Get commit messages since last tag
-COMMITS=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%s" 2>/dev/null || echo "")
+RANGE="${LATEST_TAG}..HEAD"
 
-if [ -z "$COMMITS" ]; then
+SUBJECTS=$(git log "$RANGE" --pretty=format:"%s" 2>/dev/null || echo "")
+BODIES=$(git log "$RANGE" --format=%B 2>/dev/null || echo "")
+
+if [ -z "$SUBJECTS" ]; then
   echo "BUMP=patch"
   echo "VERSION=${MAJOR}.${MINOR}.$((PATCH+1))"
   exit 0
 fi
 
-BUMP="patch"
-while IFS= read -r msg; do
-  [ -z "$msg" ] && continue
-
-  # Check for breaking change (! after type or BREAKING CHANGE in message)
-  if echo "$msg" | grep -qE '^[a-z]+(\(.+\))?!:'; then
-    BUMP="major"
-    break
-  elif echo "$msg" | grep -q 'BREAKING CHANGE'; then
-    BUMP="major"
-    break
-  elif echo "$msg" | grep -qE '^feat(\(.+\))?:'; then
-    [ "$BUMP" != "major" ] && BUMP="minor"
-  fi
-done <<< "$COMMITS"
+if grep -qE '^[a-z]+(\(.+\))?!:' <<< "$SUBJECTS" \
+  || grep -qE '^BREAKING[ -]CHANGE:' <<< "$BODIES"; then
+  BUMP="major"
+elif grep -qE '^feat(\(.+\))?:' <<< "$SUBJECTS"; then
+  BUMP="minor"
+else
+  BUMP="patch"
+fi
 
 case $BUMP in
   major) VERSION="$((MAJOR+1)).0.0" ;;

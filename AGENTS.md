@@ -143,19 +143,22 @@ These all cost a red test at least once. They are listed in the order they bite.
 - Local hooks: `pre-commit install` (prettier, ktlint, end-of-file)
 - **The pull request title drives the version number.** Merges are squashed with `PR_TITLE`
   as the commit message, and `scripts/version.sh` derives the bump from conventional commits
-  since the last `v*` tag. A title with no recognized prefix silently yields a patch bump.
+  since the last `v<major>.<minor>.<patch>` tag. A title with no recognized prefix silently
+  yields a patch bump.
 
-  | Title prefix                               | Bump  |
-  | ------------------------------------------ | ----- |
-  | `feat!:`, or `BREAKING CHANGE` in the body | major |
-  | `feat:`                                    | minor |
-  | `fix:`, `chore:`, `docs:`, anything else   | patch |
+  | Title prefix                                              | Bump  |
+  | --------------------------------------------------------- | ----- |
+  | `feat!:`, or a `BREAKING CHANGE:` footer line in the body | major |
+  | `feat:`                                                   | minor |
+  | `fix:`, `chore:`, `docs:`, anything else                  | patch |
 
   The Kotlin conversion therefore ships under `feat!:` to come out as 2.0.0.
 
 - Versions: the git tag carries the `v` prefix (`v1.0.0`), the Maven version does not
-  (`1.0.0`). The prefix is not cosmetic — `version.sh` runs `git describe --match 'v*'`
-  then strips the `v`; without it, every release would restart from 1.0.0.
+  (`1.0.0`). The prefix is not cosmetic — `version.sh` runs
+  `git describe --match 'v[0-9]*.[0-9]*.[0-9]*'` then strips the `v`; without it, every
+  release would restart from 1.0.0. That glob, and the semver check that follows it, are
+  what keep a tag like `v.1.1.15` or `v1.2.08` out of the arithmetic.
 - `.mobsuccess.yml` disables the `linear`, `ms-testers`, `mobsuccess`, `closed` and `python`
   workflows: this repository does not require a Linear ticket per pull request.
 
