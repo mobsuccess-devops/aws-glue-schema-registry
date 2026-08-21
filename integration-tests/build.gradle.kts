@@ -29,7 +29,7 @@ dependencies {
     api(libs.log4j.slf4jImpl)
     api(libs.log4j.compatApi)
     api(libs.junit.jupiter)
-    api(libs.hamcrest.all)
+    api(libs.hamcrest)
     api(libs.jaxb.api)
 
     // Classes generated from serializer-deserializer/src/test/proto, consumed through
