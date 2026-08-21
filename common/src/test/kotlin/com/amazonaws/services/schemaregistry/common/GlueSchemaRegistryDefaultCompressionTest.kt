@@ -5,9 +5,12 @@ import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryExceptio
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTimeoutPreemptively
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Duration
 
 class GlueSchemaRegistryDefaultCompressionTest {
     private val configs: MutableMap<String, Any> = HashMap()
@@ -59,7 +62,29 @@ class GlueSchemaRegistryDefaultCompressionTest {
         }
     }
 
+    @Test
+    fun testDecompress_truncatedInput_throwsAWSSchemaRegistryException() {
+        val compressedRecord = glueSchemaRegistryDefaultCompression.compress(TEST_COMPRESSIBLE_BYTE_ARRAY)
+        val truncatedRecord = compressedRecord.copyOf(compressedRecord.size / 2)
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) {
+                assertTimeoutPreemptively(Duration.ofSeconds(10)) {
+                    glueSchemaRegistryDefaultCompression.decompress(truncatedRecord, 0, truncatedRecord.size)
+                }
+            }
+        val cause = exception.cause
+
+        assertEquals("Error while decompressing data", exception.message)
+        assertEquals(AWSSchemaRegistryException::class.java, cause?.javaClass)
+        assertEquals(
+            "Compressed bytes are truncated: the stream ends before the decompressed data does",
+            cause?.message,
+        )
+    }
+
     companion object {
         private val TEST_BYTE_ARRAY = byteArrayOf(1, 2, 3)
+        private val TEST_COMPRESSIBLE_BYTE_ARRAY = ByteArray(8192) { (it % 251).toByte() }
     }
 }

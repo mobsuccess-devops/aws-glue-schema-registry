@@ -114,6 +114,16 @@ interface GlueSchemaRegistryCompressionHandler {
                     } catch (e: DataFormatException) {
                         throw AWSSchemaRegistryException("Bytes received is not compressed properly", e)
                     }
+                if (count == 0 && inflater.needsDictionary()) {
+                    throw AWSSchemaRegistryException(
+                        "Compressed bytes need a preset dictionary, which the schema registry format does not carry",
+                    )
+                }
+                if (count == 0 && inflater.needsInput()) {
+                    throw AWSSchemaRegistryException(
+                        "Compressed bytes are truncated: the stream ends before the decompressed data does",
+                    )
+                }
                 outputStream.write(buffer, 0, count)
             }
             outputStream.close()

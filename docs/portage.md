@@ -124,6 +124,18 @@ Java.
   the compile classpath it saw before. A consumer of `schema-registry-common` on its own
   does lose them at compile time, which is the point of the change. The eight `.api` dumps
   are byte-identical before and after.
+- **A truncated compressed payload raises instead of spinning forever.**
+  `GlueSchemaRegistryCompressionHandler.writeToByteArrayOutputStream` looped on
+  `while (!inflater.finished())`. On a zlib stream that ends mid-data — which the producer
+  of a record controls — `Inflater.inflate` returns 0, `needsInput()` becomes true and
+  `finished()` never does, so the loop spins on a CPU until the process is killed. The loop
+  now exits when `inflate` produced nothing and the inflater is waiting on more input,
+  raising an `AWSSchemaRegistryException` naming the truncation. A stream waiting on a
+  preset dictionary hangs the same loop for a different reason, and raises its own message
+  saying so. Every
+  well-formed payload decompresses exactly as before; a caller that was hanging now gets the
+  same `AWSSchemaRegistryException("Error while decompressing data")` it gets for any other
+  malformed input, with the truncation as its cause.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes
