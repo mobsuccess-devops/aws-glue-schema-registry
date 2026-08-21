@@ -165,6 +165,13 @@ class GlueSchemaRegistryConfigDefTest {
     }
 
     @Test
+    fun testDefineJson_declaresTheCompatibilityCheck() {
+        val parsed = AbstractConfig(fullConfigDef(), emptyMap<String, Any>())
+
+        assertFalse(parsed.getBoolean(AWSSchemaRegistryConstants.JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED))
+    }
+
+    @Test
     fun testConfigDef_leavesTheMapValuedKeysUndeclared() {
         val keys = fullConfigDef().configKeys().keys
 

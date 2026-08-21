@@ -385,17 +385,6 @@ class GlueSchemaRegistryConfiguration {
         }
     }
 
-    private fun booleanConfig(
-        configs: Map<String, *>,
-        key: String,
-    ): Boolean {
-        val value = configs[key].toString()
-        if (!value.equals("true", ignoreCase = true) && !value.equals("false", ignoreCase = true)) {
-            log.warn("Unrecognized value '{}' for {}; interpreting it as false.", value, key)
-        }
-        return value.toBoolean()
-    }
-
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES)) {
             val value = configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES]
