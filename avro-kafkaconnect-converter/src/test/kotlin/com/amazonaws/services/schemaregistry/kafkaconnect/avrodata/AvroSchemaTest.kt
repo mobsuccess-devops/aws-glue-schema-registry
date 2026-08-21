@@ -22,10 +22,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 
-/**
- * Unit tests for AvroSchema, covering the null canonical representation the Java source
- * returned for a schema with no underlying Avro object.
- */
 class AvroSchemaTest {
     @Test
     fun testCanonicalString_withNullSchemaObject_returnsNull() {

@@ -166,10 +166,6 @@ class AWSKafkaAvroConverterTest {
         assertEquals(SchemaAndValue.NULL, converter.toConnectData(TEST_TOPIC, null))
     }
 
-    /**
-     * Test AWSKafkaAvroConverter on a tombstone: Kafka Connect marks a deletion with a null
-     * value, which has to serialize to a null byte array rather than raise.
-     */
     @Test
     fun testConverter_fromConnectData_NullValue_returnsNull() {
         converter =

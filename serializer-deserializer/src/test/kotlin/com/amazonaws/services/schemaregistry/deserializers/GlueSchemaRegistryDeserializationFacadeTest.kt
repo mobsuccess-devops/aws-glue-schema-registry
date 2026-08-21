@@ -249,10 +249,6 @@ class GlueSchemaRegistryDeserializationFacadeTest {
         )
     }
 
-    /**
-     * Tests that overriding the user-agent app name accepts a null, which the Java source stored
-     * as-is.
-     */
     @Test
     fun testOverrideUserAgentApp_withNull_storesNull() {
         val glueSchemaRegistryDeserializationFacade =
