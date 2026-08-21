@@ -344,6 +344,10 @@ What each of them needs:
 The endpoints are read from the environment, so a runner can point them anywhere:
 `GLUE_ENDPOINT` for Glue and `KAFKA_BOOTSTRAP` for the broker; unset, they fall back to the
 values the upstream sources hard-coded. The region needs no override of its own — it comes
-from the AWS SDK provider chain, which reads `AWS_REGION`. The Glue-dependent job is skipped
-while the `GLUE_ENDPOINT` repository variable is empty, so the nightly stays green and
-honest rather than permanently red.
+from the AWS SDK provider chain, which reads `AWS_REGION`.
+
+The workflow supplies the Glue endpoint itself, as a `motoserver/moto` service container, so
+the suite runs whole without an AWS account. LocalStack is not an option for this: it serves
+Glue only in its top paid tier, and the Schema Registry it offers there is AVRO-only, while
+these tests cover Avro, JSON Schema and Protobuf alike. Setting the `GLUE_ENDPOINT`
+repository variable overrides the emulator and points the same tests at a real endpoint.
