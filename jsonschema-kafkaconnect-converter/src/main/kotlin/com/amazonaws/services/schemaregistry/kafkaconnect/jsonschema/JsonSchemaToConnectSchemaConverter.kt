@@ -89,15 +89,19 @@ class JsonSchemaToConnectSchemaConverter(
 
     private fun buildOptionalUnionSchema(subSchemas: Collection<org.everit.json.schema.Schema>): Schema? {
         val nonNullSubSchemas = subSchemas.filter { it !is NullSchema }
+        if (nonNullSubSchemas.isEmpty()) {
+            return null
+        }
         if (nonNullSubSchemas.size == 1) {
             return toConnectSchema(nonNullSubSchemas.first(), false)
         }
-        return buildNonOptionalUnionSchema(nonNullSubSchemas, true).build()
+        return buildNonOptionalUnionSchema(nonNullSubSchemas, hasNullSchema = true, requiredBranches = false).build()
     }
 
     private fun buildNonOptionalUnionSchema(
         subSchemas: Collection<org.everit.json.schema.Schema>,
         hasNullSchema: Boolean,
+        requiredBranches: Boolean = true,
     ): SchemaBuilder {
         val builder = SchemaBuilder.struct().name(JsonSchemaConverterConstants.JSON_SCHEMA_TYPE_ONEOF)
 
@@ -106,7 +110,7 @@ class JsonSchemaToConnectSchemaConverter(
         }
 
         subSchemas.filter { it !is NullSchema }.forEachIndexed { index, subSchema ->
-            builder.field("field${index + 1}", toConnectSchema(subSchema))
+            builder.field("field${index + 1}", toConnectSchema(subSchema, requiredBranches))
         }
 
         return builder

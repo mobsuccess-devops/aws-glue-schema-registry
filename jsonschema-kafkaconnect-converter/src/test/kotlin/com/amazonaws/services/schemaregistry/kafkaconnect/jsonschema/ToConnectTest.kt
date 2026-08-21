@@ -39,6 +39,7 @@ import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -691,6 +692,34 @@ class ToConnectTest {
         val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
 
         assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+    }
+
+    @Test
+    fun testToConnect_threeWayNullableUnion_readsANonNullValue() {
+        val jsonSchema = loadSchema(nullableSchema(""" [ "string", "integer", "null" ] """))
+        val jsonValue = ObjectMapper().readTree("""{ "value": "Cristina Hermann" }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+        val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+    }
+
+    @Test
+    fun testToConnect_threeWayNullableUnion_branchesAreOptional() {
+        val jsonSchema = loadSchema(nullableSchema(""" [ "string", "integer", "null" ] """))
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+
+        val branches = connectSchema!!.field("value").schema().fields()
+        assertTrue(branches.all { it.schema().isOptional })
+    }
+
+    @Test
+    fun testToConnect_unionOfOnlyNull_isNoSchemaAtAll() {
+        val jsonSchema = loadSchema("""{ "anyOf": [ { "type": "null" } ] }""")
+
+        assertNull(jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema))
     }
 
     @Test

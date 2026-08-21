@@ -243,4 +243,9 @@ Java.
   schema is the union of the remaining types, made optional: one real type yields that type
   directly, several yield the `oneOf` struct over them. The `oneOf`-with-two-subschemas case
   behaves exactly as before; every other shape used to raise. This is upstream PR #526
-  (upstream issue #218).
+  (upstream issue #218). Two details beyond it: a union of nothing but `null` yields no schema,
+  as a bare `NullSchema` already does, rather than an empty `oneOf` struct; and the branches of
+  a nullable multi-type union are optional, so a value that populates one branch validates. That
+  last point does not extend to a **non**-nullable multi-type union, whose branches are still
+  required and which therefore still cannot carry a value — a pre-existing limitation of the
+  union encoding, untouched here because changing it would move schemas that convert today.
