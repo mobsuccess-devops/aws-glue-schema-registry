@@ -379,3 +379,26 @@ Java.
   towards it. A sweep of every converted class for a field that is public in Kotlin and had no
   public accessor in Java — Lombok annotations accounted for — finds **no** accidental widening
   anywhere in the port.
+
+- **Duplication removed where it was literal.** `AWSSchemaRegistryClient` carried two private
+  functions with different names and identical bodies, `getSchemaVersionRequest` and
+  `getGetSchemaVersionRequest`; one is gone. `SecondaryDeserializer` had four methods each
+  catching three reflective exceptions in three blocks with the same body — twelve blocks
+  producing four distinct messages. Each is now one `catch (e: ReflectiveOperationException)`,
+  which is the common supertype of all six exception types involved and is not wider in
+  practice: `Class.forName`, `newInstance`, `getMethod` and `invoke` throw no other subclass of
+  it, so nothing newly falls into these handlers.
+- **The two single-method validation interfaces became `fun interface`s.** `SchemaValidator` and
+  `SchemaValidationStrategy` were implemented five times in `SchemaValidatorBuilder` by anonymous
+  objects; they are lambdas now, and the file is a third of its length. The strategy is still
+  read from the field at validation time rather than captured when the validator is built, so a
+  builder reconfigured after handing out a validator still changes what that validator does — the
+  inherited behaviour, kept deliberately. `fun interface` changes no signature, so the `.api`
+  dump does not move.
+
+  None of this cluster — `SchemaValidator`, `SchemaValidationStrategy`, `SchemaValidatorBuilder`,
+  `CompatibilityChecker` — is reached from anywhere in the library, and none of it had a test.
+  `SchemaValidatorBuilderTest` was written first against the inherited implementation, and pins
+  what the rewrite had to preserve: which of the two schemas each strategy interrogates, that
+  `validateLatest` reads only the first, and that `validateAll` stops at the first schema to
+  report something rather than visiting the rest.

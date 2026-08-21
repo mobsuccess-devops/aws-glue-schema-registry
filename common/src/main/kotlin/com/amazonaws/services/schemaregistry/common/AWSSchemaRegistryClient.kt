@@ -305,7 +305,7 @@ open class AWSSchemaRegistryClient {
             }
 
             return waitForSchemaEvolutionCheckToComplete(
-                getGetSchemaVersionRequest(registerSchemaVersionResponse.schemaVersionId()),
+                getSchemaVersionRequest(registerSchemaVersionResponse.schemaVersionId()),
             )
         } catch (e: Exception) {
             throw AWSSchemaRegistryException(
@@ -406,8 +406,6 @@ open class AWSSchemaRegistryClient {
         schemaName: String,
         registryName: String?,
     ): SchemaId = SchemaId.builder().schemaName(schemaName).registryName(registryName).build()
-
-    private fun getGetSchemaVersionRequest(schemaVersionId: String): GetSchemaVersionRequest = GetSchemaVersionRequest.builder().schemaVersionId(schemaVersionId).build()
 
     /**
      * Get schema version response of asynchronous operation.
