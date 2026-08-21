@@ -291,12 +291,21 @@ that surface small; none of them survive a careless rewrite, so check them befor
   needs to run the build — so `dependency-submission.yml` splits the two, exactly as
   `ci.yml` splits `build` and `report`: `generate` resolves the graph with `contents: read`
   and uploads it as an artifact, `submit` posts that artifact and runs no repository code.
-- **CodeQL is wired but dormant.** `codeql.yml` analyses `java-kotlin` with a manual build
-  mode, and is gated on the `ENABLE_CODEQL` repository variable being `true`. Code scanning
-  needs GitHub Code Security, which this private repository does not have: the gate keeps
-  the workflow ready and out of the way instead of red on every run. Flip the variable once
-  the feature is enabled. `actions/dependency-review-action` is deliberately absent for the
-  same reason — it needs the same feature.
+- **CodeQL builds with `--no-build-cache`, and that flag is load-bearing.** `codeql.yml`
+  analyses `java-kotlin` in manual build mode, which extracts code from the compiler
+  invocations `./gradlew assemble` makes. On a branch that touches no source, the restored
+  Gradle build cache serves every `compileKotlin`/`compileJava` `FROM-CACHE`, no compiler
+  ever runs, and the extractor fails the job on exit 32, having seen no source at all —
+  which, since `Analyze java-kotlin` is required, blocked every documentation-only pull
+  request. Disabling the build cache for that one invocation is what makes the analysis
+  real; the dependency cache is untouched, so the cost is a full compile (~10 min) rather
+  than a full download. Skipping the workflow on docs-only branches would
+  have been the wrong fix: a required check that skips counts as green, which is the
+  anti-pattern `.mobsuccess.yml` documents.
+- **CodeQL is still gated on the `ENABLE_CODEQL` repository variable.** It is set now that
+  the repository is public and has code scanning; the gate stays so the workflow can be
+  turned off without editing it. `actions/dependency-review-action` needs the same feature
+  and could now be added.
 - **Releases are attested and checksummed.** `publish-release` builds a `SHA256SUMS.txt`
   over every jar it published and attaches it to the GitHub release, then
   `actions/attest-build-provenance` signs a provenance statement for those same jars. A
