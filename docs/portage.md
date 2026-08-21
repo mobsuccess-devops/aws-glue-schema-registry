@@ -38,6 +38,11 @@ Java.
 
 ## Accepted deviations from the Maven build
 
+- **`templating-maven-plugin` replaced by a `Copy` task.** `common` declares
+  `generateVersionSource`, which expands `src/main/java-templates` into the build directory
+  so that `MavenPackaging.VERSION` carries the project version. That constant is read by the
+  User-Agent interceptor of the Glue calls, so the value has to be the built version rather
+  than a literal.
 - **C# and `multilang-schema-registry` removed.** The Java part of that module existed
   only to expose a native library to the C# binding; with no consumer, it has no purpose.
 - **`build-tools` removed.** That module only held the Checkstyle configuration of the
