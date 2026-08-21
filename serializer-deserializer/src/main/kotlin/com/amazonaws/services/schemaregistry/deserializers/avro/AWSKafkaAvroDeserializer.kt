@@ -92,7 +92,7 @@ open class AWSKafkaAvroDeserializer(
      * Resource clean up for Closeable.
      */
     override fun close() {
-        glueSchemaRegistryDeserializationFacade!!.close()
+        configuredFacade().close()
     }
 
     private fun prepareInput(
@@ -121,10 +121,14 @@ open class AWSKafkaAvroDeserializer(
         data: ByteArray,
         headerVersionByte: Byte,
     ): Any = if (headerVersionByte == AWSSchemaRegistryConstants.HEADER_VERSION_BYTE) {
-        glueSchemaRegistryDeserializationFacade!!.deserialize(prepareInput(data, topic))
+        configuredFacade().deserialize(prepareInput(data, topic))
     } else {
         secondaryDeserializer.deserialize(topic, data)
     }
 
     private fun getHeaderVersionByte(data: ByteArray): Byte = GlueSchemaRegistryDeserializerDataParser.getInstance().getHeaderVersionByte(ByteBuffer.wrap(data))
+
+    private fun configuredFacade(): GlueSchemaRegistryDeserializationFacade = checkNotNull(glueSchemaRegistryDeserializationFacade) {
+        "configure() has not been called, so this deserializer has no connection to the schema registry"
+    }
 }

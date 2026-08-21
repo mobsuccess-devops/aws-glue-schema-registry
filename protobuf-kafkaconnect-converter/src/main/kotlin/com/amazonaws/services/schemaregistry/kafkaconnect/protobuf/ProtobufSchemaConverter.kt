@@ -84,15 +84,20 @@ class ProtobufSchemaConverter(
         schema: Schema,
         value: Any?,
     ): ByteArray {
-        val cachedProtobufSchema = fromConnectSchemaCache!!.get(schema)
+        val schemaCache = checkNotNull(fromConnectSchemaCache) { NOT_CONFIGURED }
+        val schemaConverter = checkNotNull(connectSchemaToProtobufSchemaConverter) { NOT_CONFIGURED }
+        val dataConverter = checkNotNull(connectDataToProtobufDataConverter) { NOT_CONFIGURED }
+        val data = value!!
+
+        val cachedProtobufSchema = schemaCache.get(schema)
         if (cachedProtobufSchema != null) {
-            val message = connectDataToProtobufDataConverter!!.convert(cachedProtobufSchema, schema, value!!)
+            val message = dataConverter.convert(cachedProtobufSchema, schema, data)
             return serializer.serialize(topic, message)!!
         }
 
-        val fileDescriptor = connectSchemaToProtobufSchemaConverter!!.convert(schema)
-        fromConnectSchemaCache!!.put(schema, fileDescriptor)
-        val message = connectDataToProtobufDataConverter!!.convert(fileDescriptor, schema, value!!)
+        val fileDescriptor = schemaConverter.convert(schema)
+        schemaCache.put(schema, fileDescriptor)
+        val message = dataConverter.convert(fileDescriptor, schema, data)
 
         return serializer.serialize(topic, message)!!
     }
@@ -103,17 +108,24 @@ class ProtobufSchemaConverter(
     ): SchemaAndValue {
         val message = deserializer.deserialize(topic, bytes) as Message
 
+        val schemaCache = checkNotNull(toConnectSchemaCache) { NOT_CONFIGURED }
+        val schemaConverter = checkNotNull(protobufSchemaToConnectSchemaConverter) { NOT_CONFIGURED }
+        val dataConverter = checkNotNull(protobufDataToConnectDataConverter) { NOT_CONFIGURED }
+
         val descriptor = message.descriptorForType
-        var schema = toConnectSchemaCache!!.get(descriptor)
+        var schema = schemaCache.get(descriptor)
         if (schema == null) {
-            schema = protobufSchemaToConnectSchemaConverter!!.toConnectSchema(message)
-            toConnectSchemaCache!!.put(descriptor, schema)
+            schema = schemaConverter.toConnectSchema(message)
+            schemaCache.put(descriptor, schema)
         }
 
-        return SchemaAndValue(schema, protobufDataToConnectDataConverter!!.toConnectData(message, schema))
+        return SchemaAndValue(schema, dataConverter.toConnectData(message, schema))
     }
 
     companion object {
         private const val SCHEMAS_CACHE_SIZE_DEFAULT = 50
+
+        private const val NOT_CONFIGURED =
+            "configure() has not been called, so this converter is not ready to convert anything"
     }
 }
