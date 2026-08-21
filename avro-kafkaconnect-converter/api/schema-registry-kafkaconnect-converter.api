@@ -1,6 +1,7 @@
 public class com/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConverter : org/apache/kafka/connect/storage/Converter {
 	public fun <init> ()V
 	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/avro/AWSKafkaAvroSerializer;Lcom/amazonaws/services/schemaregistry/deserializers/avro/AWSKafkaAvroDeserializer;Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData;)V
+	public fun config ()Lorg/apache/kafka/common/config/ConfigDef;
 	public fun configure (Ljava/util/Map;Z)V
 	public fun fromConnectData (Ljava/lang/String;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)[B
 	public final fun getAvroData ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/AvroData;
@@ -15,6 +16,7 @@ public class com/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConv
 }
 
 public final class com/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConverterConfig : org/apache/kafka/common/config/AbstractConfig {
+	public static final field ASSUME_ROLE_SESSION_NAME_DEFAULT Ljava/lang/String;
 	public static final field Companion Lcom/amazonaws/services/schemaregistry/kafkaconnect/AWSKafkaAvroConverterConfig$Companion;
 	public fun <init> (Ljava/util/Map;)V
 	public static final fun configDef ()Lorg/apache/kafka/common/config/ConfigDef;

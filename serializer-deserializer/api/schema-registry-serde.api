@@ -339,6 +339,23 @@ public final class com/amazonaws/services/schemaregistry/deserializers/protobuf/
 	public final fun getAndRemoveMessageIndex ([B)Lorg/apache/commons/lang3/tuple/Pair;
 }
 
+public final class com/amazonaws/services/schemaregistry/kafkaconnect/config/GlueSchemaRegistryConfigDef {
+	public static final field GROUP_AVRO Ljava/lang/String;
+	public static final field GROUP_AWS Ljava/lang/String;
+	public static final field GROUP_CACHE Ljava/lang/String;
+	public static final field GROUP_JSON Ljava/lang/String;
+	public static final field GROUP_PROTOBUF Ljava/lang/String;
+	public static final field GROUP_REGISTRY Ljava/lang/String;
+	public static final field GROUP_SERIALIZATION Ljava/lang/String;
+	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/kafkaconnect/config/GlueSchemaRegistryConfigDef;
+	public static final fun baseConfigDef ()Lorg/apache/kafka/common/config/ConfigDef;
+	public static final fun coerce (Lorg/apache/kafka/common/config/ConfigDef;Ljava/util/Map;)Ljava/util/Map;
+	public static final fun defineAvro (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
+	public static final fun defineDataFormat (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
+	public static final fun defineJson (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
+	public static final fun defineProtobuf (Lorg/apache/kafka/common/config/ConfigDef;)Lorg/apache/kafka/common/config/ConfigDef;
+}
+
 public class com/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer : org/apache/kafka/common/serialization/Serializer {
 	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer$Companion;
 	public fun <init> ()V

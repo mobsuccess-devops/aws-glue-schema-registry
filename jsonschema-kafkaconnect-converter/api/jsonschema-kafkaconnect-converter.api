@@ -30,6 +30,7 @@ public final class com/amazonaws/services/schemaregistry/kafkaconnect/jsonschema
 	public fun <init> ()V
 	public fun <init> (Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer;Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer;)V
 	public static final fun canonicalize (Ljava/lang/String;)Ljava/lang/String;
+	public fun config ()Lorg/apache/kafka/common/config/ConfigDef;
 	public fun configure (Ljava/util/Map;Z)V
 	public fun fromConnectData (Ljava/lang/String;Lorg/apache/kafka/connect/data/Schema;Ljava/lang/Object;)[B
 	public final fun getConnectSchemaToJsonSchemaConverter ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/jsonschema/ConnectSchemaToJsonSchemaConverter;

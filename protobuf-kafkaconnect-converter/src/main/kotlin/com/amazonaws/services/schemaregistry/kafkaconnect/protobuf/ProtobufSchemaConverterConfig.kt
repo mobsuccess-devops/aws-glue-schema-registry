@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2026 Mobsuccess.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -13,28 +13,25 @@
  * limitations under the License.
  */
 
-package com.amazonaws.services.schemaregistry.kafkaconnect.jsonschema
+package com.amazonaws.services.schemaregistry.kafkaconnect.protobuf
 
 import com.amazonaws.services.schemaregistry.kafkaconnect.config.GlueSchemaRegistryConfigDef
 import org.apache.kafka.common.config.AbstractConfig
 import org.apache.kafka.common.config.ConfigDef
 
 /**
- * Glue Schema Registry JSON Schema converter config.
+ * Glue Schema Registry Protobuf converter config.
  *
  * @param props property elements for the converter config
  */
-class JsonSchemaConverterConfig(
+class ProtobufSchemaConverterConfig(
     props: Map<String, *>,
 ) : AbstractConfig(CONFIG_DEF, GlueSchemaRegistryConfigDef.coerce(CONFIG_DEF, props)) {
     companion object {
         private val CONFIG_DEF: ConfigDef =
-            GlueSchemaRegistryConfigDef
-                .defineJson(
-                    GlueSchemaRegistryConfigDef.defineDataFormat(GlueSchemaRegistryConfigDef.baseConfigDef()),
-                ).also { configDef ->
-                    JsonSchemaDataConfig.baseConfigDef().configKeys().values.forEach { configDef.define(it) }
-                }
+            GlueSchemaRegistryConfigDef.defineProtobuf(
+                GlueSchemaRegistryConfigDef.defineDataFormat(GlueSchemaRegistryConfigDef.baseConfigDef()),
+            )
 
         @JvmStatic
         fun configDef(): ConfigDef = ConfigDef(CONFIG_DEF)

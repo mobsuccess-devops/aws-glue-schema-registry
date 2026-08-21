@@ -25,6 +25,7 @@ import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
+import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaAndValue
@@ -63,6 +64,8 @@ open class AWSKafkaAvroConverter(
         null,
     )
 
+    override fun config(): ConfigDef = AWSKafkaAvroConverterConfig.configDef()
+
     /**
      * Configure the AWS Avro Converter.
      */
@@ -77,7 +80,8 @@ open class AWSKafkaAvroConverter(
         val roleToAssume = configs[AWSSchemaRegistryConstants.ASSUME_ROLE_ARN] as String?
         if (!roleToAssume.isNullOrEmpty()) {
             val sessionName =
-                configs[AWSSchemaRegistryConstants.ASSUME_ROLE_SESSION_NAME]?.toString() ?: "kafka-connect-session"
+                configs[AWSSchemaRegistryConstants.ASSUME_ROLE_SESSION_NAME]?.toString()
+                    ?: AWSKafkaAvroConverterConfig.ASSUME_ROLE_SESSION_NAME_DEFAULT
             val region = configs[AWSSchemaRegistryConstants.AWS_REGION].toString()
 
             val credentialsProvider = getCredentialsProvider(roleToAssume, sessionName, region)

@@ -214,6 +214,57 @@ It is kept so the fork stays behaviour-identical to its source, not because it i
 dependency to take today. New Flink work should use the Glue Schema Registry formats that ship
 with [Apache Flink itself](https://github.com/apache/flink/tree/master/flink-formats).
 
+## Configuration reference
+
+Every property below is read from the `Map` handed to `configure(...)`, from the `Properties`
+given to a facade, or from a Kafka Connect connector configuration. The key names are the
+constants of
+[`AWSSchemaRegistryConstants`](common/src/main/kotlin/com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants.kt);
+their semantics live in
+[`GlueSchemaRegistryConfiguration`](common/src/main/kotlin/com/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration.kt).
+
+"Scope" is the side that reads the property: a producer-only property on a consumer is simply
+ignored.
+
+| Key                              | Type                           | Default                                   | Scope                  | Notes                                                                                                       |
+| -------------------------------- | ------------------------------ | ----------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `region`                         | string                         | default AWS region chain                  | both                   | Configuration fails when neither this nor the provider chain resolves a region.                             |
+| `endpoint`                       | string                         | regional Glue endpoint                    | both                   | Endpoint override, mostly for LocalStack and VPC endpoints.                                                 |
+| `proxyUrl`                       | string (URI)                   | none                                      | both                   | Rejected with a named error when it is not a valid URI.                                                     |
+| `registry.name`                  | string                         | `default-registry`                        | serializer             | The consumer resolves a schema by version id, so it needs no registry name.                                 |
+| `schemaName`                     | string                         | from the naming strategy                  | serializer             | The default strategy derives the name from the topic.                                                       |
+| `schemaNameGenerationClass`      | string (class name)            | topic-name strategy                       | serializer             | Must implement `AWSSchemaNamingStrategy`. An unloadable name falls back to the default strategy.            |
+| `schemaAutoRegistrationEnabled`  | boolean                        | `false`                                   | serializer             | When `false`, an unknown schema fails serialization instead of being registered.                            |
+| `compatibility`                  | string (enum)                  | `BACKWARD`                                | serializer             | Only read when auto-registration creates the schema. Accepted values: `Compatibility.knownValues()`.        |
+| `description`                    | string                         | `DEFAULT-DESCRIPTION-<region>-<registry>` | serializer             | Attached to a schema this library registers.                                                                |
+| `tags`                           | `Map<String, String>`          | empty                                     | serializer             | Applied when the registry entry is created. Not declared in the Connect `ConfigDef` — see below.            |
+| `metadata`                       | `Map<String, String>`          | none                                      | serializer             | Attached to the schema version. Not declared in the Connect `ConfigDef` — see below.                        |
+| `compression`                    | string (enum)                  | `NONE`                                    | serializer             | `NONE` or `ZLIB`. The consumer reads either: the choice is recorded in the record header.                   |
+| `dataFormat`                     | string (enum)                  | none                                      | serializer             | `AVRO`, `JSON` or `PROTOBUF`. Required by the format-agnostic serializer; the format-specific ones set it.  |
+| `avroRecordType`                 | string (enum)                  | `GENERIC_RECORD`                          | deserializer           | `GENERIC_RECORD` or `SPECIFIC_RECORD`. Case-sensitive.                                                      |
+| `protobufMessageType`            | string (enum)                  | none                                      | deserializer           | `DYNAMIC_MESSAGE` or `POJO`. Case-sensitive.                                                                |
+| `jsonClassNameResolutionEnabled` | boolean                        | `false`                                   | deserializer           | Opt-in: it turns a registry field into a class name to load. See the className section above.               |
+| `jsonClassNameAllowlist`         | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected. |
+| `jacksonSerializationFeatures`   | list of enum names             | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries to enable.                                    |
+| `jacksonDeserializationFeatures` | list of enum names             | none                                      | both                   | `com.fasterxml.jackson.databind.DeserializationFeature` entries to enable.                                  |
+| `secondaryDeserializer`          | string (class name) or `Class` | none                                      | deserializer           | Fallback for records that carry no Glue Schema Registry header.                                             |
+| `timeToLiveMillis`               | long                           | `86400000` (24 h)                         | both                   | Time to live of a cache entry.                                                                              |
+| `cacheSize`                      | int                            | `200`                                     | both                   | Maximum number of cached schemas.                                                                           |
+| `userAgentApp`                   | string                         | `default`                                 | both                   | Reported in the User-Agent of the Glue calls. The Connect converters report `kafkaconnect`.                 |
+| `assumeRoleArn`                  | string                         | none                                      | Avro Connect converter | Role assumed through STS before calling Glue.                                                               |
+| `assumeRoleSessionName`          | string                         | `kafka-connect-session`                   | Avro Connect converter | Only read when `assumeRoleArn` is set.                                                                      |
+
+The three Kafka Connect converters publish these keys through `Converter.config()`, so
+`PUT /connector-plugins/{plugin}/config/validate` reports them, a Connect UI renders them, and a
+misspelled value is refused when the connector is created rather than at the first record. The
+converters also accept the keys of `AvroDataConfig` (`enhanced.avro.schema.support`,
+`connect.meta.data`, `schemas.cache.config`) and of `JsonSchemaDataConfig` (the same two plus
+`decimal.format`).
+
+`tags` and `metadata` are deliberately left out of that `ConfigDef`: their values are maps, a
+shape Kafka's `ConfigDef` has no type for. They keep working when a converter is configured
+programmatically, and a Connect worker could not have passed them anyway.
+
 ## Migrating from the AWS artifact
 
 Coming from `software.amazon.glue` on Maven Central, the swap is a coordinate change: the

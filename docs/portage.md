@@ -200,3 +200,25 @@ Java.
   `SecondaryDeserializer.validate` and `GlueSchemaRegistryUtils.initializeStrategy` compare what
   they load against a type this library loaded itself, and resolving one side through a different
   class loader would make that comparison fail rather than succeed.
+- **The Kafka Connect converters describe their configuration.** The three converters built
+  their `AbstractConfig` from an empty `ConfigDef()`, so `Converter.config()` returned the
+  empty default of the interface: `PUT /connector-plugins/{plugin}/config/validate` reported
+  nothing about the registry settings, a Connect UI had nothing to render, and a misspelled
+  key or an impossible value was discovered at the first record rather than when the
+  connector was created. Every key
+  `GlueSchemaRegistryConfiguration` reads is now declared — type, default, accepted values,
+  importance, group and documentation — in `GlueSchemaRegistryConfigDef`, which the three
+  converter config classes assemble and which each converter now returns from `config()`.
+  Two deliberate limits: `tags` and `metadata` are left undeclared, because their values are
+  maps and Kafka's `ConfigDef` has no map type — an undeclared key is passed through
+  untouched, so both keep working exactly as before. And the values of the declared keys go
+  through `GlueSchemaRegistryConfigDef.coerce` first, which renders a non-`String` value of a
+  `STRING` key through `toString()`, and a `Class` through `getName()`, because that is what
+  `GlueSchemaRegistryConfiguration` itself accepts for those keys and `ConfigDef` accepts
+  neither. What the converters reject that they used to ignore is therefore only what the
+  registry configuration would have rejected later anyway. `ProtobufSchemaConverter`, which
+  had no config class at all, gained `ProtobufSchemaConverterConfig` and now validates its
+  configuration like the other two. The enum validators follow the parsing the registry
+  configuration performs: case-insensitive for `compression`, `compatibility` and
+  `dataFormat`, which are uppercased before parsing, case-sensitive for `avroRecordType` and
+  `protobufMessageType`, which reach `Enum.valueOf` as they are given.

@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
+import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaAndValue
@@ -62,6 +63,8 @@ class JsonSchemaConverter(
         GlueSchemaRegistryKafkaSerializer().apply { userAgentApp = UserAgents.KAFKACONNECT },
         GlueSchemaRegistryKafkaDeserializer().apply { userAgentApp = UserAgents.KAFKACONNECT },
     )
+
+    override fun config(): ConfigDef = JsonSchemaConverterConfig.configDef()
 
     /**
      * Configure the JSONSchema Converter.

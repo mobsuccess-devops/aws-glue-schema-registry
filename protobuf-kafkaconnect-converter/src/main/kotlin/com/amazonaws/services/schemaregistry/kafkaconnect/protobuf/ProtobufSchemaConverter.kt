@@ -28,6 +28,7 @@ import com.google.protobuf.Message
 import org.apache.kafka.common.cache.Cache
 import org.apache.kafka.common.cache.LRUCache
 import org.apache.kafka.common.cache.SynchronizedCache
+import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaAndValue
 import org.apache.kafka.connect.storage.Converter
@@ -57,11 +58,15 @@ class ProtobufSchemaConverter(
     @VisibleForTesting
     internal fun getToConnectSchemaCache(): Cache<Descriptors.Descriptor, Schema>? = toConnectSchemaCache
 
+    override fun config(): ConfigDef = ProtobufSchemaConverterConfig.configDef()
+
     override fun configure(
         configs: Map<String, *>,
         isKey: Boolean,
     ) {
         this.isKey = isKey
+        ProtobufSchemaConverterConfig(configs)
+
         serializer.configure(configs, this.isKey)
         deserializer.configure(configs, this.isKey)
         connectSchemaToProtobufSchemaConverter = ConnectSchemaToProtobufSchemaConverter()
