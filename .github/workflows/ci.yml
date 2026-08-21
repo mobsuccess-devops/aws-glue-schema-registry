@@ -20,6 +20,9 @@ jobs:
   build:
     name: Gradle Build
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-build-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     permissions:
       contents: read
     steps:
@@ -27,8 +30,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
       - name: Setup Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
@@ -36,9 +37,14 @@ jobs:
           java-version: |
             17
             21
-          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          validate-wrappers: true
+          cache-read-only: ${{ github.event_name != 'push' || github.ref != 'refs/heads/master' }}
+          add-job-summary: always
       - name: Build, test & coverage
-        run: ./gradlew assemble check jacocoTestReport --no-daemon
+        run: ./gradlew assemble check jacocoTestReport
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -106,6 +112,9 @@ jobs:
   test-jdk:
     name: Tests on JDK ${{ matrix.jdk }}
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-test-jdk-${{ matrix.jdk }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     permissions:
       contents: read
     strategy:
@@ -117,29 +126,32 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
       - name: Setup Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
-          # Dernier de la liste = JAVA_HOME, donc Gradle tourne sur 21. 17 reste la
-          # toolchain de compilation ; 25 n'est là que comme cible d'exécution.
           java-version: |
             25
             17
             21
-          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          validate-wrappers: true
+          cache-read-only: true
+          add-job-summary: always
       - name: Test on JDK ${{ matrix.jdk }}
         run: >-
           ./gradlew test
           -PtestJavaVersion=${{ matrix.jdk }}
           -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64,JAVA_HOME_21_X64,JAVA_HOME_25_X64
-          --no-daemon
 
   lint:
     name: ktlint
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-lint-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     permissions:
       contents: read
       checks: write
@@ -179,7 +191,12 @@ jobs:
           java-version: |
             17
             21
-          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          validate-wrappers: true
+          cache-read-only: true
+          add-job-summary: always
       - name: Calculate version
         id: version
         run: |
@@ -191,7 +208,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
-        run: ./gradlew publish --no-daemon
+        run: ./gradlew publish
 
   publish-release:
     name: Publish Release
@@ -199,7 +216,9 @@ jobs:
     if: github.ref == 'refs/heads/prod' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
+      attestations: write
       contents: write
+      id-token: write
       packages: write
     steps:
       - name: Checkout
@@ -213,7 +232,12 @@ jobs:
           java-version: |
             17
             21
-          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          validate-wrappers: true
+          cache-read-only: true
+          add-job-summary: always
       - name: Calculate version
         id: version
         run: |
@@ -225,7 +249,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
-        run: ./gradlew publish --no-daemon
+        run: ./gradlew publish
+      - name: Collect published jars
+        run: |
+          mkdir -p release-artifacts
+          find . -path ./buildSrc -prune -o -path '*/build/libs/*.jar' -print0 \
+            | xargs -0 -I{} cp {} release-artifacts/
+          (cd release-artifacts && sha256sum ./*.jar > SHA256SUMS.txt)
+          cat release-artifacts/SHA256SUMS.txt
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release-artifacts/*.jar
       - name: Tag and release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -234,4 +269,5 @@ jobs:
           git push origin "v${{ steps.version.outputs.version }}"
           gh release create "v${{ steps.version.outputs.version }}" \
             --title "v${{ steps.version.outputs.version }}" \
-            --generate-notes
+            --generate-notes \
+            release-artifacts/SHA256SUMS.txt
