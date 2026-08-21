@@ -19,12 +19,12 @@ deviation reads with `git diff eed1506 -- <path>`. Accepted deviations are liste
 ## The golden rule
 
 The repository must stay **behaviour-identical to the source at the Java level**. The
-inherited test suite is the only guard rail: **2097 tests, zero failure**. A conversion
+inherited test suite is the only guard rail: **2099 tests, zero failure**. A conversion
 step that lowers that total or breaks a test is not finished, however good the produced
 code looks.
 
 ```bash
-./gradlew clean build     # compile + 2097 tests + jars
+./gradlew clean build     # compile + 2099 tests + jars
 ./gradlew test            # tests only
 ./gradlew assemble        # jars only
 ```

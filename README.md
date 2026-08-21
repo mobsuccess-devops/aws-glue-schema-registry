@@ -13,7 +13,7 @@ serializers and deserializers that plug into it.
 
 ## How this fork differs
 
-The library behaviour is unchanged — the inherited test suite (2097 tests) passes in full,
+The library behaviour is unchanged — the inherited test suite (2099 tests) passes in full,
 and the first commit of this repository is the upstream source verbatim, so every deviation
 is visible with `git diff eed1506`.
 
@@ -245,7 +245,7 @@ Three things to check on the way:
 ## Building from source
 
 ```bash
-./gradlew clean build     # compile, run the 2097 tests, produce the jars
+./gradlew clean build     # compile, run the 2099 tests, produce the jars
 ./gradlew test            # tests only
 ./gradlew assemble        # jars only
 ```
@@ -894,9 +894,17 @@ key.converter.assumeRoleSessionName=my-custom-session
 value.converter.assumeRoleSessionName=my-custom-session
 ```
 
-## Security issue notifications
+## Reporting a security issue
 
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
+Vulnerabilities in this fork are **not** reported to AWS: the build, the dependency set and
+the Kotlin conversion are specific to it, and upstream is dormant. Use GitHub's private vulnerability reporting on this
+repository — [Report a vulnerability](https://github.com/mobsuccess-devops/aws-glue-schema-registry/security/advisories/new)
+— and please do not open a public issue. The full policy is in [SECURITY.md](SECURITY.md).
+
+## Contributing
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) for the house
+rules and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## License and attribution
 

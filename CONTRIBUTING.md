@@ -1,65 +1,106 @@
-# Contributing Guidelines
+# Contributing
 
-Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
-documentation, we greatly value feedback and contributions from our community.
+Thank you for considering a contribution. This repository is the Mobsuccess fork of
+[`awslabs/aws-glue-schema-registry`](https://github.com/awslabs/aws-glue-schema-registry):
+issues and pull requests belong **here**, not upstream, and there is no contributor licence
+agreement to sign. By opening a pull request you agree that your contribution ships under
+the [Apache License 2.0](LICENSE.txt), like the rest of the project.
 
-Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
-information to effectively respond to your bug report or contribution.
+## Before you start
 
-## Reporting Bugs/Feature Requests
+- **Security problems do not go in an issue.** Follow [SECURITY.md](SECURITY.md).
+- **Search first** — check the [open](https://github.com/mobsuccess-devops/aws-glue-schema-registry/issues)
+  and [recently closed](https://github.com/mobsuccess-devops/aws-glue-schema-registry/issues?q=is%3Aissue+is%3Aclosed)
+  issues.
+- **Open an issue before a large change.** The fork has a narrow contract, described below;
+  a change that crosses it is better discussed than rewritten.
 
-We welcome you to use the GitHub issue tracker to report bugs or suggest features.
+## Reporting a bug
 
-When filing an issue, please check [existing open](https://github.com/awslabs/aws-glue-schema-registry/issues), or
-[recently
-closed](https://github.com/awslabs/aws-glue-schema-registry/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20), issues to make sure somebody else hasn't already
-reported the issue. Please try to include as much information as you can. Details like these are incredibly useful:
+Useful reports say which artifact and version, which JVM, and which data format (AVRO, JSON
+Schema, Protobuf). A failing test is worth more than a description — the suite is the
+project's only guard rail, and a reproducer usually belongs in it.
 
-- A reproducible test case or series of steps
-- The version of our code being used
-- Any modifications you've made relevant to the bug
-- Anything unusual about your environment or deployment
+If the behaviour also exists in the AWS artifact, say so: it changes the fix from a
+conversion regression to an inherited bug, and the two are handled differently.
 
-## Contributing via Pull Requests
+## The contract: identical by default, better where documented
 
-Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:
+The library must behave exactly like its upstream source at the Java level. That is what
+makes the artifact a drop-in replacement, and it is the fork's whole value proposition.
 
-1. You are working against the latest source on the _master_ branch.
-2. You check existing open, and recently merged, pull requests to make sure someone else hasn't addressed the problem already.
-3. You open an issue to discuss any significant work - we would hate for your time to be wasted.
+Deliberate improvements are allowed — the fork carries several — but they are **documented
+deviations, not silent ones**. A change in observable behaviour needs an entry in
+[docs/portage.md](docs/portage.md) saying what changed and why, and a line in
+[CHANGELOG.md](CHANGELOG.md) if a consumer could notice it.
 
-To send us a pull request, please:
+The inherited test suite is the oracle: **2099 tests, zero failures**. A change that lowers
+that total or breaks a test is not finished, however good the code looks. If a test has to
+change, the pull request has to explain why the old assertion was wrong.
 
-1. Fork the repository.
-2. Modify the source; please focus on the specific change you are contributing. If you also reformat all the code, it will be hard for us to focus on your change.
-3. Ensure local tests pass.
-4. Commit to your fork using clear commit messages.
-5. Send us a pull request, answering any default questions in the pull request interface.
-6. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
+## Building and testing
 
-GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
-[creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
+JVM 17 or later; Gradle resolves its own toolchain.
 
-## Finding contributions to work on
+```bash
+./gradlew clean build     # compile, run the 2099 tests, produce the jars
+./gradlew test            # tests only
+./gradlew assemble        # jars only
+```
 
-Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use
-the default GitHub issue labels ((enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any
-['help wanted'](https://github.com/awslabs/aws-glue-schema-registry/labels/help%20wanted) issues is a great place to
-start.
+The `integration-tests` module needs real AWS resources. Its `*IntegrationTest` classes are
+excluded from the unit run and from CI — do not re-enable them there.
 
-## Code of Conduct
+Install the hooks once, so formatting is fixed before it reaches review:
 
-This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
-For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
-opensource-codeofconduct@amazon.com with any additional questions or comments.
+```bash
+pre-commit install
+```
 
-## Security issue notifications
+They run prettier, ktlint 1.4.1 (configured in `.editorconfig`, `intellij_idea` style) and an
+end-of-file fixer.
 
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
+## House style
 
-## Licensing
+- **English everywhere that lands on GitHub**: commit messages, pull request titles and
+  bodies, documentation and any comment.
+- **No comments in the code.** Rationale goes in the commit message, in the pull request
+  body, or in `docs/portage.md` — somewhere it can be maintained. Code that needs a comment
+  to be understood usually needs a better name instead.
+- **Versions live in `gradle/libs.versions.toml`.** Never hard-code one in a
+  `build.gradle.kts`.
+- **Kotlin, for new code.** The Java → Kotlin conversion is done except for
+  `integration-tests`. [AGENTS.md](AGENTS.md) lists the Java interop traps that have each
+  cost a red test at least once; it is worth reading before converting anything.
 
-See the [LICENSE](https://github.com/awslabs/aws-glue-schema-registry/blob/master/LICENSE) file for our project's
-licensing. We will ask you to confirm the licensing of your contribution.
+## Pull requests
 
-We may ask you to sign a [Contributor License Agreement (CLA)](http://en.wikipedia.org/wiki/Contributor_License_Agreement) for larger changes.
+Work from an up-to-date `master`, keep the change focused, and do not reformat unrelated
+files — a diff that mixes a fix with a reformat is hard to review and hard to revert.
+
+**The pull request title is the release note and the version bump.** Merges are squashed
+with the title as the commit message, and `scripts/version.sh` derives the next version from
+the conventional commits since the last `v*` tag:
+
+| Title prefix                                              | Bump  |
+| --------------------------------------------------------- | ----- |
+| `feat!:`, or a `BREAKING CHANGE:` footer line in the body | major |
+| `feat:`                                                   | minor |
+| `fix:`, `chore:`, `docs:`, anything else                  | patch |
+
+A title with no recognised prefix silently yields a patch bump, so a breaking change with a
+careless title ships as a patch. Get the prefix right.
+
+The body should explain **why**, not restate the diff. Reviewers can read the diff; they
+cannot read the reasoning that produced it.
+
+Then watch CI: `Gradle Build` is a required check, and ktlint comments inline.
+
+## Releases
+
+Maintainers only. A push to the `prod` branch triggers `publish-release`, which computes the
+version, publishes to GitHub Packages, tags `vX.Y.Z` and creates the GitHub release.
+
+## Code of conduct
+
+By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
