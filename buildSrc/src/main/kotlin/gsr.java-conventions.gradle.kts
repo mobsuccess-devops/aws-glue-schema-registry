@@ -43,9 +43,6 @@ tasks.withType<Jar>().configureEach {
     }
 }
 
-// Two builds of the same commit have to produce byte-identical archives: without this,
-// every entry carries its own build timestamp and the file order follows the filesystem,
-// so a rebuild yields a different jar and the build cache cannot vouch for it.
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
@@ -95,8 +92,6 @@ val testJavaLauncher =
         languageVersion.set(testJavaVersion)
     }
 
-// Half the cores, so that the forks of the modules Gradle runs in parallel do not add up
-// to more than the machine has.
 val testForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
 
 tasks.test {
