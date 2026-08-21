@@ -17,9 +17,6 @@ package com.amazonaws.services.schemaregistry.integrationtests.kinesis
 
 import cloud.localstack.Constants
 import cloud.localstack.ServiceName
-import com.amazonaws.services.kinesis.producer.KinesisProducer
-import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration
-import com.amazonaws.services.kinesis.producer.UserRecordResult
 import com.amazonaws.services.schemaregistry.common.Schema
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializer
@@ -73,6 +70,9 @@ import software.amazon.awssdk.services.kinesis.model.StreamStatus
 import software.amazon.kinesis.common.ConfigsBuilder
 import software.amazon.kinesis.coordinator.Scheduler
 import software.amazon.kinesis.metrics.NullMetricsFactory
+import software.amazon.kinesis.producer.KinesisProducer
+import software.amazon.kinesis.producer.KinesisProducerConfiguration
+import software.amazon.kinesis.producer.UserRecordResult
 import software.amazon.kinesis.retrieval.polling.PollingConfig
 import java.net.URI
 import java.nio.ByteBuffer
@@ -240,7 +240,9 @@ class GlueSchemaRegistryKinesisIntegrationTest {
 
         produceRecordsWithKPL(streamName, producerRecords, dataFormat, compatibility, gsrConfig)
 
-        TimeUnit.SECONDS.sleep(KCL_SCHEDULER_SHUT_DOWN_WAIT_TIME_SECONDS.toLong())
+        Awaitility.await()
+            .atMost(KCL_CONSUMPTION_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .untilAsserted { assertEquals(producerRecords.size, recordProcessor.consumedRecords.size) }
         scheduler.shutdown()
 
         assertTrue(recordProcessor.creationSuccess)
@@ -277,7 +279,9 @@ class GlueSchemaRegistryKinesisIntegrationTest {
 
         produceRecordsWithKPL(streamName, producerRecords, dataFormat, compatibility, gsrConfig)
 
-        TimeUnit.SECONDS.sleep(KCL_SCHEDULER_SHUT_DOWN_WAIT_TIME_SECONDS.toLong())
+        Awaitility.await()
+            .atMost(KCL_CONSUMPTION_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .untilAsserted { assertEquals(producerRecords.size, recordProcessor.consumedRecords.size) }
         scheduler.shutdown()
 
         assertTrue(recordProcessor.creationSuccess)
@@ -482,7 +486,9 @@ class GlueSchemaRegistryKinesisIntegrationTest {
 
         Thread(scheduler).start()
 
-        TimeUnit.SECONDS.sleep(KCL_SCHEDULER_START_UP_WAIT_TIME_SECONDS.toLong())
+        Awaitility.await()
+            .atMost(KCL_SCHEDULER_START_UP_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .until { recordProcessor.creationSuccess }
 
         return scheduler
     }
@@ -511,8 +517,8 @@ class GlueSchemaRegistryKinesisIntegrationTest {
         private const val LOCALSTACK_KINESIS_PORT = 4566
         private val LOCALSTACK_ENDPOINT = String.format("http://%s:%d", LOCALSTACK_HOSTNAME, LOCALSTACK_KINESIS_PORT)
         private val LOCALSTACK_CLOUDWATCH_PORT = Constants.DEFAULT_PORTS[ServiceName.CLOUDWATCH]!!
-        private const val KCL_SCHEDULER_START_UP_WAIT_TIME_SECONDS = 15
-        private const val KCL_SCHEDULER_SHUT_DOWN_WAIT_TIME_SECONDS = 5
+        private const val KCL_SCHEDULER_START_UP_TIMEOUT_SECONDS = 300L
+        private const val KCL_CONSUMPTION_TIMEOUT_SECONDS = 120L
 
         private val SCHEMA_REGISTRY_ENDPOINT_OVERRIDE = GlueSchemaRegistryConnectionProperties.ENDPOINT
         private val REGION = GlueSchemaRegistryConnectionProperties.REGION

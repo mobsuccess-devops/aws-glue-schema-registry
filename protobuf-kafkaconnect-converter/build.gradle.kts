@@ -11,7 +11,9 @@ dependencies {
 
     implementation(libs.protobuf.javaUtil)
 
-    runtimeOnly(libs.apicurio.protobufUtils)
+    runtimeOnly(libs.apicurio.protobufUtils) {
+        exclude(group = "com.ibm.icu", module = "icu4j")
+    }
 }
 
 protobuf {

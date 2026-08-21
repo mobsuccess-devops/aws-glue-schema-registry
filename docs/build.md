@@ -143,7 +143,15 @@ AWS_REGION=us-east-2 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
   ./gradlew :schema-registry-integration-tests:integrationTest
 ```
 
-A whole run takes about twenty minutes and is **73 tests, none failing** — 45 in
+A whole run takes about thirty-five minutes and is **73 tests, none failing** — 45 in
 `GlueSchemaRegistryKafkaIntegrationTest`, 28 in `GlueSchemaRegistryKinesisIntegrationTest`.
 That is the number to match: the suite is invisible to `build`, so nothing else catches a
-class that stops running.
+class that stops running. Most of the wall clock is the fifteen KPL/KCL cases: the KCL 3
+scheduler takes about a hundred seconds to reach its worker loop against LocalStack.
+
+`GlueSchemaRegistryKinesisIntegrationTest` creates a Kinesis stream per test — 28 of them,
+each with its own KCL lease table — and deletes none of them. The workflow gets a fresh
+LocalStack container every run, so it never notices; a container reused locally hits
+LocalStack's 100-shard account limit after the fourth run and every later test fails with
+`LimitExceededException`. Delete the streams and the DynamoDB tables between runs, or
+restart the container.
