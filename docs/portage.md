@@ -298,3 +298,13 @@ Java.
   is unaffected. The `.api` dumps lose the three `$Companion` classes and their `Companion`
   fields and gain the `INSTANCE` field an `object` declares; the static `getInstance()` that
   callers actually use does not move.
+
+  That `Companion` was **not** part of the surface this fork promises to preserve. The Java
+  source used the initialization-on-demand holder idiom — a _private_ nested `UtilsHelper` /
+  `DataParserHelper` holding the instance, reached through a public static `getInstance()` — so
+  the only public member was `getInstance()` itself. The conversion to Kotlin introduced
+  `Companion` as a public member the Java original never had; removing it narrows the surface
+  back towards the source rather than away from it. The `INSTANCE` field an `object` declares is
+  new for the same reason the `Companion` was, and is equally not something a caller needs.
+  Laziness is unchanged in all three cases: the holder class, the companion and the `object` are
+  each initialised on first touch, which is the first `getInstance()` call.
