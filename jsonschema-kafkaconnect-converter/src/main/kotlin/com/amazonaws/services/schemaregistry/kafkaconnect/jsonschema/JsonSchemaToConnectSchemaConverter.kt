@@ -65,9 +65,11 @@ class JsonSchemaToConnectSchemaConverter(
             val subSchemas = jsonSchema.subschemas
             val hasNullSchema = subSchemas.any { it is NullSchema }
 
-            val isOptionalUnion =
-                CombinedSchema.ONE_CRITERION == jsonSchema.criterion && subSchemas.size == 2 && hasNullSchema
-            if (isOptionalUnion) {
+            val criterion = jsonSchema.criterion
+            val isNullableUnion =
+                hasNullSchema &&
+                    (CombinedSchema.ONE_CRITERION == criterion || CombinedSchema.ANY_CRITERION == criterion)
+            if (isNullableUnion) {
                 return buildOptionalUnionSchema(subSchemas)
             }
 
@@ -85,7 +87,13 @@ class JsonSchemaToConnectSchemaConverter(
         return result
     }
 
-    private fun buildOptionalUnionSchema(subSchemas: Collection<org.everit.json.schema.Schema>): Schema? = toConnectSchema(subSchemas.first { it !is NullSchema }, false)
+    private fun buildOptionalUnionSchema(subSchemas: Collection<org.everit.json.schema.Schema>): Schema? {
+        val nonNullSubSchemas = subSchemas.filter { it !is NullSchema }
+        if (nonNullSubSchemas.size == 1) {
+            return toConnectSchema(nonNullSubSchemas.first(), false)
+        }
+        return buildNonOptionalUnionSchema(nonNullSubSchemas, true).build()
+    }
 
     private fun buildNonOptionalUnionSchema(
         subSchemas: Collection<org.everit.json.schema.Schema>,

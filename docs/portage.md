@@ -231,3 +231,16 @@ Java.
   configuration performs: case-insensitive for `compression`, `compatibility` and
   `dataFormat`, which are uppercased before parsing, case-sensitive for `avroRecordType` and
   `protobufMessageType`, which reach `Enum.valueOf` as they are given.
+- **A nullable union is optional however JSON Schema spells it.**
+  `JsonSchemaToConnectSchemaConverter` recognised "one real type plus null" only when everit
+  had modelled it as `oneOf` with exactly two subschemas. A `"type": ["string", "null"]` array
+  is parsed by everit as `anyOf`, so it fell through to the non-optional union path, which
+  calls `optional()` on the builder, and then to `populateConnectProperties`, which calls
+  `required()` on the same builder — Connect's `SchemaBuilder` rejects that with
+  `Invalid SchemaBuilder call: optional has already been set`. The commonest way of writing a
+  nullable field in JSON Schema was therefore unreadable by the Connect converter. Any
+  `oneOf` or `anyOf` containing a `NullSchema` is now treated as nullable, and the resulting
+  schema is the union of the remaining types, made optional: one real type yields that type
+  directly, several yield the `oneOf` struct over them. The `oneOf`-with-two-subschemas case
+  behaves exactly as before; every other shape used to raise. This is upstream PR #526
+  (upstream issue #218).

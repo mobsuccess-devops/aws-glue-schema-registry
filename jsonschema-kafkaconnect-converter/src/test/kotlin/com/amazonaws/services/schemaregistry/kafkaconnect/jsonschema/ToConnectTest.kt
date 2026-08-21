@@ -39,6 +39,7 @@ import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -611,6 +612,125 @@ class ToConnectTest {
             ),
         ).defaultValue(default)
         .build()
+
+    @Test
+    fun testToConnect_nullableTypeArray_isAnOptionalFieldOfTheRealType() {
+        val jsonSchema = loadSchema(nullableSchema(""" [ "string", "null" ] """))
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+
+        val field = connectSchema!!.field("value")
+        assertEquals(Schema.Type.STRING, field.schema().type())
+        assertTrue(field.schema().isOptional)
+    }
+
+    @Test
+    fun testToConnect_nullableTypeArray_readsAValue() {
+        val jsonSchema = loadSchema(nullableSchema(""" [ "string", "null" ] """))
+        val jsonValue = ObjectMapper().readTree("""{ "value": "Cristina Hermann" }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+        val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+        assertEquals("Cristina Hermann", (connectValue as Struct).get("value"))
+    }
+
+    @Test
+    fun testToConnect_nullableTypeArray_readsANull() {
+        val jsonSchema = loadSchema(nullableSchema(""" [ "string", "null" ] """))
+        val jsonValue = ObjectMapper().readTree("""{ "value": null }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+        val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+    }
+
+    @Test
+    fun testToConnect_nullableAnyOf_isAnOptionalFieldOfTheRealType() {
+        val jsonSchema =
+            loadSchema(
+                """
+                {
+                    "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "value": { "anyOf": [ { "type": "string" }, { "type": "null" } ] }
+                    },
+                    "additionalProperties": false
+                }
+                """.trimIndent(),
+            )
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+
+        val field = connectSchema!!.field("value")
+        assertEquals(Schema.Type.STRING, field.schema().type())
+        assertTrue(field.schema().isOptional)
+    }
+
+    @Test
+    fun testToConnect_threeWayNullableUnion_isAnOptionalUnionOfTheRealTypes() {
+        val jsonSchema = loadSchema(nullableSchema(""" [ "string", "integer", "null" ] """))
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+
+        val field = connectSchema!!.field("value")
+        assertEquals(Schema.Type.STRUCT, field.schema().type())
+        assertTrue(field.schema().isOptional)
+        assertEquals(2, field.schema().fields().size)
+    }
+
+    @Test
+    fun testToConnect_threeWayNullableUnion_readsANull() {
+        val jsonSchema = loadSchema(nullableSchema(""" [ "string", "integer", "null" ] """))
+        val jsonValue = ObjectMapper().readTree("""{ "value": null }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+        val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+    }
+
+    @Test
+    fun testToConnect_nullableOneOfOfTwoRealTypes_isStillAnOptionalUnion() {
+        val jsonSchema =
+            loadSchema(
+                """
+                {
+                    "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "value": {
+                            "oneOf": [ { "type": "string" }, { "type": "integer" }, { "type": "null" } ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+                """.trimIndent(),
+            )
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+
+        val field = connectSchema!!.field("value")
+        assertEquals(Schema.Type.STRUCT, field.schema().type())
+        assertTrue(field.schema().isOptional)
+        assertEquals(2, field.schema().fields().size)
+    }
+
+    private fun nullableSchema(types: String): String = """
+        {
+            "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "value": { "type": $types }
+            },
+            "additionalProperties": false
+        }
+    """.trimIndent()
+
+    private fun loadSchema(definition: String): JsonSchema = SchemaLoader.load(JSONObject(definition))
 
     companion object {
         private val JSON_NODE_FACTORY: JsonNodeFactory = TypeConverter.JSON_NODE_FACTORY
