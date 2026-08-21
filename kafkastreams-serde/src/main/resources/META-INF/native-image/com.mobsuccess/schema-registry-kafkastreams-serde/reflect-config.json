@@ -1,0 +1,10 @@
+[
+  {
+    "name": "com.amazonaws.services.schemaregistry.kafkastreams.GlueSchemaRegistryKafkaStreamsSerde",
+    "methods": [{ "name": "<init>", "parameterTypes": [] }]
+  },
+  {
+    "name": "com.amazonaws.services.schemaregistry.kafkastreams.AWSKafkaAvroSerDe",
+    "methods": [{ "name": "<init>", "parameterTypes": [] }]
+  }
+]

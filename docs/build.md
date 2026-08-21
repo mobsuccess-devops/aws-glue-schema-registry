@@ -52,6 +52,18 @@ new code — anything added from now on is flagged the moment it is written.
 
 ## Other build notes
 
+- **The jars carry GraalVM reachability metadata.**
+  `serializer-deserializer` and `kafkastreams-serde` each ship a
+  `META-INF/native-image/com.mobsuccess/<artifactId>/` directory that `native-image` reads
+  off the classpath. `reflect-config.json` registers the classes a Kafka or Kafka Streams
+  configuration names as a string; `resource-config.json` lists the 29 `.proto` files
+  `ProtobufSchemaLoader` loads with `getResourceAsStream`. **That list has to move with the
+  loader**: adding a proto to `GOOGLE_API_PROTOS`, `GOOGLE_WELLKNOWN_PROTOS` or
+  `WIRE_PROTOS` without adding it to `resource-config.json` compiles, passes every test on
+  the JVM, and throws `IOException: Proto file not found` only inside a native image. The
+  metadata is verified by building a native image of a consumer and comparing the
+  `registered for reflection` and `resources` counts of the build output, not by any test in
+  this repository.
 - **Lombok is confined to `integration-tests`**, the one module still entirely in Java. It is
   declared there, on the test configurations only. The root `lombok.config` is what keeps
   `lombok.nonNull.exceptionType = IllegalArgumentException` in force for it, so it stays as

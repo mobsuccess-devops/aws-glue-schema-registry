@@ -308,3 +308,24 @@ Java.
   new for the same reason the `Companion` was, and is equally not something a caller needs.
   Laziness is unchanged in all three cases: the holder class, the companion and the `object` are
   each initialised on first touch, which is the first `getInstance()` call.
+
+- **`mbknor-jackson-jsonschema` taken from its Scala 2.13 build.** The pom depended on the
+  `_2.12` artifact, whose `scala.Serializable` supertype no longer exists in Scala 2.13. A
+  consumer whose platform pins `scala-library` at 2.13 — the Quarkus BOM does — therefore
+  resolved a classpath on which `JsonSchemaGenerator` cannot link, and a GraalVM native
+  image built from it died on an unresolved `JsonSchemaConfig$` type. The `_2.13` artifact
+  is the same 1.0.39 release cross-compiled, so the JSON Schema support is unchanged; only
+  the Scala runtime the consumer ends up with is.
+- **GraalVM reachability metadata packaged in the jars.**
+  `schema-registry-serde` and `schema-registry-kafkastreams-serde` ship a
+  `META-INF/native-image/com.mobsuccess/<artifactId>/` directory, read automatically by
+  `native-image` from the classpath. It registers the two things a native consumer cannot
+  work out for itself: the entry points named by class name in a Kafka or Kafka Streams
+  configuration, which nothing references statically — the four `*KafkaSerializer` /
+  `*KafkaDeserializer` classes and the two `Serde` ones — and the 29 `.proto` files
+  `ProtobufSchemaLoader` reads off the classpath through `getResourceAsStream`, which are
+  not embedded in an image unless declared and whose absence breaks the Protobuf path at
+  run time rather than at build time. `com.google.protobuf.DescriptorProtos` is registered
+  for reflection alongside them, for the descriptor parsing that path performs. This
+  packages, once and for every consumer, configuration each of them was otherwise writing
+  by hand.
