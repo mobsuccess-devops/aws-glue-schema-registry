@@ -15,6 +15,9 @@
 
 package com.amazonaws.services.schemaregistry.kafkaconnect
 
+import com.amazonaws.services.schemaregistry.kafkaconnect.avrodata.AvroDataConfig
+import com.amazonaws.services.schemaregistry.kafkaconnect.config.GlueSchemaRegistryConfigDef
+import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import org.apache.kafka.common.config.AbstractConfig
 import org.apache.kafka.common.config.ConfigDef
 
@@ -25,9 +28,44 @@ import org.apache.kafka.common.config.ConfigDef
  */
 class AWSKafkaAvroConverterConfig(
     props: Map<String, *>,
-) : AbstractConfig(configDef(), props) {
+) : AbstractConfig(CONFIG_DEF, GlueSchemaRegistryConfigDef.coerce(CONFIG_DEF, props)) {
     companion object {
+        const val ASSUME_ROLE_SESSION_NAME_DEFAULT = "kafka-connect-session"
+
+        private const val GROUP_ASSUME_ROLE = "Assume role"
+
+        private val CONFIG_DEF: ConfigDef =
+            GlueSchemaRegistryConfigDef
+                .defineAvro(GlueSchemaRegistryConfigDef.baseConfigDef())
+                .define(
+                    AWSSchemaRegistryConstants.ASSUME_ROLE_ARN,
+                    ConfigDef.Type.STRING,
+                    null,
+                    ConfigDef.Importance.LOW,
+                    "ARN of an IAM role the converter assumes before calling Glue. When unset, the " +
+                        "credentials of the Connect worker are used directly.",
+                    GROUP_ASSUME_ROLE,
+                    1,
+                    ConfigDef.Width.LONG,
+                    "Assume role ARN",
+                ).define(
+                    AWSSchemaRegistryConstants.ASSUME_ROLE_SESSION_NAME,
+                    ConfigDef.Type.STRING,
+                    ASSUME_ROLE_SESSION_NAME_DEFAULT,
+                    ConfigDef.Importance.LOW,
+                    "Session name reported to STS when " + AWSSchemaRegistryConstants.ASSUME_ROLE_ARN +
+                        " is set.",
+                    GROUP_ASSUME_ROLE,
+                    2,
+                    ConfigDef.Width.MEDIUM,
+                    "Assume role session name",
+                ).also { configDef ->
+                    AvroDataConfig.baseConfigDef().configKeys().values.forEach { configDef.define(it) }
+                }
+
         @JvmStatic
-        fun configDef(): ConfigDef = ConfigDef()
+        fun configDef(): ConfigDef = ConfigDef(CONFIG_DEF)
+
+        internal fun coerce(props: Map<String, *>): Map<String, *> = GlueSchemaRegistryConfigDef.coerce(CONFIG_DEF, props)
     }
 }

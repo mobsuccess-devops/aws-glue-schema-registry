@@ -33,7 +33,9 @@ object AWSSchemaRegistryConstants {
     const val DEFAULT_SCHEMA_STRATEGY = "AWSSchemaNamingStrategyDefaultImpl"
     const val DATA_FORMAT = "dataFormat"
     const val CACHE_TIME_TO_LIVE_MILLIS = "timeToLiveMillis"
+    const val DEFAULT_CACHE_TIME_TO_LIVE_MILLIS = 24 * 60 * 60 * 1000L
     const val CACHE_SIZE = "cacheSize"
+    const val DEFAULT_CACHE_SIZE = 200
     const val AVRO_RECORD_TYPE = "avroRecordType"
     const val PROTOBUF_MESSAGE_TYPE = "protobufMessageType"
     const val REGISTRY_NAME = "registry.name"

@@ -37,8 +37,8 @@ class GlueSchemaRegistryConfiguration {
     var compressionType: AWSSchemaRegistryConstants.COMPRESSION = AWSSchemaRegistryConstants.COMPRESSION.NONE
     var endPoint: String? = null
     var region: String? = null
-    var timeToLiveMillis: Long = 24 * 60 * 60 * 1000L
-    var cacheSize: Int = 200
+    var timeToLiveMillis: Long = AWSSchemaRegistryConstants.DEFAULT_CACHE_TIME_TO_LIVE_MILLIS
+    var cacheSize: Int = AWSSchemaRegistryConstants.DEFAULT_CACHE_SIZE
     var avroRecordType: AvroRecordType? = AvroRecordType.GENERIC_RECORD
     var protobufMessageType: ProtobufMessageType? = null
     var registryName: String? = null

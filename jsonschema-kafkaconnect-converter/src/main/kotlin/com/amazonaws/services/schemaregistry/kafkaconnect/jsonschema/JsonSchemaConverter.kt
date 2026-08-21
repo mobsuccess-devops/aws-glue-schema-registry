@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
+import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaAndValue
@@ -63,6 +64,8 @@ class JsonSchemaConverter(
         GlueSchemaRegistryKafkaDeserializer().apply { userAgentApp = UserAgents.KAFKACONNECT },
     )
 
+    override fun config(): ConfigDef = JsonSchemaConverterConfig.configDef()
+
     /**
      * Configure the JSONSchema Converter.
      */
@@ -72,18 +75,19 @@ class JsonSchemaConverter(
     ) {
         this.isKey = isKey
         JsonSchemaConverterConfig(configs)
+        val resolvedConfigs = JsonSchemaConverterConfig.coerce(configs)
 
-        serializer.configure(configs, this.isKey)
-        deserializer.configure(configs, this.isKey)
+        serializer.configure(resolvedConfigs, this.isKey)
+        deserializer.configure(resolvedConfigs, this.isKey)
 
-        if (!MapUtils.isEmpty(configs)) {
+        if (!MapUtils.isEmpty(resolvedConfigs)) {
             @Suppress("UNCHECKED_CAST")
             val serializationFeatures =
-                configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] as List<String>?
+                resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] as List<String>?
 
             @Suppress("UNCHECKED_CAST")
             val deserializationFeatures =
-                configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] as List<String>?
+                resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] as List<String>?
 
             if (!CollectionUtils.isEmpty(serializationFeatures)) {
                 serializationFeatures!!.forEach { objectMapper.enable(SerializationFeature.valueOf(it)) }
@@ -93,7 +97,7 @@ class JsonSchemaConverter(
             }
         }
 
-        val jsonSchemaDataConfigs = JsonSchemaDataConfig(configs)
+        val jsonSchemaDataConfigs = JsonSchemaDataConfig(resolvedConfigs)
 
         connectSchemaToJsonSchemaConverter = ConnectSchemaToJsonSchemaConverter(jsonSchemaDataConfigs)
         connectValueToJsonNodeConverter = ConnectValueToJsonNodeConverter(jsonSchemaDataConfigs)

@@ -271,6 +271,8 @@ public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistry
 	public static final field COMPRESSION_DEFAULT_BYTE B
 	public static final field COMPRESSION_TYPE Ljava/lang/String;
 	public static final field DATA_FORMAT Ljava/lang/String;
+	public static final field DEFAULT_CACHE_SIZE I
+	public static final field DEFAULT_CACHE_TIME_TO_LIVE_MILLIS J
 	public static final field DEFAULT_COMPATIBILITY_SETTING Lsoftware/amazon/awssdk/services/glue/model/Compatibility;
 	public static final field DEFAULT_REGISTRY_NAME Ljava/lang/String;
 	public static final field DEFAULT_SCHEMA_STRATEGY Ljava/lang/String;
