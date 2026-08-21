@@ -40,13 +40,14 @@ a module's own tests do not cover the modules that consume it.
 
 ## Structure
 
-Ten modules, whose directories mirror those of the source repository and whose Gradle
-project names reuse the Maven artifactIds:
+Eleven modules. Ten mirror the directories of the source repository and reuse the Maven
+artifactIds as their Gradle project names; `serde-kotlin` is the fork's own addition:
 
 | Directory                           | Artifact                                 | Role                                     |
 | ----------------------------------- | ---------------------------------------- | ---------------------------------------- |
 | `common`                            | `schema-registry-common`                 | Glue client, cache, exceptions           |
 | `serializer-deserializer`           | `schema-registry-serde`                  | SerDe core (Avro, JSON Schema, Protobuf) |
+| `serde-kotlin`                      | `schema-registry-serde-kotlin`           | Kotlin DSL and typed `Serde<T>`          |
 | `serializer-deserializer-msk-iam`   | `schema-registry-serde-msk-iam`          | uber-jar SerDe + MSK IAM auth            |
 | `kafkastreams-serde`                | `schema-registry-kafkastreams-serde`     | Kafka Streams integration                |
 | `avro-kafkaconnect-converter`       | `schema-registry-kafkaconnect-converter` | Connect Avro converter                   |

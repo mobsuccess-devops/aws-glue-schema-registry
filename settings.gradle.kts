@@ -8,6 +8,7 @@ rootProject.name = "aws-glue-schema-registry"
 private val modules = mapOf(
     "schema-registry-common" to "common",
     "schema-registry-serde" to "serializer-deserializer",
+    "schema-registry-serde-kotlin" to "serde-kotlin",
     "schema-registry-serde-msk-iam" to "serializer-deserializer-msk-iam",
     "schema-registry-kafkastreams-serde" to "kafkastreams-serde",
     "schema-registry-kafkaconnect-converter" to "avro-kafkaconnect-converter",

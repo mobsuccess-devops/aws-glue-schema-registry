@@ -1,0 +1,74 @@
+public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistry {
+	public static final fun glueSchemaRegistryConfig (Lkotlin/jvm/functions/Function1;)Ljava/util/Map;
+	public static final fun glueSchemaRegistryConfiguration (Lkotlin/jvm/functions/Function1;)Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;
+	public static final fun glueSchemaRegistryDeserializer (ZLkotlin/jvm/functions/Function1;)Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer;
+	public static synthetic fun glueSchemaRegistryDeserializer$default (ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/amazonaws/services/schemaregistry/deserializers/GlueSchemaRegistryKafkaDeserializer;
+	public static final fun glueSchemaRegistrySerde (Ljava/lang/Class;ZLkotlin/jvm/functions/Function1;)Lorg/apache/kafka/common/serialization/Serde;
+	public static synthetic fun glueSchemaRegistrySerde$default (Ljava/lang/Class;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lorg/apache/kafka/common/serialization/Serde;
+	public static final fun glueSchemaRegistrySerializer (ZLkotlin/jvm/functions/Function1;)Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer;
+	public static synthetic fun glueSchemaRegistrySerializer$default (ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/amazonaws/services/schemaregistry/serializers/GlueSchemaRegistryKafkaSerializer;
+	public static final fun typed (Lorg/apache/kafka/common/serialization/Serde;Ljava/lang/Class;)Lorg/apache/kafka/common/serialization/Serde;
+}
+
+public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfigBuilder {
+	public final fun build ()Ljava/util/Map;
+	public final fun getAutoRegistration ()Ljava/lang/Boolean;
+	public final fun getAvroRecordType ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
+	public final fun getCacheSize ()Ljava/lang/Integer;
+	public final fun getCacheTimeToLiveMillis ()Ljava/lang/Long;
+	public final fun getCompatibility ()Lsoftware/amazon/awssdk/services/glue/model/Compatibility;
+	public final fun getCompression ()Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;
+	public final fun getDataFormat ()Lsoftware/amazon/awssdk/services/glue/model/DataFormat;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getEndpoint ()Ljava/lang/String;
+	public final fun getJsonClassNameResolutionEnabled ()Ljava/lang/Boolean;
+	public final fun getJsonSchemaCompatibilityCheckEnabled ()Ljava/lang/Boolean;
+	public final fun getJsonSchemaNullableEnabled ()Ljava/lang/Boolean;
+	public final fun getProtobufMessageType ()Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
+	public final fun getProxyUrl ()Ljava/net/URI;
+	public final fun getRegion ()Ljava/lang/String;
+	public final fun getRegistryName ()Ljava/lang/String;
+	public final fun getSchemaName ()Ljava/lang/String;
+	public final fun getSchemaNamingStrategyClass ()Ljava/lang/String;
+	public final fun getSecondaryDeserializer ()Ljava/lang/String;
+	public final fun getUserAgentApp ()Ljava/lang/String;
+	public final fun jacksonDeserializationFeatures ([Lcom/fasterxml/jackson/databind/DeserializationFeature;)V
+	public final fun jacksonSerializationFeatures ([Lcom/fasterxml/jackson/databind/SerializationFeature;)V
+	public final fun jsonClassNameAllowlist ([Ljava/lang/Class;)V
+	public final fun jsonClassNameAllowlist ([Ljava/lang/String;)V
+	public final fun metadata (Ljava/util/Map;)V
+	public final fun property (Ljava/lang/String;Ljava/lang/Object;)V
+	public final fun setAutoRegistration (Ljava/lang/Boolean;)V
+	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
+	public final fun setCacheSize (Ljava/lang/Integer;)V
+	public final fun setCacheTimeToLiveMillis (Ljava/lang/Long;)V
+	public final fun setCompatibility (Lsoftware/amazon/awssdk/services/glue/model/Compatibility;)V
+	public final fun setCompression (Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;)V
+	public final fun setDataFormat (Lsoftware/amazon/awssdk/services/glue/model/DataFormat;)V
+	public final fun setDescription (Ljava/lang/String;)V
+	public final fun setEndpoint (Ljava/lang/String;)V
+	public final fun setJsonClassNameResolutionEnabled (Ljava/lang/Boolean;)V
+	public final fun setJsonSchemaCompatibilityCheckEnabled (Ljava/lang/Boolean;)V
+	public final fun setJsonSchemaNullableEnabled (Ljava/lang/Boolean;)V
+	public final fun setProtobufMessageType (Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;)V
+	public final fun setProxyUrl (Ljava/net/URI;)V
+	public final fun setRegion (Ljava/lang/String;)V
+	public final fun setRegistryName (Ljava/lang/String;)V
+	public final fun setSchemaName (Ljava/lang/String;)V
+	public final fun setSchemaNamingStrategyClass (Ljava/lang/String;)V
+	public final fun setSecondaryDeserializer (Ljava/lang/String;)V
+	public final fun setUserAgentApp (Ljava/lang/String;)V
+	public final fun tags (Ljava/util/Map;)V
+}
+
+public abstract interface annotation class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryDsl : java/lang/annotation/Annotation {
+}
+
+public final class com/mobsuccess/schemaregistry/kotlin/TypedSerde : org/apache/kafka/common/serialization/Serde {
+	public fun <init> (Ljava/lang/Class;Lorg/apache/kafka/common/serialization/Serde;)V
+	public fun close ()V
+	public fun configure (Ljava/util/Map;Z)V
+	public fun deserializer ()Lorg/apache/kafka/common/serialization/Deserializer;
+	public fun serializer ()Lorg/apache/kafka/common/serialization/Serializer;
+}
+
