@@ -1,7 +1,9 @@
 # Build
 
-- Gradle 9.6.1, Kotlin DSL, **JVM 17** toolchain (consumable by Kafka Connect and Flink).
-  CI installs 17 and 21: 21 runs Gradle itself, 17 is the compilation toolchain.
+- Gradle 9.7.0, Kotlin DSL, **JVM 17** toolchain (consumable by Kafka Connect and Flink).
+  Every CI job installs 17 and 21 — 21 runs Gradle itself, 17 is the compilation toolchain.
+  `test-jdk` installs 25 on top, and runs the suite on 21 and 25; the order that list is
+  written in matters, see [ci.md](ci.md).
 - Versions centralized in `gradle/libs.versions.toml` — never hard-code a version in a
   `build.gradle.kts`
 - Shared configuration in `buildSrc/src/main/kotlin/gsr.*.gradle.kts`, no `subprojects {}`
