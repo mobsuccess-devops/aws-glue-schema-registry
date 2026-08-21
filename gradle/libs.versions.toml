@@ -1,6 +1,8 @@
 # Version catalog — single source of truth for the whole build.
-# Versions are carried over unchanged from the original pom.xml (awslabs eed1506) so
-# that the Gradle port stays behaviour-identical to the Maven build.
+# Versions started as those of the original pom.xml (awslabs eed1506), so that the Gradle
+# port stayed behaviour-identical to the Maven build. They move from there when there is a
+# reason to move them — a security fix, most often — and `git diff eed1506` still shows
+# every such deviation.
 [versions]
 awsSdkV2 = "2.53.1"
 mskIamAuth = "2.3.7"
