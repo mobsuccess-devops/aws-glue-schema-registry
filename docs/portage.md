@@ -166,3 +166,16 @@ Java.
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes
   with an `internal` constructor, so they still cannot be built from outside the library.
+- **POJO classes are resolved through the thread context class loader.** `Class.forName(name)`
+  resolves through the class loader that defined the calling class — this library's. When the
+  application is loaded apart from its dependencies, which is the normal arrangement for a Kafka
+  Connect plugin directory, a repackaged Spring Boot jar or an application server, that loader
+  cannot see the application's own classes, so `protobufMessageType=POJO` and JSON `className`
+  resolution both fail with a `ClassNotFoundException` naming a class that is demonstrably on the
+  classpath. `PojoClassResolver` asks the thread context class loader first and falls back to
+  `Class.forName`, so the resolution can only find more classes than before, never fewer. This is
+  upstream PR #336, extended to the JSON POJO path, which has the same defect for the same reason.
+  The two other reflective lookups in the library are deliberately left alone:
+  `SecondaryDeserializer.validate` and `GlueSchemaRegistryUtils.initializeStrategy` compare what
+  they load against a type this library loaded itself, and resolving one side through a different
+  class loader would make that comparison fail rather than succeed.

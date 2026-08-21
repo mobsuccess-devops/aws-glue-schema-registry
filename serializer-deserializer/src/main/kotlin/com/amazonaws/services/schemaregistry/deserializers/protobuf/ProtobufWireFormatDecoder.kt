@@ -15,6 +15,7 @@
 
 package com.amazonaws.services.schemaregistry.deserializers.protobuf
 
+import com.amazonaws.services.schemaregistry.deserializers.PojoClassResolver
 import com.amazonaws.services.schemaregistry.serializers.protobuf.MessageIndexFinder
 import com.amazonaws.services.schemaregistry.utils.ProtobufMessageType
 import com.google.protobuf.CodedInputStream
@@ -62,7 +63,7 @@ class ProtobufWireFormatDecoder(
     ): Any {
         val className = ProtobufClassName.from(descriptor)
         try {
-            val classType = Class.forName(className)
+            val classType = PojoClassResolver.resolve(className)
             val parseMethod = classType.getMethod("parseFrom", CodedInputStream::class.java)
             return parseMethod.invoke(classType, codedInputStream)
         } catch (e: Exception) {

@@ -19,6 +19,7 @@ import com.amazonaws.services.schemaregistry.common.GlueSchemaRegistryDataFormat
 import com.amazonaws.services.schemaregistry.common.Schema
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializerDataParser
+import com.amazonaws.services.schemaregistry.deserializers.PojoClassResolver
 import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
 import com.amazonaws.services.schemaregistry.serializers.json.JsonDataWithSchema
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
@@ -88,7 +89,7 @@ open class JsonDeserializer(
             if (classNameResolutionEnabled && classNameNode != null) {
                 val className = classNameNode.asText()
                 if (configs!!.isClassNameAllowed(className)) {
-                    return objectMapper.readValue(plainData, Class.forName(className))
+                    return objectMapper.readValue(plainData, PojoClassResolver.resolve(className))
                 }
                 warnOnceForDisallowedClassName(className)
             }
