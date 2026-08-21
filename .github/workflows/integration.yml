@@ -88,15 +88,15 @@ jobs:
 
   with-glue:
     name: Against Glue
-    # The rest of the suite registers schemas in Glue. Until an endpoint is
-    # configured, this job is skipped rather than reported as failing.
-    if: vars.GLUE_ENDPOINT != ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
       checks: write
     env:
-      GLUE_ENDPOINT: ${{ vars.GLUE_ENDPOINT }}
+      # moto below answers the Glue Schema Registry calls, so this job needs no AWS
+      # account. Setting the GLUE_ENDPOINT repository variable points the same tests
+      # at a real endpoint instead — the public one, or a VPC endpoint.
+      GLUE_ENDPOINT: ${{ vars.GLUE_ENDPOINT || 'http://localhost:5000' }}
       # The tests resolve their region through the AWS SDK provider chain, which
       # reads this; there is no override of our own to add.
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-2' }}
@@ -129,6 +129,18 @@ jobs:
           EAGER_SERVICE_LOADING: 1
         options: >-
           --health-cmd "curl -sf http://localhost:4566/_localstack/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+      # LocalStack does not serve Glue outside its top paid tier, and the Schema
+      # Registry it offers there is AVRO-only; moto implements the registry calls
+      # for all three data formats.
+      moto:
+        image: motoserver/moto:5.2.2
+        ports:
+          - 5000:5000
+        options: >-
+          --health-cmd "curl -sf http://localhost:5000/moto-api/"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 20
