@@ -24,10 +24,16 @@ policy:
       # runs on 17 only, so without them a regression that only shows on 21 or 25
       # merges green. Their names are the resolved ones, `Tests on JDK ${{ matrix.jdk }}`
       # expanded, since that is what a required check matches on.
+      #
+      # `Analyze java-kotlin` is required only because the ENABLE_CODEQL repository
+      # variable is now set. The job is gated on it, and a required check that skips
+      # counts as green — so listing it while the variable is unset would look like a
+      # security gate without being one. Unset the variable and this entry goes with it.
       additional-required-job-names:
         - Gradle Build
         - Tests on JDK 21
         - Tests on JDK 25
+        - Analyze java-kotlin
 linear:
   team_identifier: FTTECH
   team_label_identifier: Core
