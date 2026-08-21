@@ -44,3 +44,28 @@ dependencies {
     // the test jar just as the Maven `tests` classifier did.
     testImplementation(project(path = ":schema-registry-serde", configuration = "testArtifacts"))
 }
+
+// Two of the integration tests exercise the transport only — a Kafka round trip and a
+// Kinesis one — without registering anything in Glue. They are the part of this module a
+// runner can execute with a broker and LocalStack alone, so the CI runs them on every
+// nightly while the rest waits for a Glue endpoint. failOnNoMatchingTests is on: if one
+// of them is renamed, this task fails instead of quietly running nothing.
+tasks.register<Test>("integrationTestWithoutGlue") {
+    description = "Runs the integration tests that need no Glue account."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    val testSourceSet = project.the<SourceSetContainer>()["test"]
+    testClassesDirs = testSourceSet.output.classesDirs
+    classpath = testSourceSet.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching(
+            "*.GlueSchemaRegistryKafkaIntegrationTest.testProduceConsumeWithoutGlueSchemaRegistry",
+        )
+        includeTestsMatching("*.GlueSchemaRegistryKinesisIntegrationTest.testKinesisProduceConsume")
+        isFailOnNoMatchingTests = true
+    }
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}

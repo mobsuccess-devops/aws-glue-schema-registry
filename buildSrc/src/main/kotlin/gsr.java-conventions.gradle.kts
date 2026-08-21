@@ -103,6 +103,27 @@ tasks.test {
     }
 }
 
+// The counterpart of that exclusion: the same test source set, filtered the other way.
+// Kept out of `check` on purpose — these tests need a Kafka broker, LocalStack and a Glue
+// endpoint, so they are driven by the integration workflow rather than by every build.
+val integrationTest by tasks.registering(Test::class) {
+    description = "Runs the *IntegrationTest classes that the test task leaves out."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    val testSourceSet = project.the<SourceSetContainer>()["test"]
+    testClassesDirs = testSourceSet.output.classesDirs
+    classpath = testSourceSet.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*IntegrationTest")
+        isFailOnNoMatchingTests = false
+    }
+    shouldRunAfter(tasks.test)
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
     reports {
