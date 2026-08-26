@@ -8,7 +8,8 @@
   `build.gradle.kts`
 - Shared configuration in `buildSrc/src/main/kotlin/gsr.*.gradle.kts`, no `subprojects {}`
   in the root build
-- Published to GitHub Packages under the `com.mobsuccess` group
+- Published under the `com.mobsuccess` group: releases to Maven Central, snapshots to
+  GitHub Packages
 
 ## The ABI is versioned
 

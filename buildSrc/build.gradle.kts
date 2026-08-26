@@ -17,6 +17,10 @@ dependencies {
 
     implementation(libs.licenseReport.plugin)
 
+    implementation(libs.dokka.plugin)
+
+    implementation(libs.nmcp.plugin)
+
     // Required to apply the Kotlin plugin from gsr.java-conventions.
     implementation(libs.kotlin.gradlePlugin)
 }

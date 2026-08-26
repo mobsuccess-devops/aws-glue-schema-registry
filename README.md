@@ -1,6 +1,7 @@
 # AWS Glue Schema Registry Library
 
 [![JVM Library](https://github.com/mobsuccess-devops/aws-glue-schema-registry/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mobsuccess-devops/aws-glue-schema-registry/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/com.mobsuccess/schema-registry-serde?label=Maven%20Central&color=blue)](https://central.sonatype.com/artifact/com.mobsuccess/schema-registry-serde)
 [![Latest release](https://img.shields.io/github/v/release/mobsuccess-devops/aws-glue-schema-registry?sort=semver&label=release&color=blue)](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest)
 [![Apache 2 License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE.txt)
 ![JVM 17](https://img.shields.io/badge/JVM-17-blue.svg)
@@ -34,7 +35,7 @@ verbatim, so `git diff eed1506` shows every change.
 | ------------ | --------------------------------------- | --------------------------------------- |
 | Build        | Maven                                   | Gradle 9.7.0, Kotlin DSL                |
 | Languages    | Java + C#                               | Kotlin, tests included                  |
-| Distribution | Maven Central                           | GitHub Packages                         |
+| Distribution | Maven Central                           | Maven Central (snapshots on GH)         |
 | Group        | `software.amazon.glue`                  | `com.mobsuccess`                        |
 | JVM target   | 8                                       | 17                                      |
 | Dependencies | Kafka 3.6.1, Wire 5.2.0, Jackson 2.12.2 | Kafka 3.9.2, Wire 6.4.6, Jackson 2.22.2 |
@@ -101,28 +102,12 @@ You need an AWS account with the [Glue Schema Registry set up](https://docs.aws.
 [credentials the AWS SDK can resolve](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/home.html),
 and JVM 17 or later.
 
-Artifacts are published to **GitHub Packages**, which requires a GitHub personal access token
-(classic, scope `read:packages`) even to read a public repository. Export it, then declare the
-repository:
-
-```bash
-export GITHUB_ACTOR=your-github-username
-export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
-```
+Releases are on **Maven Central** under the `com.mobsuccess` group — no repository block, no
+token:
 
 ```kotlin
 repositories {
     mavenCentral()
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry")
-        credentials {
-            username = providers.gradleProperty("gpr.user").orNull
-                ?: System.getenv("GITHUB_ACTOR")
-            password = providers.gradleProperty("gpr.token").orNull
-                ?: System.getenv("GITHUB_TOKEN")
-        }
-    }
 }
 
 dependencies {
@@ -130,12 +115,15 @@ dependencies {
 }
 ```
 
-The latest version is on the
-[releases page](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest).
+The latest version is on
+[Maven Central](https://central.sonatype.com/artifact/com.mobsuccess/schema-registry-serde) and
+on the [releases page](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest).
+Snapshots are a separate channel: every push to `master` publishes `<next-version>-SNAPSHOT` to
+GitHub Packages, which does require a token.
 
-Maven and Groovy DSL setups, CI credentials, the version compatibility matrix, the move from
-the `software.amazon.glue` artifact and a troubleshooting table are in
-**[docs/installation.md](docs/installation.md)**.
+Maven and Groovy DSL setups, the snapshot channel, the version compatibility matrix, the move
+from the `software.amazon.glue` artifact or from GitHub Packages, and a troubleshooting table
+are in **[docs/installation.md](docs/installation.md)**.
 
 ## Basic usage
 
@@ -177,7 +165,7 @@ Protobuf, POJOs, compression, caching and the rest are in
 
 | Document                                         | What is in it                                                                  |
 | ------------------------------------------------ | ------------------------------------------------------------------------------ |
-| [Installation](docs/installation.md)             | GitHub Packages setup, compatibility matrix, migration from the AWS artifact   |
+| [Installation](docs/installation.md)             | Maven Central coordinates, snapshot channel, compatibility matrix, migration   |
 | [Usage](docs/usage.md)                           | Kafka producers and consumers for the three formats, Kinesis, Kafka Streams    |
 | [Kotlin DSL](serde-kotlin/README.md)             | `schema-registry-serde-kotlin`: the configuration DSL and the typed `Serde<T>` |
 | [Configuration reference](docs/configuration.md) | Every property, its default and the side that reads it                         |

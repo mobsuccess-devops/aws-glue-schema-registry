@@ -21,6 +21,73 @@
   release would restart from 1.0.0. That glob, and the semver check that follows it, are
   what keep a tag like `v.1.1.15` or `v1.2.08` out of the arithmetic.
 
+## Publication
+
+Two channels, two audiences.
+
+| Channel                                                                                                  | Contents               | Auth to read | Published by                        |
+| -------------------------------------------------------------------------------------------------------- | ---------------------- | ------------ | ----------------------------------- |
+| [Maven Central](https://central.sonatype.com/namespace/com.mobsuccess)                                   | releases only          | none         | `publishAggregationToCentralPortal` |
+| [GitHub Packages](https://github.com/orgs/mobsuccess-devops/packages?repo_name=aws-glue-schema-registry) | releases and snapshots | classic PAT  | `publish`                           |
+
+`publish-snapshot` is unchanged: a push to `master` publishes `<next>-SNAPSHOT` to GitHub
+Packages and nothing else. `publish-release` runs both, **Central first**, then GitHub
+Packages. The order is deliberate: GitHub Packages refuses to overwrite a release version it
+already holds, so a Central failure after a successful GitHub Packages publish would leave an
+untagged version behind and wedge the retry on the version number it recomputes. Central
+first means a failure there leaves nothing published anywhere, and a re-run starts clean.
+
+- **The Central path is `com.gradleup.nmcp`, not `com.vanniktech.maven.publish`.** Both
+  cover the Portal API; they differ in what they do to the publications. vanniktech _creates_
+  the publication from a platform descriptor (`JavaLibrary`, `KotlinJvm`) and owns the
+  artifact set, the sources and javadoc jars and the pom — which is exactly what the four
+  shaded modules cannot give up. Those modules replace the main artifact with the uber-jar,
+  strip every dependency from the pom bar `slf4j-api` and disable the Gradle module metadata;
+  handing publication ownership to a plugin that rebuilds all three would mean fighting it at
+  every release. nmcp creates nothing: it reads the `maven-publish` publications the
+  convention plugins already produce, stages them into a local repository and uploads the zip.
+  The uber-jar specifics survive untouched, and `gsr.shaded-conventions` did not change beyond
+  adding the javadoc jar to its artifact list.
+- **Only the nine library modules go to Central.** `nmcpAggregation(project(…))` in the root
+  build names them one by one. `schema-registry-examples` publishes to GitHub Packages as it
+  always has, but it is not a library and Central is immutable — an artifact put there cannot
+  be taken back.
+- **Signing is conditional on the key being present.** Central rejects unsigned artifacts, so
+  `gsr.publish-conventions` configures `signing` with `useInMemoryPgpKeys` — but only when
+  `signingInMemoryKey` resolves. A local `./gradlew build` and a pull request build have no
+  key, register no `Sign` task and need nothing. The release job supplies the key and every
+  artifact, the pom and the module metadata get an `.asc` next to them.
+- **Javadoc comes from Dokka.** Central requires a javadoc jar; the sources are Kotlin, so
+  `javadocJar` packages the output of `dokkaGeneratePublicationJavadoc`. It is not wired into
+  `assemble`, so it costs nothing on a pull request build and is built on the publish path.
+- **The credentials are project properties, passed as `ORG_GRADLE_PROJECT_*`.** Gradle maps
+  that environment prefix onto project properties by itself, so the workflow needs no glue.
+
+  | Repository secret                | Environment variable                            | What it is                        |
+  | -------------------------------- | ----------------------------------------------- | --------------------------------- |
+  | `MAVEN_CENTRAL_USERNAME`         | `ORG_GRADLE_PROJECT_mavenCentralUsername`       | Portal **user token** username    |
+  | `MAVEN_CENTRAL_PASSWORD`         | `ORG_GRADLE_PROJECT_mavenCentralPassword`       | Portal **user token** password    |
+  | `SIGNING_IN_MEMORY_KEY`          | `ORG_GRADLE_PROJECT_signingInMemoryKey`         | ASCII-armored PGP **private** key |
+  | `SIGNING_IN_MEMORY_KEY_PASSWORD` | `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword` | its passphrase                    |
+
+  The account password is never one of them: the Portal issues a token pair for publishing.
+
+- **A release waits for a human in the Portal.** `publishingType` defaults to `USER_MANAGED`:
+  the upload is validated automatically, then the deployment sits in
+  [Deployments](https://central.sonatype.com/publishing/deployments) until a maintainer
+  presses **Publish**. Passing `-PcentralPublishingType=AUTOMATIC` releases without that
+  click; the workflow does not, on purpose, and flipping it is a one-word change once a few
+  releases have gone through.
+
+- **The bundle can be built and checked without publishing anything.**
+
+  ```bash
+  PACKAGE_VERSION=<version> ./gradlew nmcpZipAggregation nmcpCheckAggregationFiles
+  ```
+
+  It stages every publication into `build/nmcp/zip/aggregation.zip` and verifies that each
+  coordinate carries the files Central requires. No credentials, no upload.
+
 ## Branch protection
 
 - **`.mobsuccess.yml` is what mobsuccessbot enforces**, and it holds no comments — the file
@@ -169,7 +236,8 @@ that surface small; none of them survive a careless rewrite, so check them befor
 - **Releases are attested and checksummed.** `publish-release` builds a `SHA256SUMS.txt`
   over every jar it published and attaches it to the GitHub release, then
   `actions/attest-build-provenance` signs a provenance statement for those same jars. A
-  consumer can check a jar pulled from GitHub Packages against the release checksums, or
+  consumer can check a jar pulled from Maven Central or GitHub Packages against the release
+  checksums, or
   verify its build provenance with `gh attestation verify <jar> --repo <this repo>`. The
   job therefore also holds `id-token: write` and `attestations: write`.
 - **Release tags are immutable, and the `Immutable release tags` ruleset is what the

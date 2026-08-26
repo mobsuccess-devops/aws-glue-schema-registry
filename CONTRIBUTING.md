@@ -142,7 +142,10 @@ Then watch CI: `Gradle Build` is a required check, and ktlint comments inline.
 ## Releases
 
 Maintainers only. A push to the `prod` branch triggers `publish-release`, which computes the
-version, publishes to GitHub Packages, tags `vX.Y.Z` and creates the GitHub release.
+version, publishes to Maven Central and to GitHub Packages, tags `vX.Y.Z` and creates the
+GitHub release. The Central upload is validated automatically and then waits for a maintainer
+to press **Publish** in the [Central Portal](https://central.sonatype.com/publishing/deployments)
+— see [docs/ci.md](docs/ci.md#publication).
 
 ## Code of conduct
 
