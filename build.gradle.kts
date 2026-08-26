@@ -14,7 +14,7 @@ nmcpAggregation {
         username.set(providers.gradleProperty("mavenCentralUsername").filter { it.isNotBlank() })
         password.set(providers.gradleProperty("mavenCentralPassword").filter { it.isNotBlank() })
         publishingType.set(
-            providers.gradleProperty("centralPublishingType").orElse("USER_MANAGED"),
+            providers.gradleProperty("centralPublishingType").orElse("AUTOMATIC"),
         )
     }
 }
