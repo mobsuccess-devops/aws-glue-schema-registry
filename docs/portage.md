@@ -627,3 +627,22 @@ The only Java left in the repository is the Avro classes generated into the test
   block already wraps every other failure in, rather than escaping `runAsync` raw — the
   future fails either way. Nothing a test asserts changes; the suite is the same 73 tests,
   none failing.
+
+- **The Avro Connect converter no longer builds an STS client for the region `"null"`.**
+  `AWSKafkaAvroConverter.configure` read the region of the assumed-role STS client as
+  `configs.get(AWSSchemaRegistryConstants.AWS_REGION).toString()`. That key is optional — the
+  rest of the library falls back to the default AWS region provider chain — so in Java the line
+  raised a `NullPointerException` from `configure()` whenever `assumeRoleArn` was set without it.
+  Kotlin's `Any?.toString()` renders a null receiver as the **string** `"null"`, so the port
+  turned that immediate failure into `Region.of("null")`: an STS client that builds happily and
+  fails on its first `AssumeRole` call, in a worker that has been up for a while, with an error
+  that names no configuration key. The region is now resolved the way
+  `GlueSchemaRegistryConfiguration` resolves it for the Glue client — the configured value,
+  otherwise the default provider chain — and an `AWSSchemaRegistryException` naming both keys is
+  raised from `configure()` when neither yields one. The deviation from the Java source is the
+  exception: an absent region with an `assumeRoleArn` raised an unmessaged `NullPointerException`
+  there, and either resolves through the provider chain here — the behaviour every other consumer
+  of that key already has — or raises a named `AWSSchemaRegistryException`. `assumeRoleArn` is
+  read by the Avro converter alone; the upstream TODO next to it, "add this feature to all other
+  converters", is still open, so the JSON Schema and Protobuf converters have no such line to
+  fix, and this change does not add the feature to them.
