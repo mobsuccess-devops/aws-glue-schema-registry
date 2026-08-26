@@ -66,8 +66,8 @@ publishing {
     }
 }
 
-val signingKey = providers.gradleProperty("signingInMemoryKey").orNull
-val signingKeyPassword = providers.gradleProperty("signingInMemoryKeyPassword").orNull
+val signingKey = providers.gradleProperty("signingInMemoryKey").orNull?.takeIf { it.isNotBlank() }
+val signingKeyPassword = providers.gradleProperty("signingInMemoryKeyPassword").orNull?.takeIf { it.isNotBlank() }
 
 signing {
     isRequired = signingKey != null

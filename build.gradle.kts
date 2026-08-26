@@ -11,8 +11,8 @@ apiValidation {
 
 nmcpAggregation {
     centralPortal {
-        username.set(providers.gradleProperty("mavenCentralUsername"))
-        password.set(providers.gradleProperty("mavenCentralPassword"))
+        username.set(providers.gradleProperty("mavenCentralUsername").filter { it.isNotBlank() })
+        password.set(providers.gradleProperty("mavenCentralPassword").filter { it.isNotBlank() })
         publishingType.set(
             providers.gradleProperty("centralPublishingType").orElse("USER_MANAGED"),
         )

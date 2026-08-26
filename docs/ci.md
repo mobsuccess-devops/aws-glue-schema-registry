@@ -31,7 +31,11 @@ Two channels, two audiences.
 | [GitHub Packages](https://github.com/orgs/mobsuccess-devops/packages?repo_name=aws-glue-schema-registry) | releases and snapshots | classic PAT  | `publish`                           |
 
 `publish-snapshot` is unchanged: a push to `master` publishes `<next>-SNAPSHOT` to GitHub
-Packages and nothing else. `publish-release` runs both, GitHub Packages first, then Central.
+Packages and nothing else. `publish-release` runs both, **Central first**, then GitHub
+Packages. The order is deliberate: GitHub Packages refuses to overwrite a release version it
+already holds, so a Central failure after a successful GitHub Packages publish would leave an
+untagged version behind and wedge the retry on the version number it recomputes. Central
+first means a failure there leaves nothing published anywhere, and a re-run starts clean.
 
 - **The Central path is `com.gradleup.nmcp`, not `com.vanniktech.maven.publish`.** Both
   cover the Portal API; they differ in what they do to the publications. vanniktech _creates_
