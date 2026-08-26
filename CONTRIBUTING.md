@@ -74,6 +74,35 @@ pre-commit install
 They run prettier, ktlint 1.4.1 (configured in `.editorconfig`, `intellij_idea` style) and an
 end-of-file fixer.
 
+## The public ABI is frozen by the committed dumps
+
+`binary-compatibility-validator` dumps the public ABI of every published module into
+`<module>/api/<artifactId>.api`. Those files are committed, and `apiCheck` runs as part of
+`check`: a change to a public signature fails `./gradlew build` until the dump is refreshed.
+
+```bash
+./gradlew apiCheck    # runs as part of `check`
+./gradlew apiDump     # accept the new surface, then commit the .api diff
+```
+
+This is what mechanizes the fork's promise that the API stays identical to its source, so a
+red `apiCheck` is not a formality — and it is the check most likely to fail a first
+contribution. Read the diff it prints, decide whether the signature change is deliberate,
+and only then run `apiDump`. The refreshed `.api` files are part of the pull request, and
+the body has to say why the surface moved. A dump regenerated to turn the build green,
+with no reasoning attached, is exactly what the check exists to catch.
+
+**A dump that loses a line is a breaking change until argued otherwise.** A removed symbol
+is something a consumer could have compiled against and no longer can, so the question the
+pull request has to answer is whether the title should be `feat!:`. It has gone unasked
+once: [#128](https://github.com/mobsuccess-devops/aws-glue-schema-registry/pull/128) dropped
+the `$Companion` classes of three utility singletons from the dumps and shipped under
+`refactor:` — a patch bump. The removal turned out to be defensible, because that
+`Companion` was introduced by the Kotlin conversion and the Java original never had it, and
+[docs/portage.md](docs/portage.md) now records the argument. But it was made after the
+release, not before it. Make it in the pull request instead, while the title can still
+change the version.
+
 ## House style
 
 - **English everywhere that lands on GitHub**: commit messages, pull request titles and
