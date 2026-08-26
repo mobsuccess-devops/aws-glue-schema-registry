@@ -350,6 +350,17 @@ open class AWSSchemaRegistryClient {
         .schemaId(getSchemaIdRequestObject(schemaName, configuration.registryName))
         .build()
 
+    /**
+     * Compares [schemaDefinition] against the latest version of [schemaName] and fails the
+     * registration when the comparison reports an incompatibility. Does nothing unless this
+     * client was given a configuration, that configuration enables the check, and [dataFormat]
+     * is JSON.
+     *
+     * The mode applied is the `compatibility` of the local configuration, which defaults to
+     * BACKWARD when the key is absent; the mode the schema carries in Glue is not read. A
+     * transitive mode is applied against the latest version alone. `docs/configuration.md`
+     * states what both limits mean for a caller.
+     */
     private fun checkJsonSchemaCompatibility(
         schemaDefinition: String,
         schemaName: String,

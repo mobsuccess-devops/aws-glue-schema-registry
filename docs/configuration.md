@@ -28,7 +28,7 @@ ignored.
 | `avroRecordType`                      | string (enum)                  | `GENERIC_RECORD`                          | deserializer           | `GENERIC_RECORD` or `SPECIFIC_RECORD`. Case-sensitive.                                                                                                                                                                                             |
 | `protobufMessageType`                 | string (enum)                  | none                                      | deserializer           | `DYNAMIC_MESSAGE` or `POJO`. Case-sensitive.                                                                                                                                                                                                       |
 | `jsonSchemaNullableEnabled`           | boolean                        | `false`                                   | serializer             | Generates `oneOf [null, type]` for an optional field when a schema is **derived from a POJO**. No effect through the Kafka Connect converter, which supplies its own schema. Off by default: it changes the schema text, hence the schema version. |
-| `jsonSchemaCompatibilityCheckEnabled` | boolean                        | `false`                                   | serializer             | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only. Costs one `GetSchemaVersion` call per newly registered definition.          |
+| `jsonSchemaCompatibilityCheckEnabled` | boolean                        | `false`                                   | serializer             | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only, under the local mode — [limits](#limits-of-the-json-compatibility-check).   |
 | `jsonClassNameResolutionEnabled`      | boolean                        | `false`                                   | deserializer           | Opt-in: it turns a registry field into a class name to load. See [className resolution](usage.md#deserializing-json-into-a-java-pojo-classname-resolution).                                                                                        |
 | `jsonClassNameAllowlist`              | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected.                                                                                                                                        |
 | `jacksonSerializationFeatures`        | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries to enable.                                                                                                                                                                           |
@@ -57,3 +57,22 @@ works from a worker properties file.
 `tags` and `metadata` are deliberately left out of that `ConfigDef`: their values are maps, a
 shape Kafka's `ConfigDef` has no type for. They keep working when a converter is configured
 programmatically, and a Connect worker could not have passed them anyway.
+
+## Limits of the JSON compatibility check
+
+`jsonSchemaCompatibilityCheckEnabled` compares the definition being registered against the latest
+version of the schema, on the client, in the producer — one extra `GetSchemaVersion` call per
+newly registered definition. Glue is asked for that version and for nothing else, which sets two
+limits the caller has to work with.
+
+**The mode applied is the one configured locally.** The check reads the `compatibility` property,
+which silently defaults to `BACKWARD` when the key is absent; the mode the schema carries in Glue
+is never read. Set `compatibility` to the mode of the schema in the registry. Otherwise a schema
+created elsewhere under `NONE` has changes refused that the registry accepts, and a registry set
+to `FULL` is checked backward alone when the local key is absent, which lets a forward-breaking
+change through.
+
+**A transitive mode compares the latest version only.** `BACKWARD_ALL`, `FORWARD_ALL` and
+`FULL_ALL` are checked as `BACKWARD`, `FORWARD` and `FULL`: the comparison is against the latest
+version of the schema and never against the versions before it, so a change that is compatible
+with the latest version but breaks an older one passes.

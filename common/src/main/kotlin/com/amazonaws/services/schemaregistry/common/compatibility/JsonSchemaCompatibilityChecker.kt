@@ -31,6 +31,13 @@ import software.amazon.awssdk.services.glue.model.Compatibility
  * required field that stops being required breaks an older reader of new data. Everything else
  * a schema can say — types, formats, enumerations, `additionalProperties` — is **not** compared.
  * A report of no errors therefore means "no broken `required` contract", not "compatible".
+ *
+ * Nothing here is read from Glue. The mode to apply and the definition to compare against are
+ * both supplied by the caller, and `AWSSchemaRegistryClient` supplies the `compatibility` of the
+ * local configuration — which defaults to `BACKWARD` when the key is absent — together with the
+ * latest version of the schema. A mode that does not match the one the schema carries in the
+ * registry is therefore applied all the same, and a transitive mode compares the latest version
+ * alone; `docs/configuration.md` states what that means for a caller.
  */
 public class JsonSchemaCompatibilityChecker {
     /**
@@ -39,6 +46,11 @@ public class JsonSchemaCompatibilityChecker {
      *
      * The modes that disable enforcement — `NONE`, `DISABLED`, and a mode this SDK does not
      * know — return an empty list without reading either definition.
+     *
+     * The transitive modes `BACKWARD_ALL`, `FORWARD_ALL` and `FULL_ALL` are checked as
+     * `BACKWARD`, `FORWARD` and `FULL`: [previousSchemaDefinition] is the only definition
+     * compared against, so passing the latest version of a schema says nothing about the
+     * versions registered before it.
      */
     public fun checkCompatibility(
         newSchemaDefinition: String,
