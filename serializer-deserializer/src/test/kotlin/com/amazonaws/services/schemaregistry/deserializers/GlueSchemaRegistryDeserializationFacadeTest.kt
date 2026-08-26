@@ -47,6 +47,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Named
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -1057,7 +1058,7 @@ class GlueSchemaRegistryDeserializationFacadeTest {
                             DataFormat.AVRO,
                             r,
                             AVRO_UTILS.getSchemaDefinition(r),
-                            UUID.randomUUID(),
+                            Named.of("randomSchemaVersionId", UUID.randomUUID()),
                             AvroRecordType.GENERIC_RECORD.getName(),
                             compression,
                             getAvroBytes(r, AVRO_UTILS.getSchemaDefinition(r)),
@@ -1070,7 +1071,7 @@ class GlueSchemaRegistryDeserializationFacadeTest {
                             DataFormat.AVRO,
                             r,
                             AVRO_UTILS.getSchemaDefinition(r),
-                            UUID.randomUUID(),
+                            Named.of("randomSchemaVersionId", UUID.randomUUID()),
                             AvroRecordType.SPECIFIC_RECORD.getName(),
                             compression,
                             getAvroBytes(r, AVRO_UTILS.getSchemaDefinition(r)),
@@ -1083,7 +1084,7 @@ class GlueSchemaRegistryDeserializationFacadeTest {
                             DataFormat.JSON,
                             r,
                             JSON_SERIALIZER.getSchemaDefinition(r),
-                            UUID.randomUUID(),
+                            Named.of("randomSchemaVersionId", UUID.randomUUID()),
                             // Not being used
                             AvroRecordType.GENERIC_RECORD.getName(),
                             compression,
@@ -1097,7 +1098,7 @@ class GlueSchemaRegistryDeserializationFacadeTest {
                             DataFormat.JSON,
                             r,
                             JSON_SERIALIZER.getSchemaDefinition(r),
-                            UUID.randomUUID(),
+                            Named.of("randomSchemaVersionId", UUID.randomUUID()),
                             // Not being used
                             AvroRecordType.GENERIC_RECORD.getName(),
                             compression,
@@ -1125,7 +1126,7 @@ class GlueSchemaRegistryDeserializationFacadeTest {
                             DataFormat.JSON,
                             r,
                             JSON_SERIALIZER.getSchemaDefinition(r),
-                            UUID.randomUUID(),
+                            Named.of("randomSchemaVersionId", UUID.randomUUID()),
                             // Not being used
                             AvroRecordType.GENERIC_RECORD.getName(),
                             compression,

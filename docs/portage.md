@@ -555,3 +555,27 @@ The only Java left in the repository is the Avro classes generated into the test
   append to it, and a name recorded twice made the second delete fail for exactly this reason.
   Nothing a test asserts changes; only a teardown that used to stop at the first missing schema
   now finishes.
+
+- **Parameterized test names no longer carry an identity hash or a random UUID.** JUnit
+  builds the display name of a `@ParameterizedTest` from `toString()` of each argument, and
+  Gradle writes that name — with no method name next to it — into the `name` attribute of
+  the JUnit XML. Four classes fed it something that changes on every run:
+  `FileDescriptorUtilsTest` and `MessageIndexFinderTest` pass protobuf `Descriptors`, whose
+  inherited `toString()` ends in an identity hash; `ProtobufSchemaConverterTest` passes a
+  Connect `Struct` whose `AllTypes` row holds a `byte[]`, rendered as `[B@1b6d3586`; and
+  `GlueSchemaRegistryDeserializationFacadeTest` passes a `UUID.randomUUID()` schema version
+  id. `EnricoMi/publish-unit-test-result-action` diffs those names between runs, so every
+  pull request reported hundreds of tests removed and as many added while the run count was
+  unchanged — noise over the one signal that would show a class dropping out of the suite,
+  which is what the golden rule leans on. The arguments are now wrapped in `Named.of(...)`:
+  the descriptors take their `fullName` or file name, the `Struct` column of both converter
+  providers the name of its test case, the version id a fixed label. `Named` is unwrapped
+  before the argument reaches the test method, so this changes the report and nothing else —
+  the ids stay random, and the per-class inventory is the same 75 classes and 2240 tests
+  before and after. Found by diffing the `name` attributes of two consecutive
+  `./gradlew cleanTest test --no-build-cache` runs, which is also how the fix was verified;
+  no other class in the suite differs between two runs. The five methods sharing
+  `testDataAndSchemaProvider` now report identical names for a given row, where the random
+  ids used to tell them apart — the same duplication `GlueSchemaRegistrySerializationFacadeTest`
+  already has from its fixed `SCHEMA_VERSION_ID_FOR_TESTING`, and the reason its rows do not
+  need a wrapper.

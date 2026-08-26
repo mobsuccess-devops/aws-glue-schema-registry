@@ -41,6 +41,7 @@ import com.google.protobuf.Descriptors
 import com.squareup.wire.schema.internal.parser.ProtoParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Named
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -184,7 +185,7 @@ class FileDescriptorUtilsTest {
                 TestSyntax2CustomOptions.getDescriptor(),
                 TestSyntax3CustomOptions.getDescriptor(),
             ).map { it.file }
-            .map { Arguments.of(it) }
+            .map { Arguments.of(Named.of(it.name, it)) }
 
         @JvmStatic
         fun testProtoFileProviderForJsonName(): Stream<Arguments> = Stream
@@ -192,6 +193,6 @@ class FileDescriptorUtilsTest {
                 TestSyntax2JsonName.getDescriptor(),
                 TestSyntax3JsonName.getDescriptor(),
             ).map { it.file }
-            .map { Arguments.of(it) }
+            .map { Arguments.of(Named.of(it.name, it)) }
     }
 }
