@@ -60,15 +60,22 @@ jobs:
           --health-retries 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           java-version: |
             17
             21
-          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          validate-wrappers: true
+          cache-read-only: true
+          add-job-summary: always
       - name: Wait for Kafka
         run: .github/scripts/wait-for-kafka.sh "${{ job.services.kafka.id }}"
       # The converter test needs nothing at all; the two others exercise a Kafka
@@ -80,7 +87,7 @@ jobs:
             :schema-registry-integration-tests:integrationTestWithoutGlue
       - name: Test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
           files: |
             **/build/test-results/integrationTest/*.xml
@@ -89,7 +96,7 @@ jobs:
           check_name: "Integration Tests (without a Glue account)"
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: integration-test-report-without-glue
           path: "**/build/reports/tests/integrationTest*/"
@@ -157,29 +164,36 @@ jobs:
           --health-retries 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           java-version: |
             17
             21
-          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          validate-wrappers: true
+          cache-read-only: true
+          add-job-summary: always
       - name: Wait for Kafka
         run: .github/scripts/wait-for-kafka.sh "${{ job.services.kafka.id }}"
       - name: Run
         run: ./gradlew --no-daemon :schema-registry-integration-tests:integrationTest
       - name: Test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
           files: "**/build/test-results/integrationTest/*.xml"
           comment_mode: "off"
           check_name: "Integration Tests (against Glue)"
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: integration-test-report
           path: "**/build/reports/tests/integrationTest*/"

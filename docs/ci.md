@@ -51,6 +51,9 @@
     repository variable. The job is gated on that variable, and a required check that skips
     counts as green — so listing it while the variable is unset would look like a security
     gate without being one. Unset the variable and the entry has to go with it.
+  - `ktlint` was advisory from the start — reviewdog reported at `level: warning` with
+    `fail_on_error` unset, so the job was green whatever ktlint found, and it was not in the
+    list either. It now runs at `level: error` with `fail_on_error: true`, and is required.
 
 - **`prod` requires the same five checks as `master`**, and that is what makes the release
   gate real: without them, an administrator pushing a commit that never saw a pull request
@@ -86,9 +89,13 @@ that surface small; none of them survive a careless rewrite, so check them befor
   checks the committed `gradle-wrapper.jar` against Gradle's published hashes before any
   Gradle code runs. Both have to be refreshed together when the wrapper is upgraded, with
   the values from `services.gradle.org/distributions/gradle-<version>-bin.zip.sha256`. Every
-  job that runs Gradle sets that flag — on `gradle/actions/setup-gradle` in `ci.yml` and
-  `codeql.yml`, on `gradle/actions/dependency-submission` in `dependency-submission.yml`,
-  which takes the same option. A new job that runs `./gradlew` has to set it too.
+  job that runs Gradle sets that flag — on `gradle/actions/setup-gradle` in `ci.yml`,
+  `codeql.yml` and `integration.yml`, on `gradle/actions/dependency-submission` in
+  `dependency-submission.yml`, which takes the same option. A new job that runs `./gradlew`
+  has to set it too. `integration.yml` had neither: it ran Gradle off `setup-java`'s own
+  `cache: gradle`, which restores a cache but validates nothing, and it referenced its four
+  actions by tag. It was also the only workflow handing `checks: write` to a third-party
+  action pinned to a moving tag.
 - **The Gradle cache is written from a push to `master` only.** `setup-gradle` restores it
   everywhere but takes `cache-read-only` on anything else, so neither a pull request —
   including one from a fork — nor a push to `prod` can poison the cache a later `master`
@@ -107,7 +114,8 @@ that surface small; none of them survive a careless rewrite, so check them befor
   the top of the workflow means a new job starts with nothing, since the repository-wide
   default is still `write`. The exceptions are deliberate:
   `ktlint` takes `pull-requests: read` because reviewdog reads the diff to place its
-  findings, and the two `publish-*` jobs need `packages: write` to publish — plus, for
+  findings — it no longer takes `checks: write`, see the `github-pr-annotations` note
+  below — and the two `publish-*` jobs need `packages: write` to publish — plus, for
   `publish-release`, `contents: write` and the only checkout that keeps its credentials
   persisted, since its last step pushes the release tag. Those two run on a push to `master`
   or `prod`, never on a pull request.
@@ -170,6 +178,17 @@ that surface small; none of them survive a careless rewrite, so check them befor
   There are no bypass actors: re-cutting a botched tag means flipping the ruleset's
   `enforcement` to `disabled` for as long as it takes, which is the audit trail the bypass
   would not leave.
+- **`ktlint` reports through `github-pr-annotations`, and that is what makes it a gate.**
+  The `github-pr-check` reporter it used before opened a second check run of its own, also
+  called `ktlint`, next to the job's — two checks under one name, which is no basis for a
+  required context. `github-pr-annotations` writes the findings to the job's own log
+  instead, so `ktlint` names exactly one check and the job's exit code is the verdict. It
+  also drops the `checks: write` the old reporter needed. `filter_mode` is `nofilter`, not
+  `file`: reviewdog resolves the changed files from the pull request diff, which does not
+  exist on a `push` or a `merge_group` run, so `file` would have let a violation through the
+  merge queue unseen. `nofilter` lints the whole tree on every event, which is only viable
+  because the tree is clean — a violation left anywhere blocks every pull request until it
+  is fixed.
 - **Redundant runs are cancelled on pull requests only.** `build`, `test-jdk` and `ktlint`
   carry a `concurrency` group keyed on the pull request number — `test-jdk` keys on its
   matrix leg too, or the two legs would cancel each other — with `cancel-in-progress` scoped

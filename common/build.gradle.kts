@@ -3,6 +3,11 @@ plugins {
     id("gsr.publish-conventions")
 }
 
+coverage {
+    minimumInstructionCoverage.set(0.76)
+    minimumBranchCoverage.set(0.61)
+}
+
 dependencies {
     api(platform(libs.aws.bom))
     api(platform(libs.jackson.bom))

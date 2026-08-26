@@ -15,6 +15,7 @@ policy:
         - Tests on JDK 21
         - Tests on JDK 25
         - Analyze java-kotlin
+        - ktlint
 linear:
   team_identifier: FTTECH
   team_label_identifier: Core

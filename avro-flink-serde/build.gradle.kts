@@ -3,6 +3,11 @@ plugins {
     id("gsr.publish-conventions")
 }
 
+coverage {
+    minimumInstructionCoverage.set(0.94)
+    minimumBranchCoverage.set(0.97)
+}
+
 dependencies {
     // The original pom pointed at schema-registry-serde published on Maven Central
     // (2.0.0 for compile, 1.0.2 for test) rather than at the neighbouring module; the

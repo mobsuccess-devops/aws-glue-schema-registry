@@ -3,6 +3,11 @@ plugins {
     alias(libs.plugins.protobuf)
 }
 
+coverage {
+    minimumInstructionCoverage.set(0.93)
+    minimumBranchCoverage.set(0.86)
+}
+
 dependencies {
     api(project(":schema-registry-serde"))
     api(libs.kafka.connectApi)

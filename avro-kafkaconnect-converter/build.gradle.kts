@@ -3,6 +3,11 @@ plugins {
     alias(libs.plugins.avro)
 }
 
+coverage {
+    minimumInstructionCoverage.set(0.79)
+    minimumBranchCoverage.set(0.74)
+}
+
 dependencies {
     api(project(":schema-registry-serde"))
     api(libs.kafka.connectApi)

@@ -4,6 +4,11 @@ plugins {
     alias(libs.plugins.protobuf)
 }
 
+coverage {
+    minimumInstructionCoverage.set(0.66)
+    minimumBranchCoverage.set(0.58)
+}
+
 dependencies {
     constraints {
         api(libs.scala.library)

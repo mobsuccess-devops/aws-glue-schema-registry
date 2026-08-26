@@ -1,5 +1,6 @@
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.math.BigDecimal
 
 plugins {
     `java-library`
@@ -134,4 +135,32 @@ tasks.jacocoTestReport {
         html.required.set(true)
         csv.required.set(false)
     }
+}
+
+val coverage = extensions.create<GsrCoverageExtension>("coverage")
+coverage.enabled.convention(true)
+coverage.minimumInstructionCoverage.convention(0.60)
+coverage.minimumBranchCoverage.convention(0.50)
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.test)
+    onlyIf { coverage.enabled.get() }
+    violationRules {
+        rule {
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal.valueOf(coverage.minimumInstructionCoverage.get())
+            }
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal.valueOf(coverage.minimumBranchCoverage.get())
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
 }
