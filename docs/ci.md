@@ -43,6 +43,10 @@
     of the policy's template workflows; those of `ci.yml`, written by hand, are invisible to
     it, and without the list a red CI still leaves a pull request mergeable. Set these here,
     never in the branch-protection UI — the next policy run overwrites the UI.
+  - `Tests on the protobuf floor` guards the version contract described in
+    [build.md](build.md): it is the only job that resolves protobuf at the floor the
+    generated code imposes on consumers, so without it a floor raised past a consumer's own
+    pin merges green.
   - The list names **resolved** job names, so the matrix appears as `Tests on JDK 21` and
     `Tests on JDK 25`. Both are required because `Gradle Build` runs on 17 only: they carry
     the guarantee that JSON Schema output does not depend on the JDK that produced it, and

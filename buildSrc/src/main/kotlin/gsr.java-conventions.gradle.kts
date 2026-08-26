@@ -22,11 +22,21 @@ java {
     withSourcesJar()
 }
 
+val protobufFloor = libs.versions.protobufGencode.get()
+val protobufFloorEverywhere = providers.gradleProperty("protobufFloor").isPresent
+
 configurations.configureEach {
     // The original pom excluded org.lz4:lz4-java from every Kafka artifact in favour of
     // the at.yawk.lz4:lz4-java fork. Both declare the same `org.lz4:lz4-java` capability:
     // without this exclusion, Gradle refuses to arbitrate between them.
     exclude(group = "org.lz4", module = "lz4-java")
+
+    if (protobufFloorEverywhere || name == "compileClasspath" || name.endsWith("CompileClasspath")) {
+        resolutionStrategy {
+            force("${libs.protobuf.java.get().module}:$protobufFloor")
+            force("${libs.protobuf.javaUtil.get().module}:$protobufFloor")
+        }
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {

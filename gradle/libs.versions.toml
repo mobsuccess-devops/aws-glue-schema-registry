@@ -9,7 +9,8 @@ mskIamAuth = "2.3.7"
 kafka = "3.9.2"
 avro = "1.11.4"
 flink = "1.12.2"
-protobuf = "4.36.0"
+protobufGencode = "4.31.1"
+protobufRuntime = "4.36.0"
 apicurio = "3.3.1"
 wire = "6.4.6"
 kotlinRuntime = "2.4.10"       # Kotlin deps pulled in by mbknor/wire, distinct from the compiler version
@@ -75,9 +76,9 @@ kafka-connectJson = { module = "org.apache.kafka:connect-json", version.ref = "k
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 avro-compiler = { module = "org.apache.avro:avro-compiler", version.ref = "avro" }
 avro-ipc = { module = "org.apache.avro:avro-ipc", version.ref = "avro" }
-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
-protobuf-javaUtil = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobuf" }
-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufRuntime" }
+protobuf-javaUtil = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobufRuntime" }
+protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobufGencode" }
 protoGoogleCommon = { module = "com.google.api.grpc:proto-google-common-protos", version.ref = "protoGoogleCommon" }
 apicurio-protobufUtils = { module = "io.apicurio:apicurio-registry-protobuf-schema-utilities", version.ref = "apicurio" }
 wire-schema = { module = "com.squareup.wire:wire-schema", version.ref = "wire" }

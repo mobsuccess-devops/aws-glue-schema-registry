@@ -82,6 +82,27 @@ new code — anything added from now on is flagged the moment it is written.
   declare the same _capability_; reintroducing the former breaks resolution.
 - **Code generation**: protobuf (`serializer-deserializer`, `protobuf-kafkaconnect-converter`)
   and Avro (`avro-kafkaconnect-converter`). Generated sources are not versioned.
+- **protobuf has two versions, and the lower one is the contract.** Generated protobuf code
+  stamps the protoc version that produced it and refuses, at class initialization, a runtime
+  older than itself. The `protoc` this build uses is therefore a _floor_ imposed on every
+  consumer: one whose own BOM pins protobuf lower cannot load
+  `metadata.ProtobufSchemaMetadata` at all, and has no fix beyond forcing the version — which
+  is what a Quarkus consumer, pinned by an `enforcedPlatform`, had to do. `protobufGencode` is
+  that floor and is deliberately older than the current release; it moves up only when no
+  consumer is left below it, and the fork gains nothing from generating with a newer protoc.
+  `protobufRuntime` is what the build declares as a dependency, so a consumer with no
+  constraint of its own resolves the current release, while a consumer pinned anywhere
+  between the floor and it resolves its own pin — a plain `require` is a minimum that a
+  platform may lower, not a lock.
+- **`require` plus `prefer` does not express that**, which is worth knowing before reaching
+  for it: a `prefer` is ignored as soon as the same constraint carries a `require`, so
+  `require = floor, prefer = current` resolves to the floor everywhere, including for
+  consumers.
+- **Every `*CompileClasspath` is forced to the floor**, so the fork cannot compile against an
+  API its floor does not have, while tests and the published metadata keep the current
+  runtime. `./gradlew test -PprotobufFloor` forces the whole graph down to the floor instead;
+  that is what the `Tests on the protobuf floor` job runs, and it is also what catches a
+  `protobufGencode` raised without a consumer check.
 - **`serializer-deserializer` publishes a `tests` jar** consumed by `integration-tests`
   through the `testArtifacts` configuration.
 - The Kotlin dependencies pulled in by `mbknor-jackson-jsonschema` and `wire` are pinned at
