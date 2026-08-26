@@ -34,13 +34,12 @@ ABI change, which is the point.
 
 Two things the dumps deliberately do **not** cover:
 
-- **What an uber-jar bundles.** The validator reads a module's own `main` output, not the
-  jar `shadowJar` assembles, so `schema-registry-serde-msk-iam.api` is four lines describing
-  the one class that module declares — not the `schema-registry-serde` classes its uber-jar
-  ships. That is not a gap: those classes are guarded by `:schema-registry-serde:apiCheck`,
-  where they are declared. What is guarded nowhere is the _relocation and exclusion_ rules of
-  `gsr.shaded-conventions`; changing those changes what consumers receive without moving a
-  single dump.
+- **What a plugin distribution ships.** The validator reads a module's own `main` output, so
+  `schema-registry-serde-msk-iam.api` is four lines describing the one class that module
+  declares — not the `schema-registry-serde` classes its zip carries. That is not a gap: those
+  classes are guarded by `:schema-registry-serde:apiCheck`, where they are declared. What is
+  guarded nowhere is the _contents_ of the zip, which follow `runtimeClasspath`: a dependency
+  change moves what an operator unpacks without moving a single dump.
 - **`examples`.** It is excluded because it is a sample application. It is published, so it
   technically has an ABI, but the fork makes no promise about it — a consumer depending on
   `schema-registry-examples` is doing something the module was not built for. Add it to the
@@ -101,6 +100,92 @@ The `madrapps/jacoco-report` step in `ci.yml` comments the numbers on a pull req
 the weakest floor any module enforces, so its verdict cannot contradict the one that
 actually blocks a merge.
 
+## The plugin distributions
+
+`schema-registry-serde-msk-iam` and the three Connect converters publish an ordinary jar with
+a complete pom, like every other module. They also build a **plugin distribution**: a zip of
+that jar and its whole runtime classpath, laid out as a Kafka Connect plugin directory.
+
+```bash
+./gradlew pluginDistribution                       # all four
+./gradlew :schema-registry-kafkaconnect-converter:pluginDistribution
+```
+
+Each zip holds one directory, `<artifactId>-<version>/`, with every jar under `lib/` and
+`LICENSE.txt`, `NOTICE.txt` and `THIRD-PARTY-LICENSES.txt` beside it. That is the layout a
+Connect worker walks and the one Confluent Hub packages use. `gsr.distribution-conventions`
+builds it, wires it into `assemble`, and deliberately does **not** add it to any publication:
+the zips are attached to the GitHub Release, not pushed to Maven Central or GitHub Packages.
+See [ci.md](ci.md#publication).
+
+### Why they are not uber-jars any more
+
+Until 4.0.0 these four modules replaced their main artifact with a shaded uber-jar and
+published a pom stripped of every dependency bar `slf4j-api`. That inherited upstream's empty
+`maven-shade-plugin` configuration, and it cost:
+
+|                                          | Before (uber-jars) | After (thin jars + zips) |
+| ---------------------------------------- | -----------------: | -----------------------: |
+| one publication                          |  284 MB, 188 files |    **7.9 MB, 204 files** |
+| `schema-registry-serde-msk-iam`          |            69.8 MB |                   6.3 KB |
+| `protobuf-kafkaconnect-converter`        |            69.8 MB |                  95.3 KB |
+| `jsonschema-kafkaconnect-converter`      |            68.8 MB |                 115.0 KB |
+| `schema-registry-kafkaconnect-converter` |            67.9 MB |                  91.8 KB |
+
+Size was the trigger — Maven Central meters the free tier against a 78 MB monthly release-size
+threshold — but it is not the only thing that was wrong with the old shape. A pom that declares
+nothing cannot be arbitrated: a consumer could not override a Kafka or Jackson version, and a
+CVE scanner reading the pom saw an artifact with one dependency. The bytes moved rather than
+disappeared; what changed is that they moved to a channel that is anonymous, unmetered, and
+honest about being a distribution rather than a library.
+
+### What was inside them, and what was tried first
+
+Worth recording, because the same content is what an operator now unpacks. By originating
+dependency, for `schema-registry-serde-msk-iam` — the four were within 3 MB of each other:
+
+| Origin                                                              |   MB |
+| ------------------------------------------------------------------- | ---: |
+| AWS SDK v2 (`glue` alone is 9.6)                                    | 15.4 |
+| Kafka compression codecs — `zstd-jni`, `snappy-java`, `at.yawk.lz4` |  9.4 |
+| `kafka-clients`                                                     |  8.8 |
+| `mbknor-jackson-jsonschema` and `scala-library`                     |  5.8 |
+| `kotlin-reflect`, `kotlin-scripting-*`, `classgraph`                |  5.8 |
+| Netty, Apache HttpClient 4 and 5 — the AWS SDK's other HTTP clients |  7.0 |
+| Protobuf and `proto-google-common-protos`                           |  3.4 |
+| Guava                                                               |  2.9 |
+| Wire                                                                |  2.7 |
+| Jackson                                                             |  2.3 |
+| `kotlin-stdlib`                                                     |  1.8 |
+| everit JSON Schema and its validators                               |  1.6 |
+| Avro                                                                |  0.6 |
+| this repository                                                     |  0.3 |
+| everything else                                                     |  2.1 |
+
+Three narrower fixes were measured before the shape changed, and none of them was enough:
+
+- **Dropping the AWS SDK HTTP clients the fork never selects.** Every AWS client this library
+  builds passes an explicit `UrlConnectionHttpClient`, so `apache-client`, `apache5-client` and
+  `netty-nio-client` are dead weight — except that since SDK 2.29 the classpath provider ranks
+  implementations rather than failing on several, Apache 5 first, so the clients the SDK builds
+  for itself silently used HttpClient 5. Worth −28 MB across the four jars, or −10%.
+- **`minimize()`, which cannot work here.** For `schema-registry-serde-msk-iam` it produces a
+  jar of 11.9 MB **containing no classes at all** — the module declares only a placeholder, so
+  shadow has no root to walk from. For the Avro converter, 67.9 MB becomes 39.0 MB by deleting
+  nine tenths of `kafka-clients`, all of Netty and all of `kotlin-reflect`, every one of them
+  loaded by name. Both jars pass the full test suite, which is exactly the trap.
+- **Dropping the Kafka compression codecs from the three converters**, 9.4 MB each. A converter
+  never holds a producer or a consumer, so it never compresses — but the argument rests on the
+  worker's plugin classloader keeping `org.apache.kafka.common` parent-first, and nothing here
+  starts a worker to check it.
+
+Two structural facts remain true of what an operator unpacks, and neither is worth an API break
+now that the bytes are off Central: each converter carries the two data formats it cannot use
+(about 19 MB in the Avro one, 13 MB in the Protobuf one, 6 MB in the JSON Schema one), because
+`schema-registry-serde` is one artifact for all three; and `software.amazon.awssdk:glue` is
+9.6 MB of which the schema-registry operations are a rounding error, because `GlueClient`
+declares a method per Glue operation and every model class is statically reachable from it.
+
 ## Other build notes
 
 - **The jars carry GraalVM reachability metadata.**
@@ -123,7 +208,7 @@ actually blocks a merge.
   enough to compile the test sources of `serializer-deserializer`.
 - **Configuration caching is not enabled.** `com.github.jk1.dependency-license-report` holds a
   `Project` reference in its `ReportTask`, so the entry is discarded on every build of the four
-  shaded modules — checked against 2.9 and 3.1.4 alike. Nothing else in the build objects, so
+  modules that build a plugin distribution — checked against 2.9 and 3.1.4 alike. Nothing else in the build objects, so
   `org.gradle.configuration-cache=true` can go into `gradle.properties` the day that task is
   fixed.
 - **Archives are reproducible**: `isPreserveFileTimestamps = false` and

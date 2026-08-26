@@ -44,7 +44,7 @@ What the fork adds on top of the port:
 
 - **Dependencies that keep moving.** Upstream's are where its last release left them.
   Dependabot watches `gradle/libs.versions.toml`, and the _resolved_ runtime graph — the
-  transitives, including the ones shaded into the uber-jars, which is where most CVEs sit —
+  transitives, which is where most CVEs sit —
   is submitted to GitHub so that its alerts see them too. A transitive that carries one is
   constrained out rather than waited on — `scala-library` is held above CVE-2022-36944.
   protobuf 4.36.0 is on `master` and ships in the next major; the current release still
@@ -86,15 +86,18 @@ Agent-facing notes live in [AGENTS.md](AGENTS.md).
 | `schema-registry-common`                 | Glue client, cache, exceptions                |
 | `schema-registry-serde`                  | Core SerDe (AVRO, JSON Schema, Protobuf)      |
 | `schema-registry-serde-kotlin`           | Kotlin configuration DSL and typed `Serde<T>` |
-| `schema-registry-serde-msk-iam`          | Uber-jar bundling the SerDe with MSK IAM auth |
+| `schema-registry-serde-msk-iam`          | The SerDe bundled with MSK IAM auth           |
 | `schema-registry-kafkastreams-serde`     | Kafka Streams integration                     |
 | `schema-registry-kafkaconnect-converter` | Kafka Connect AVRO converter                  |
 | `jsonschema-kafkaconnect-converter`      | Kafka Connect JSON Schema converter           |
 | `protobuf-kafkaconnect-converter`        | Kafka Connect Protobuf converter              |
 | `schema-registry-flink-serde`            | Flink serialization schemas                   |
 
-Most applications only need `schema-registry-serde`. The four Kafka Connect / MSK IAM
-artifacts are shaded uber-jars, meant to be dropped onto a Connect plugin path.
+Most applications only need `schema-registry-serde`. The three Connect converters and
+`schema-registry-serde-msk-iam` are ordinary jars with a complete pom, and each one also
+ships a **plugin distribution** — a zip of the jar and its whole runtime classpath, attached
+to every [GitHub Release](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases),
+for a Connect worker's `plugin.path`. See [kafka-connect.md](docs/kafka-connect.md).
 
 ## Installation
 
@@ -216,10 +219,9 @@ the modifications are listed in [NOTICE.txt](NOTICE.txt) and summarised in
 [How this fork differs](#how-this-fork-differs). It is neither endorsed by nor affiliated
 with Amazon.com, Inc. or its affiliates.
 
-Every published artifact carries `META-INF/LICENSE.txt` and `META-INF/NOTICE.txt`. The
-uber-jars — the Kafka Connect converters and `schema-registry-serde-msk-iam` — bundle their
-dependencies, and so also carry `META-INF/THIRD-PARTY-LICENSES.txt`, an inventory generated
-from the resolved runtime classpath at build time:
+Every published artifact carries `META-INF/LICENSE.txt` and `META-INF/NOTICE.txt`. The four
+plugin distributions ship third-party code, and so also carry `THIRD-PARTY-LICENSES.txt`, an
+inventory generated from the resolved runtime classpath at build time:
 
 ```bash
 ./gradlew thirdPartyLicenses

@@ -40,7 +40,7 @@ order to work in.
 | `common`                            | `schema-registry-common`                 | Glue client, cache, exceptions           |
 | `serializer-deserializer`           | `schema-registry-serde`                  | SerDe core (Avro, JSON Schema, Protobuf) |
 | `serde-kotlin`                      | `schema-registry-serde-kotlin`           | Kotlin DSL and typed `Serde<T>`          |
-| `serializer-deserializer-msk-iam`   | `schema-registry-serde-msk-iam`          | uber-jar SerDe + MSK IAM auth            |
+| `serializer-deserializer-msk-iam`   | `schema-registry-serde-msk-iam`          | SerDe + MSK IAM auth bundle              |
 | `kafkastreams-serde`                | `schema-registry-kafkastreams-serde`     | Kafka Streams integration                |
 | `avro-kafkaconnect-converter`       | `schema-registry-kafkaconnect-converter` | Connect Avro converter                   |
 | `avro-flink-serde`                  | `schema-registry-flink-serde`            | Flink (de)serialization schemas          |

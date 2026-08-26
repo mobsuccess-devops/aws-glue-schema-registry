@@ -46,7 +46,6 @@ jaxbApi = "2.3.1"
 
 # Plugins
 kotlin = "2.4.10"
-shadow = "9.6.1"
 protobufPlugin = "0.10.0"
 avroPlugin = "1.9.1"
 licenseReport = "2.9"
@@ -116,7 +115,6 @@ lz4 = { module = "at.yawk.lz4:lz4-java", version.ref = "lz4" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakeFileSystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okioFakeFs" }
 jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxbApi" }
-shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 licenseReport-plugin = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
 dokka-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
@@ -150,7 +148,6 @@ powermock-reflect = { module = "org.powermock:powermock-reflect", version.ref = 
 podam = { module = "uk.co.jemos.podam:podam", version.ref = "podam" }
 
 [plugins]
-shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 avro = { id = "com.github.davidmc24.gradle.plugin.avro", version.ref = "avroPlugin" }
 binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }

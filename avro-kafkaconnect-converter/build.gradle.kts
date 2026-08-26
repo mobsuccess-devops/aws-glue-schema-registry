@@ -1,5 +1,5 @@
 plugins {
-    id("gsr.shaded-conventions")
+    id("gsr.distribution-conventions")
     alias(libs.plugins.avro)
 }
 

@@ -12,9 +12,6 @@ dependencies {
     // convention plugins, which cannot reach them otherwise.
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 
-    // Required to apply the shadow plugin from gsr.shaded-conventions.
-    implementation(libs.shadow.plugin)
-
     implementation(libs.licenseReport.plugin)
 
     implementation(libs.dokka.plugin)

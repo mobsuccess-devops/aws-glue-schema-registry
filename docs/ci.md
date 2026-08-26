@@ -29,6 +29,7 @@ Two channels, two audiences.
 | -------------------------------------------------------------------------------------------------------- | ---------------------- | ------------ | ----------------------------------- |
 | [Maven Central](https://central.sonatype.com/namespace/com.mobsuccess)                                   | releases only          | none         | `publishAggregationToCentralPortal` |
 | [GitHub Packages](https://github.com/orgs/mobsuccess-devops/packages?repo_name=aws-glue-schema-registry) | releases and snapshots | classic PAT  | `publish`                           |
+| [GitHub Releases](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases)                | the four plugin zips   | none         | `pluginDistribution` + `gh release` |
 
 `publish-snapshot` is unchanged: a push to `master` publishes `<next>-SNAPSHOT` to GitHub
 Packages and nothing else. `publish-release` runs both, **Central first**, then GitHub
@@ -39,15 +40,12 @@ first means a failure there leaves nothing published anywhere, and a re-run star
 
 - **The Central path is `com.gradleup.nmcp`, not `com.vanniktech.maven.publish`.** Both
   cover the Portal API; they differ in what they do to the publications. vanniktech _creates_
-  the publication from a platform descriptor (`JavaLibrary`, `KotlinJvm`) and owns the
-  artifact set, the sources and javadoc jars and the pom — which is exactly what the four
-  shaded modules cannot give up. Those modules replace the main artifact with the uber-jar,
-  strip every dependency from the pom bar `slf4j-api` and disable the Gradle module metadata;
-  handing publication ownership to a plugin that rebuilds all three would mean fighting it at
-  every release. nmcp creates nothing: it reads the `maven-publish` publications the
-  convention plugins already produce, stages them into a local repository and uploads the zip.
-  The uber-jar specifics survive untouched, and `gsr.shaded-conventions` did not change beyond
-  adding the javadoc jar to its artifact list.
+  the publication from a platform descriptor (`JavaLibrary`, `KotlinJvm`) and owns the artifact
+  set, the sources and javadoc jars and the pom. nmcp creates nothing: it reads the
+  `maven-publish` publications the convention plugins already produce, stages them into a local
+  repository and uploads the zip. That was decisive while the four shaded modules owned their
+  own artifact set and pom; now that every module publishes the same way it is simply the
+  smaller dependency, and there is no reason to change it.
 - **Only the nine library modules go to Central.** `nmcpAggregation(project(…))` in the root
   build names them one by one. `schema-registry-examples` publishes to GitHub Packages as it
   always has, but it is not a library and Central is immutable — an artifact put there cannot
@@ -87,6 +85,20 @@ first means a failure there leaves nothing published anywhere, and a re-run star
 
   It stages every publication into `build/nmcp/zip/aggregation.zip` and verifies that each
   coordinate carries the files Central requires. No credentials, no upload.
+
+- **A publication weighs 7.9 MB across 204 files**, which is what the plugin distributions
+  being release assets rather than Maven artifacts buys. Maven Central meters the free tier on
+  release size — a 78 MB monthly threshold, evaluated as a three-month average and rate-limited
+  from 1 October 2026 — and the four uber-jars this repository used to publish were 276 MB of a
+  284 MB release on their own. The reasoning, the measurements and the alternatives that were
+  weighed are in [build.md](build.md#the-plugin-distributions).
+
+- **The plugin zips go to the GitHub Release, not to a Maven repository.** `pluginDistribution`
+  is wired into `assemble` but not into any publication, so `publish` and
+  `publishAggregationToCentralPortal` never see it. The release job builds the four zips,
+  covers them with the same `SHA256SUMS.txt` and build-provenance attestation as the jars, and
+  attaches them to the tag. Release assets are anonymous to download and are not metered, which
+  is the whole point.
 
 ## Branch protection
 

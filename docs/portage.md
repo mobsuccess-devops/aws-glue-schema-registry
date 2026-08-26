@@ -71,6 +71,16 @@ The only Java left in the repository is the Avro classes generated into the test
   over nullable parameters guarded by `require()`, at the cost of updating the tests that
   asserted the exception type. Only the type changes: a null value is still rejected, at
   the same point.
+- **The four shaded modules publish an ordinary jar, not an uber-jar.** `maven-shade-plugin`
+  was configured with an empty `<configuration/>`, so `schema-registry-serde-msk-iam` and the
+  three Connect converters replaced their main artifact with a jar holding their whole runtime
+  classpath, published a pom stripped of every dependency bar `slf4j-api`, and disabled the
+  Gradle module metadata. They now publish like every other module — a thin jar, a complete
+  pom, module metadata — and the self-contained bundle survives as a **plugin distribution**: a
+  zip of the jar and its runtime classpath, laid out as a Connect plugin directory, attached to
+  each GitHub Release instead of being pushed to a Maven repository. A publication goes from
+  284 MB to 7.9 MB. What was in those jars, and why the bundle moved rather than shrank, is in
+  [build.md](build.md#the-plugin-distributions).
 - **Publication coordinates.** Group `com.mobsuccess` instead of `software.amazon.glue`,
   so that an artifact of this fork can never silently substitute itself for the Maven
   Central one in a consumer's dependency graph. The artifactIds are unchanged.
@@ -86,9 +96,8 @@ The only Java left in the repository is the Avro classes generated into the test
 - **`LICENSE.txt` and `NOTICE.txt` packaged in every jar.** Apache License 2.0 §4 asks
   for both to accompany each redistributed copy of the work; the Maven build packaged
   neither, so a consumer receiving only the jar got no licence and no attribution. They
-  now land in `META-INF/` of every artifact, uber-jars included. Most bundled jars carry
-  files of the same name, so `shadowJar` keeps the first occurrence — the `metaInf` spec
-  is the first child spec of `Jar`, which makes it ours, the one describing this work.
+  now land in `META-INF/` of every artifact, and beside the `lib/` directory of every plugin
+  distribution.
 - **`NOTICE.txt` states the modifications.** ALv2 §4.b requires a modified distribution
   to carry prominent notice of the change. The upstream `NOTICE.txt` held the Amazon
   copyright line alone; the fork's modifications are now listed after it, along with the
@@ -97,22 +106,20 @@ The only Java left in the repository is the Avro classes generated into the test
   described the dependency graph of the Maven build, a set this fork no longer has: the
   C# modules are gone, Kotlin, Wire and `at.yawk.lz4` came in. It is replaced by a
   `thirdPartyLicenses` task, built on `com.github.jk1.dependency-license-report`, which
-  derives the inventory from the resolved `runtimeClasspath` and packages it into the
-  uber-jars — the only artifacts that physically embed third-party code. Generating it
-  per build is what keeps it from drifting a second time. The report's generation
-  timestamp is stripped so that two builds of the same commit produce identical jars.
-- **`slf4j-api` kept out of the uber-jars.** The four shaded modules bundled it along with
-  everything else on their runtime classpath, as the Maven build did. Since the move to
-  slf4j 2.0 that is a trap for a standalone application: `org.slf4j.LoggerFactory` 2.x binds
-  through an `SLF4JServiceProvider`, and a classpath that serves the uber-jar's copy first
-  hands a 1.x stack — logback 1.2, `log4j-slf4j-impl` — a `LoggerFactory` that finds no
-  provider, which turns every logger in the process into a NOP, not just this library's.
-  Kafka Connect is immune: its plugin classloader parent-delegates `org.slf4j`. `shadowJar`
-  now excludes the artifact, and the dependency-reduced pom of those modules declares it —
-  the one dependency it carries — so a consumer with no slf4j of its own still resolves one.
-  It is deliberately **not** relocated: a relocated `slf4j-api` would look for a provider
-  under the relocated package, never find one, and be a NOP always rather than sometimes.
-  The licence inventory drops it too, since it describes what the jar embeds.
+  derives the inventory from the resolved `runtimeClasspath` and packages it into the four
+  plugin distributions — the only artifacts that physically carry third-party code. Generating
+  it per build is what keeps it from drifting a second time. The report's generation timestamp
+  is stripped so that two builds of the same commit produce identical archives.
+- **`slf4j-api` is declared, never bundled into a classpath a consumer cannot arbitrate.**
+  While the four modules shipped uber-jars, embedding it was a trap for a standalone
+  application: `org.slf4j.LoggerFactory` 2.x binds through an `SLF4JServiceProvider`, and a
+  classpath that served the uber-jar's copy first handed a 1.x stack — logback 1.2,
+  `log4j-slf4j-impl` — a `LoggerFactory` that finds no provider, which turns every logger in
+  the process into a NOP, not just this library's. The jar excluded it and the pom declared it.
+  Now that those modules publish a normal pom, the exclusion has no reason to exist: a build
+  tool resolves one `slf4j-api` and the consumer's own binding wins. The plugin distributions
+  do carry the jar, and Kafka Connect is immune by construction — its plugin classloader
+  parent-delegates `org.slf4j`, so the worker's own copy is the one that loads.
 - **`AvroSchema.toString()` renders a null canonical string as `"null"`.** The Java source
   returned `canonicalString()` straight from `toString()`, and that method returns null for a
   schema carrying no Avro object. Kotlin forbids a nullable return type on `toString()`, so the
@@ -535,8 +542,9 @@ The only Java left in the repository is the Avro classes generated into the test
   `FileDescriptorUtilsTest` cases down with a `NoSuchMethodError`. Test scope only.
 
 - **`icu4j` excluded from apicurio.** 3.3.1 declares `com.ibm.icu:icu4j`, which no class of
-  its own references, and the uber-jar `protobuf-kafkaconnect-converter` publishes carries
-  every runtime dependency. Excluding it takes that jar from 86.5 MB to 73.0 MB. The apicurio
+  its own references, and it landed on the runtime classpath of
+  `protobuf-kafkaconnect-converter` — 13.5 MB of the uber-jar that module used to publish, and
+  13.5 MB of the plugin distribution it builds today. The apicurio
   classes themselves are unreachable here in any case — the fork vendors its copy of them
   under `com.amazonaws.services.schemaregistry.utils.apicurio` — but the dependency is the
   pom's and is kept.
