@@ -451,11 +451,8 @@ open class AvroData(avroDataConfig: AvroDataConfig) {
         schema: Schema,
         fromConnectContext: FromConnectContext,
         ignoreOptional: Boolean,
-    ): ApacheAvroSchema = if (fromConnectContext.cycleReferences.containsKey(schema.name())) {
-        fromConnectContext.cycleReferences[schema.name()]!!
-    } else {
-        fromConnectSchema(schema, fromConnectContext, ignoreOptional)
-    }
+    ): ApacheAvroSchema = fromConnectContext.cycleReferences[schema.name()]
+        ?: fromConnectSchema(schema, fromConnectContext, ignoreOptional)
 
     private fun addAvroRecordField(
         fields: MutableList<ApacheAvroSchema.Field>,
@@ -1831,12 +1828,12 @@ open class AvroData(avroDataConfig: AvroDataConfig) {
                             avroSchemaForUnderlyingTypeIfOptional(schema, avroSchema)
                         val elementAvroSchema =
                             if (schema != null) underlyingAvroSchema.elementType else ANYTHING_SCHEMA
-                        for (`val` in list) {
+                        for (element in list) {
                             converted.add(
                                 fromConnectData(
                                     elementSchema,
                                     elementAvroSchema,
-                                    `val`,
+                                    element,
                                     false,
                                     true,
                                     enhancedSchemaSupport,
@@ -1927,12 +1924,12 @@ open class AvroData(avroDataConfig: AvroDataConfig) {
                         // one of the union types.
                         if (AVRO_TYPE_UNION == schema!!.name()) {
                             for (field in schema.fields()) {
-                                val `object` = struct.get(field)
-                                if (`object` != null) {
+                                val fieldValue = struct.get(field)
+                                if (fieldValue != null) {
                                     return fromConnectData(
                                         field.schema(),
                                         avroSchema,
-                                        `object`,
+                                        fieldValue,
                                         false,
                                         true,
                                         enhancedSchemaSupport,

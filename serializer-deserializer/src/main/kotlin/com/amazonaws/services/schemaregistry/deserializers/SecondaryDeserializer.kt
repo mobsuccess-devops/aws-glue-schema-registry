@@ -17,7 +17,6 @@ package com.amazonaws.services.schemaregistry.deserializers
 
 import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
-import java.lang.reflect.InvocationTargetException
 
 // `open`: the test suites mock this type.
 open class SecondaryDeserializer private constructor() {
@@ -31,11 +30,7 @@ open class SecondaryDeserializer private constructor() {
         try {
             val secConfigure = clz!!.getMethod("configure", Map::class.java, Boolean::class.javaPrimitiveType)
             secConfigure.invoke(obj, configs, isKey)
-        } catch (e: NoSuchMethodException) {
-            throw AWSSchemaRegistryException("Can't find method called configure or invoke it.", e)
-        } catch (e: InvocationTargetException) {
-            throw AWSSchemaRegistryException("Can't find method called configure or invoke it.", e)
-        } catch (e: IllegalAccessException) {
+        } catch (e: ReflectiveOperationException) {
             throw AWSSchemaRegistryException("Can't find method called configure or invoke it.", e)
         }
     }
@@ -49,11 +44,7 @@ open class SecondaryDeserializer private constructor() {
             return clz!!.interfaces.asList().contains(
                 Class.forName("org.apache.kafka.common.serialization.Deserializer"),
             )
-        } catch (e: ClassNotFoundException) {
-            throw AWSSchemaRegistryException("Can't find the class or instantiate it.", e)
-        } catch (e: IllegalAccessException) {
-            throw AWSSchemaRegistryException("Can't find the class or instantiate it.", e)
-        } catch (e: InstantiationException) {
+        } catch (e: ReflectiveOperationException) {
             throw AWSSchemaRegistryException("Can't find the class or instantiate it.", e)
         }
     }
@@ -69,11 +60,7 @@ open class SecondaryDeserializer private constructor() {
         try {
             val secDeserialize = clz!!.getMethod("deserialize", String::class.java, ByteArray::class.java)
             return secDeserialize.invoke(obj, topic, data)
-        } catch (e: NoSuchMethodException) {
-            throw AWSSchemaRegistryException("Can't find method called deserialize or invoke it.", e)
-        } catch (e: InvocationTargetException) {
-            throw AWSSchemaRegistryException("Can't find method called deserialize or invoke it.", e)
-        } catch (e: IllegalAccessException) {
+        } catch (e: ReflectiveOperationException) {
             throw AWSSchemaRegistryException("Can't find method called deserialize or invoke it.", e)
         }
     }
@@ -85,11 +72,7 @@ open class SecondaryDeserializer private constructor() {
 
         try {
             clz!!.getMethod("close").invoke(obj)
-        } catch (e: NoSuchMethodException) {
-            throw AWSSchemaRegistryException("Can't find method called close or invoke it.", e)
-        } catch (e: InvocationTargetException) {
-            throw AWSSchemaRegistryException("Can't find method called close or invoke it.", e)
-        } catch (e: IllegalAccessException) {
+        } catch (e: ReflectiveOperationException) {
             throw AWSSchemaRegistryException("Can't find method called close or invoke it.", e)
         }
     }
