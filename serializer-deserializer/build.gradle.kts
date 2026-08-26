@@ -12,6 +12,7 @@ coverage {
 dependencies {
     constraints {
         api(libs.scala.library)
+        api(libs.lz4)
     }
 
     api(project(":schema-registry-common"))
