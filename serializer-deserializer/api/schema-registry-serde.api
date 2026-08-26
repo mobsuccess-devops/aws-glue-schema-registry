@@ -15,7 +15,6 @@ public final class additionalTypes/Decimals$Decimal : com/google/protobuf/Genera
 	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/Message;
 	public synthetic fun getDefaultInstanceForType ()Lcom/google/protobuf/MessageLite;
 	public static final fun getDescriptor ()Lcom/google/protobuf/Descriptors$Descriptor;
-	public fun getDescriptorForType ()Lcom/google/protobuf/Descriptors$Descriptor;
 	public fun getFraction ()I
 	public fun getParserForType ()Lcom/google/protobuf/Parser;
 	public fun getPrecision ()I
