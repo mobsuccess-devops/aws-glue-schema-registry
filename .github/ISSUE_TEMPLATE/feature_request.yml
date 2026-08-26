@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest a change or an addition
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do, and where the library gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: >-
+        The fork must stay behaviour-identical to its upstream source at the Java level, so
+        say whether this changes observable behaviour or the public API — see
+        [CONTRIBUTING.md](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/CONTRIBUTING.md).
+    validations:
+      required: true
