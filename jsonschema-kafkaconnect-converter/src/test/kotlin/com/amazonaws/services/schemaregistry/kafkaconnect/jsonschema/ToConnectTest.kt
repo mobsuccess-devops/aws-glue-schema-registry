@@ -31,6 +31,8 @@ import org.apache.kafka.connect.data.Timestamp
 import org.apache.kafka.connect.json.DecimalFormat
 import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.BooleanSchema
+import org.everit.json.schema.CombinedSchema
+import org.everit.json.schema.NullSchema
 import org.everit.json.schema.NumberSchema
 import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.StringSchema
@@ -39,6 +41,7 @@ import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -544,6 +547,49 @@ class ToConnectTest {
         assertEquals(connectSchema, actualConnectSchema)
 
         ConnectSchema.validateValue(connectSchema, actualConnectValue)
+    }
+
+    @Test
+    fun testToConnect_sameTypeRequiredAndNullableFields_requiredFieldConvertedFirst() {
+        val connectSchema = toConnectStructOfStrings(requiredFieldName = "a", nullableFieldName = "b")
+
+        assertFalse(connectSchema.field("a").schema().isOptional)
+        assertTrue(connectSchema.field("b").schema().isOptional)
+
+        val connectValue = Struct(connectSchema).put("a", "present")
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+    }
+
+    @Test
+    fun testToConnect_sameTypeRequiredAndNullableFields_nullableFieldConvertedFirst() {
+        val connectSchema = toConnectStructOfStrings(requiredFieldName = "b", nullableFieldName = "a")
+
+        assertTrue(connectSchema.field("a").schema().isOptional)
+        assertFalse(connectSchema.field("b").schema().isOptional)
+
+        val connectValue = Struct(connectSchema).put("b", "present")
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+    }
+
+    private fun toConnectStructOfStrings(
+        requiredFieldName: String,
+        nullableFieldName: String,
+    ): Schema {
+        val nullableStringSchema =
+            CombinedSchema
+                .oneOf(listOf(NullSchema.builder().build(), StringSchema.builder().build()))
+                .build()
+        val jsonSchema =
+            ObjectSchema
+                .builder()
+                .addPropertySchema(requiredFieldName, StringSchema.builder().build())
+                .addPropertySchema(nullableFieldName, nullableStringSchema)
+                .addRequiredProperty(requiredFieldName)
+                .build()
+
+        return jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)!!
     }
 
     @Test

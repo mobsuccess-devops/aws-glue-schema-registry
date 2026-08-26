@@ -540,6 +540,28 @@ class FromConnectTest {
     }
 
     @Test
+    fun testFromConnect_sameTypeFields_keepTheirOwnIndex() {
+        val connectSchema =
+            SchemaBuilder
+                .struct()
+                .field("a", Schema.STRING_SCHEMA)
+                .field("b", Schema.STRING_SCHEMA)
+                .build()
+
+        val jsonSchema = connectSchemaToJsonSchemaConverter.fromConnectSchema(connectSchema) as ObjectSchema
+
+        assertEquals(0, connectIndexOf(jsonSchema, "a"))
+        assertEquals(1, connectIndexOf(jsonSchema, "b"))
+    }
+
+    private fun connectIndexOf(
+        objectSchema: ObjectSchema,
+        fieldName: String,
+    ): Int? = objectSchema.propertySchemas[fieldName]
+        ?.unprocessedProperties
+        ?.get(JsonSchemaConverterConstants.CONNECT_INDEX_PROP) as Int?
+
+    @Test
     fun testSchemaCache_size_fromConnectConversion() {
         val jsonSchemaDataConfig =
             JsonSchemaDataConfig(Collections.singletonMap(JsonSchemaDataConfig.SCHEMAS_CACHE_SIZE_CONFIG, 2))

@@ -268,6 +268,23 @@ The only Java left in the repository is the Avro classes generated into the test
   last point does not extend to a **non**-nullable multi-type union, whose branches are still
   required and which therefore still cannot carry a value — a pre-existing limitation of the
   union encoding, untouched here because changing it would move schemas that convert today.
+- **The JSON Schema converter caches key on everything that shapes the result.** Both caches
+  were keyed on the schema alone although the conversion also depends on the other arguments,
+  and everit and Connect schemas compare by value, so two conversions of equal schemas
+  collided. `toConnectSchema(schema, required)` bakes `required` into the Connect schema it
+  builds: in `{"a": {"type": "string"}, "b": {"type": ["string", "null"]}}` the field `a` is
+  converted with `required = true` and the union branch of `b` with `required = false`, so
+  whichever ran first decided both — `b` came out required, or, with the properties the other
+  way round, `a` came out optional. A record with `b` null then failed
+  `ConnectSchema.validateValue`, and a JDBC sink created the column `NOT NULL`. The mirror
+  `fromConnectSchema(schema, ignoreOptional, index)` writes `index` into `connect.index`, so a
+  struct with two fields of the same Connect type gave both of them the first one's index and
+  lost the ordering that property exists to carry. The keys are now `Pair(schema, required)`
+  and `Triple(schema, ignoreOptional, index)`. The defect is upstream's, and upstream cannot
+  reach the `toConnect` half of it: before the entry above, no nullable union converted at all,
+  so `required` never varied. The caches stay public `val`s and their erased signatures are
+  unchanged, so the ABI dumps do not move; the entry counts asserted by the existing
+  cache-size tests do not move either, since each of their calls uses one argument value.
 - **Nullable fields can be opted into when a JSON schema is derived from a POJO.**
   `JsonSerializer` built its `JsonSchemaGenerator` with the mbknor default, which types an
   optional field as its type alone. A POJO whose optional field is null therefore serialises
