@@ -9,7 +9,7 @@ policy:
     - branch: master
       override-settings:
         requiredApprovingReviewCount: 0
-        isAdminEnforced: false
+        isAdminEnforced: true
       additional-required-job-names:
         - Gradle Build
         - Tests on JDK 21
