@@ -32,7 +32,7 @@ import org.everit.json.schema.ReferenceSchema
 class JsonSchemaToConnectSchemaConverter(
     private val jsonSchemaDataConfig: JsonSchemaDataConfig,
 ) {
-    val toConnectSchemaCache: Cache<org.everit.json.schema.Schema, Schema> =
+    val toConnectSchemaCache: Cache<Pair<org.everit.json.schema.Schema, Boolean>, Schema> =
         SynchronizedCache(LRUCache(jsonSchemaDataConfig.getSchemasCacheSize()))
     private val connectMetaData: Boolean = jsonSchemaDataConfig.isConnectMetaData()
     private val typeConverterFactory = TypeConverterFactory()
@@ -49,7 +49,8 @@ class JsonSchemaToConnectSchemaConverter(
             return null
         }
 
-        toConnectSchemaCache.get(jsonSchema)?.let { return it }
+        val cacheKey = jsonSchema to required
+        toConnectSchemaCache.get(cacheKey)?.let { return it }
 
         val connectType =
             jsonSchema.unprocessedProperties[JsonSchemaConverterConstants.CONNECT_TYPE_PROP] as String?
@@ -83,7 +84,7 @@ class JsonSchemaToConnectSchemaConverter(
         populateConnectProperties(builder, jsonSchema, required, connectName)
 
         val result = builder.build()
-        toConnectSchemaCache.put(jsonSchema, result)
+        toConnectSchemaCache.put(cacheKey, result)
         return result
     }
 
