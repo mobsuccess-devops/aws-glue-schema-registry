@@ -18,6 +18,13 @@ val slf4jApi =
         .get()
         .get()
 
+configurations.configureEach {
+    exclude(group = "software.amazon.awssdk", module = "apache-client")
+    exclude(group = "software.amazon.awssdk", module = "apache5-client")
+    exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+    exclude(group = "com.squareup.wire", module = "wire-compiler")
+}
+
 licenseReport {
     configurations = arrayOf("runtimeClasspath")
     excludes = arrayOf("${slf4jApi.group}:${slf4jApi.name}")

@@ -71,6 +71,14 @@ The only Java left in the repository is the Avro classes generated into the test
   over nullable parameters guarded by `require()`, at the cost of updating the tests that
   asserted the exception type. Only the type changes: a null value is still rejected, at
   the same point.
+- **The uber-jars no longer bundle every artifact they resolve.** `maven-shade-plugin` was
+  configured with an empty `<configuration/>`, so the four shaded modules packed their whole
+  runtime classpath. Four artifacts are now excluded — the AWS SDK's two Apache HTTP clients
+  and its Netty async client, none of which the SDK selects once an explicit
+  `UrlConnectionHttpClient` is passed everywhere, and `wire-compiler`, which no source set
+  imports. A publication drops from 284 MB to 255 MB. The full inventory of the jars, the
+  reasoning, and the four candidates that were measured and left in are in
+  [build.md](build.md#the-uber-jars).
 - **Publication coordinates.** Group `com.mobsuccess` instead of `software.amazon.glue`,
   so that an artifact of this fork can never silently substitute itself for the Maven
   Central one in a consumer's dependency graph. The artifactIds are unchanged.

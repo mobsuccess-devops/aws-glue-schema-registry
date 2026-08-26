@@ -88,6 +88,12 @@ first means a failure there leaves nothing published anywhere, and a re-run star
   It stages every publication into `build/nmcp/zip/aggregation.zip` and verifies that each
   coordinate carries the files Central requires. No credentials, no upload.
 
+- **A publication weighs 255 MB, and the four uber-jars are 248 MB of it.** What they contain,
+  what was taken out of them, and what was measured and left in, is in
+  [build.md](build.md#the-uber-jars). Central's free tier is metered on release size against a
+  78 MB monthly threshold, so the size of these four is a publishing question before it is a
+  packaging one.
+
 ## Branch protection
 
 - **`.mobsuccess.yml` is what mobsuccessbot enforces**, and it holds no comments — the file

@@ -101,6 +101,128 @@ The `madrapps/jacoco-report` step in `ci.yml` comments the numbers on a pull req
 the weakest floor any module enforces, so its verdict cannot contradict the one that
 actually blocks a merge.
 
+## The uber-jars
+
+`schema-registry-serde-msk-iam` and the three Connect converters are shaded by
+`gsr.shaded-conventions`: the uber-jar replaces the main artifact, the pom is stripped of
+every dependency bar `slf4j-api`, and the Gradle module metadata is disabled. They are
+dropped as-is onto a Kafka Connect plugin path, where nothing resolves a transitive
+dependency, so **whatever is reachable at run time has to be inside the jar**. That is the
+contract, and it is what makes these four the whole weight of a publication.
+
+Measure them with:
+
+```bash
+PACKAGE_VERSION=<version> ./gradlew clean build nmcpZipAggregation
+unzip -l build/nmcp/zip/aggregation.zip
+```
+
+### What is in them
+
+The four are the same jar with a different front end — one `schema-registry-serde`, one
+Glue client, one Kafka client, and the union of the Avro, JSON Schema and Protobuf
+toolchains. Taking `schema-registry-serde-msk-iam` as the representative, by originating
+dependency:
+
+| Origin                                                              |   MB | Note                                                                     |
+| ------------------------------------------------------------------- | ---: | ------------------------------------------------------------------------ |
+| AWS SDK v2                                                          | 15.4 | `glue` alone is 9.6 — the model classes of every Glue API, not just ours |
+| Kafka compression codecs (`zstd-jni`, `snappy-java`, `at.yawk.lz4`) |  9.4 | 22 MB uncompressed, almost all native binaries for sixteen platforms     |
+| `kafka-clients`                                                     |  8.8 |                                                                          |
+| `mbknor-jackson-jsonschema` and `scala-library`                     |  5.8 | the JSON Schema derivation path; `scala-library` is 5.7 of it            |
+| `kotlin-reflect`, `kotlin-scripting-*`, `classgraph`                |  5.8 |                                                                          |
+| Netty                                                               |  3.8 | the SDK's async HTTP client                                              |
+| Protobuf runtime and `proto-google-common-protos`                   |  3.4 |                                                                          |
+| Apache HttpClient 4 and 5                                           |  3.2 | the SDK's two sync HTTP clients                                          |
+| Guava                                                               |  2.9 |                                                                          |
+| Wire                                                                |  2.7 |                                                                          |
+| Jackson                                                             |  2.3 |                                                                          |
+| `kotlin-stdlib`                                                     |  1.8 |                                                                          |
+| everit JSON Schema and its validators                               |  1.6 |                                                                          |
+| Avro                                                                |  0.6 |                                                                          |
+| this repository                                                     |  0.3 |                                                                          |
+| everything else                                                     |  2.1 |                                                                          |
+
+The jar is very close to the sum of the dependency jars it repacks, so
+`runtimeClasspath` is a faithful proxy: measuring a candidate exclusion does not need a
+build.
+
+### What is excluded, and why
+
+`gsr.shaded-conventions` drops four artifacts from the four shaded modules. Nothing else in
+the build is affected — `examples` and `integration-tests` depend on `schema-registry-serde`
+directly and resolve the unnarrowed graph.
+
+- **`apache-client` and `apache5-client`.** Every AWS client this library builds passes an
+  explicit `UrlConnectionHttpClient`: `AWSSchemaRegistryClient` for Glue,
+  `AWSKafkaAvroConverter` for the assume-role STS client. The only clients built through the
+  SDK's own HTTP resolution are the ones the SDK builds for itself — the SSO credential
+  providers, and the `StsClient` inside `aws-msk-iam-auth`. Since 2.29 the SDK no longer
+  fails when several implementations are on the classpath: `ClasspathSdkHttpServiceProvider`
+  ranks them, Apache 5 first, Apache 4 second, `HttpURLConnection` third. Bundling all three
+  therefore meant those internal clients silently used Apache HttpClient 5 while everything
+  the fork builds itself used `HttpURLConnection`. With the two gone the jar registers
+  exactly one `SdkHttpService`, so the resolution is deterministic and the whole artifact
+  speaks over one HTTP stack.
+- **`netty-nio-client`**, which provides `SdkAsyncHttpService`. Nothing here builds an async
+  AWS client, and no `SdkAsyncHttpService` is registered in the jar any more.
+- **`wire-compiler`.** The Protobuf path uses `com.squareup.wire.schema` and
+  `com.squareup.wire.Syntax`; `wire-compiler` is the code generator, and no source set
+  imports it. Upstream's pom declared it at compile scope next to `wire-schema` and the port
+  carried it over as `runtimeOnly`. It leaves with `swiftpoet` and the three generator
+  artifacts.
+
+The effect, measured on the aggregation bundle:
+
+| Artifact                                 |  Before |   After |         Delta |
+| ---------------------------------------- | ------: | ------: | ------------: |
+| `schema-registry-serde-msk-iam`          | 69.8 MB | 61.6 MB | −8.2 (−11.8%) |
+| `protobuf-kafkaconnect-converter`        | 69.8 MB | 63.1 MB |  −6.8 (−9.7%) |
+| `jsonschema-kafkaconnect-converter`      | 68.8 MB | 62.0 MB |  −6.8 (−9.8%) |
+| `schema-registry-kafkaconnect-converter` | 67.9 MB | 61.2 MB | −6.8 (−10.0%) |
+| **one publication**                      |  284 MB |  255 MB |  −28.5 (−10%) |
+
+`schema-registry-serde-msk-iam` gains the extra 1.5 MB because `aws-msk-iam-auth` declares
+`apache-client` itself, so HttpClient 4 and `commons-codec` leave with it.
+
+### What was measured and rejected
+
+- **`minimize()`.** For `schema-registry-serde-msk-iam` it produces a jar of **11.9 MB that
+  contains no classes at all** — no `IAMLoginModule`, no serializer, nothing. The module
+  declares no source of its own, being `schema-registry-serde` plus `aws-msk-iam-auth`, so
+  shadow has no root to walk from and keeps almost nothing. For the Avro converter, which
+  does have classes, 67.9 MB becomes 39.0 MB by deleting nine tenths of `kafka-clients`, all
+  of Netty and all of `kotlin-reflect` — every one of them loaded by name rather than
+  referenced. `minimize()` cannot see a `Class.forName`, and this library resolves
+  serializers, deserializers and SDK service clients by name; the GraalVM metadata in
+  [native-image.md](native-image.md) exists for the same reason. Both jars pass the test
+  suite.
+- **The Kafka compression codecs**, 9.4 MB a jar and the second largest block after the AWS
+  SDK. `kafka-clients` names `zstd-jni`, `snappy-java` and `lz4` by class from
+  `org.apache.kafka.common.compress`, so they are reachable from anything holding a producer
+  or a consumer. A Connect converter holds neither — the worker owns the client — which
+  would make 28 MB removable from the three converters. It was not taken: the argument rests
+  on a Connect worker keeping `org.apache.kafka.common` on the parent classloader, which is a
+  property of a Connect version rather than of this jar, and nothing in this build or in the
+  integration suite starts a worker to check it. Self-containment is the point of the
+  artifact.
+- **Splitting `schema-registry-serde` by format**, which is where the real weight is. Each
+  converter carries the two formats it cannot use: about 19 MB of Protobuf, Wire, everit,
+  `mbknor-jackson-jsonschema`, Scala and `kotlin-reflect` in the Avro converter, 13 MB in the
+  Protobuf one, 6 MB in the JSON Schema one. `GlueSchemaRegistrySerializerFactory` dispatches
+  on `DataFormat` and instantiates lazily, so those classes are never executed — but they are
+  what makes the serde one artifact instead of three, and separating them breaks the API of
+  every module and every consumer of the fork.
+- **Narrowing `software.amazon.awssdk:glue`**, 9.6 MB of which the schema-registry
+  operations are a rounding error. `GlueClient` declares a method per Glue operation, so
+  every model class is statically reachable; there is nothing to strip that is not also a
+  hand-edit of a published SDK artifact.
+
+The arithmetic that follows is worth stating plainly: a publication drops from 284 MB to
+255 MB, and Maven Central's free-tier threshold is 78 MB a month. Trimming the uber-jars is
+worth doing on its own merits, and it does not change that order of magnitude — see
+[ci.md](ci.md#publication).
+
 ## Other build notes
 
 - **The jars carry GraalVM reachability metadata.**
