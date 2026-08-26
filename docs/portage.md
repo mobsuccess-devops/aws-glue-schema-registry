@@ -101,6 +101,18 @@ The only Java left in the repository is the Avro classes generated into the test
   uber-jars — the only artifacts that physically embed third-party code. Generating it
   per build is what keeps it from drifting a second time. The report's generation
   timestamp is stripped so that two builds of the same commit produce identical jars.
+- **`slf4j-api` kept out of the uber-jars.** The four shaded modules bundled it along with
+  everything else on their runtime classpath, as the Maven build did. Since the move to
+  slf4j 2.0 that is a trap for a standalone application: `org.slf4j.LoggerFactory` 2.x binds
+  through an `SLF4JServiceProvider`, and a classpath that serves the uber-jar's copy first
+  hands a 1.x stack — logback 1.2, `log4j-slf4j-impl` — a `LoggerFactory` that finds no
+  provider, which turns every logger in the process into a NOP, not just this library's.
+  Kafka Connect is immune: its plugin classloader parent-delegates `org.slf4j`. `shadowJar`
+  now excludes the artifact, and the dependency-reduced pom of those modules declares it —
+  the one dependency it carries — so a consumer with no slf4j of its own still resolves one.
+  It is deliberately **not** relocated: a relocated `slf4j-api` would look for a provider
+  under the relocated package, never find one, and be a NOP always rather than sometimes.
+  The licence inventory drops it too, since it describes what the jar embeds.
 - **`AvroSchema.toString()` renders a null canonical string as `"null"`.** The Java source
   returned `canonicalString()` straight from `toString()`, and that method returns null for a
   schema carrying no Avro object. Kotlin forbids a nullable return type on `toString()`, so the
