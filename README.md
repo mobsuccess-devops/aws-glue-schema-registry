@@ -23,24 +23,60 @@ Kinesis — in AVRO, JSON Schema and Protobuf.
 
 ## How this fork differs
 
-The library behaviour is unchanged — the inherited test suite passes in full, and the first
-commit of this repository is the upstream source verbatim, so every deviation is visible with
-`git diff eed1506`. What changed is everything around the code:
+The contract is **identical by default, better where documented**. The library behaves like
+its upstream source at the Java level — that is what makes the artifact a drop-in replacement
+— and the improvements the fork carries are documented deviations, never silent ones: every
+one of them is written up in [docs/portage.md](docs/portage.md). The inherited test suite is
+the oracle and it stays green, and the first commit of this repository is the upstream source
+verbatim, so `git diff eed1506` shows every change.
 
-|              | Upstream               | This fork                          |
-| ------------ | ---------------------- | ---------------------------------- |
-| Build        | Maven                  | Gradle 9.7.0, Kotlin DSL           |
-| Languages    | Java + C#              | Java only, Kotlin port in progress |
-| Distribution | Maven Central          | GitHub Packages                    |
-| Group        | `software.amazon.glue` | `com.mobsuccess`                   |
-| JVM target   | 8                      | 17                                 |
+|              | Upstream                                | This fork                               |
+| ------------ | --------------------------------------- | --------------------------------------- |
+| Build        | Maven                                   | Gradle 9.7.0, Kotlin DSL                |
+| Languages    | Java + C#                               | Kotlin, tests included                  |
+| Distribution | Maven Central                           | GitHub Packages                         |
+| Group        | `software.amazon.glue`                  | `com.mobsuccess`                        |
+| JVM target   | 8                                       | 17                                      |
+| Dependencies | Kafka 3.6.1, Wire 5.2.0, Jackson 2.12.2 | Kafka 3.9.2, Wire 6.4.6, Jackson 2.22.2 |
 
-The C# binding and its native (GraalVM) layer were removed: without a binding, the native
-layer had no consumer. Artifact names are unchanged. The group differs on purpose, so that an
-artifact from this fork can never silently substitute for the Maven Central one.
+What the fork adds on top of the port:
 
-Every deviation is documented in [docs/portage.md](docs/portage.md); agent-facing notes live
-in [AGENTS.md](AGENTS.md).
+- **Dependencies that keep moving.** Upstream's are where its last release left them.
+  Dependabot watches `gradle/libs.versions.toml`, and the _resolved_ runtime graph — the
+  transitives, including the ones shaded into the uber-jars, which is where most CVEs sit —
+  is submitted to GitHub so that its alerts see them too. A transitive that carries one is
+  constrained out rather than waited on — `scala-library` is held above CVE-2022-36944.
+  protobuf 4.36.0 is on `master` and ships in the next major; the current release still
+  resolves 3.25.5.
+- **GraalVM native-image support.** `schema-registry-serde` and
+  `schema-registry-kafkastreams-serde` carry their own reachability metadata in
+  `META-INF/native-image`, verified by building a real Quarkus consumer as a native image, so
+  a native consumer writes no configuration for this library —
+  [docs/native-image.md](docs/native-image.md).
+- **A Kotlin API.** `schema-registry-serde-kotlin` adds a typed configuration DSL and a
+  `Serde<T>` that checks the type of each record instead of handing Kafka Streams a
+  `Serde<Any>`. Strictly additive: no other module depends on it —
+  [serde-kotlin/README.md](serde-kotlin/README.md).
+- **Kafka Connect configuration that validates.** The three converters declare every registry
+  property in a `ConfigDef`, so `PUT /connector-plugins/{plugin}/config/validate` and a
+  Connect UI have something to work with, and an impossible value is rejected when the
+  connector is created rather than at the first record.
+- **An opt-in JSON Schema compatibility check.** Glue enforces a schema's compatibility mode
+  for AVRO and Protobuf, but not for JSON. `jsonSchemaCompatibilityCheckEnabled` compares the
+  `required` contract with the latest registered version producer-side, so a breaking version
+  fails where it is produced rather than in a consumer.
+- **A nightly integration suite.** The `*IntegrationTest` classes run every night against a
+  real Kafka broker — once with LocalStack standing in for AWS, once against a real Glue
+  registry — instead of only on a developer's machine.
+
+The C# binding was removed, and with it `native-schema-registry`: a C shared library, compiled
+ahead of time from the Java, whose only purpose was to give that binding an entry point.
+Removing it says nothing about running this library _inside_ a GraalVM native image, which is
+supported and documented in [docs/native-image.md](docs/native-image.md). Artifact names are
+unchanged. The group differs on purpose, so that an artifact from this fork can never silently
+substitute for the Maven Central one.
+
+Agent-facing notes live in [AGENTS.md](AGENTS.md).
 
 ## Packages
 
@@ -146,6 +182,7 @@ Protobuf, POJOs, compression, caching and the rest are in
 | [Kotlin DSL](serde-kotlin/README.md)             | `schema-registry-serde-kotlin`: the configuration DSL and the typed `Serde<T>` |
 | [Configuration reference](docs/configuration.md) | Every property, its default and the side that reads it                         |
 | [Kafka Connect](docs/kafka-connect.md)           | The three converters, plugin path, worker configuration, cross-account role    |
+| [Native image](docs/native-image.md)             | GraalVM: what the jars declare, what a consumer still declares                 |
 | [Flink](docs/flink.md)                           | The Flink serialization schemas, and why they are not recommended              |
 | [Build](docs/build.md)                           | The Gradle build: toolchain, conventions, ABI dumps, code generation           |
 | [CI and supply chain](docs/ci.md)                | Releases, workflow permissions, pinning, dependency policy                     |
