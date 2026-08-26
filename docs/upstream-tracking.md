@@ -24,7 +24,7 @@ inventory when upstream moves.
 
 ## To address
 
-6 pull requests, 18 issues.
+6 pull requests, 17 issues.
 
 | Upstream                                                               | Type  | Title                                                | Verdict and notes                                                                                                                                                                                                       |
 | ---------------------------------------------------------------------- | ----- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -49,13 +49,12 @@ inventory when upstream moves.
 | [#371](https://github.com/awslabs/aws-glue-schema-registry/issues/371) | issue | Dependency clash with newer Flink                    | Planned — fixed by the Flink 1.20 migration (see [#291]).                                                                                                                                                                                   |
 | [#374](https://github.com/awslabs/aws-glue-schema-registry/pull/374)   | PR    | Bump Flink to 1.20.1                                 | Planned — adopt with the Flink 1.20 migration (see [#291]); this PR is the whole diff: three coordinate lines, `flink-streaming-java` losing its dead `_2.11` suffix.                                                                        |
 | [#471](https://github.com/awslabs/aws-glue-schema-registry/issues/471) | issue | Default schema naming collision                      | Planned — duplicate of [#93]; closed by the same opt-in suffix strategy.                                                                                                                                                    |
-| [#509](https://github.com/awslabs/aws-glue-schema-registry/issues/509) | issue | Upgrade the Kinesis Producer Library to 1.x          | Deferred to the protobuf-java 4.x major — KPL 1.x hard-requires protobuf 4 on the shared integration classpath while the serde publishes 3.25.5 as `api` ([mobsuccess#115]); the emulator side is already solved ([mobsuccess#126]). |
 | [#527](https://github.com/awslabs/aws-glue-schema-registry/pull/527)   | PR    | JSON Schema `const` support in Connect converter     | Planned (S) — port: recursive Connect-schema inference for `ConstSchema`, with the PR's tests.                                                                                                                             |
 | [#534](https://github.com/awslabs/aws-glue-schema-registry/pull/534)   | PR    | Fix integration-test docker images                   | Planned (S) — adopt the intent, not the patch: rewrite `integration-tests/docker-compose.yml` to mirror the CI service set (`apache/kafka` 3.9.1 KRaft, localstack with `sts`, moto 5.2.2) so local runs match `integration.yml`. |
 
 ## Addressed
 
-14 pull requests, 33 issues.
+14 pull requests, 34 issues.
 
 | Upstream                                                               | Type  | Title                                                    | Notes                                                                                                                                                                                            |
 | ---------------------------------------------------------------------- | ----- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -94,9 +93,10 @@ inventory when upstream moves.
 | [#380](https://github.com/awslabs/aws-glue-schema-registry/issues/380) | issue | Vulnerable dependency updates                            | Dependabot plus the audit's dependency work (Kafka 3.9.2, Wire 6.4.6, log4j 2.26, Guava 33.6, …).                                                                                                    |
 | [#477](https://github.com/awslabs/aws-glue-schema-registry/pull/477)   | PR    | Java 17 LTS build compatibility                          | Same coverage as [#363].                                                                                                                                                                             |
 | [#478](https://github.com/awslabs/aws-glue-schema-registry/issues/478) | issue | Avro serde performance (Connect & Flink)                 | [mobsuccess#91].                                                                                                                                                                                     |
-| [#491](https://github.com/awslabs/aws-glue-schema-registry/issues/491) | issue | Incompatibility with protobuf-java 4.x                   | The reported break is fixed by [mobsuccess#70] (`php_generic_services` removal — consumers may force protobuf-java 4.x); bumping the fork's own 3.25.5 `api` pin stays a deliberate major-only step.  |
+| [#491](https://github.com/awslabs/aws-glue-schema-registry/issues/491) | issue | Incompatibility with protobuf-java 4.x                   | The reported break was fixed by [mobsuccess#70] (`php_generic_services` removal); the fork's own pin then moved to protobuf 4.36 with the [mobsuccess#135] major.                                     |
 | [#494](https://github.com/awslabs/aws-glue-schema-registry/pull/494)   | PR    | Client-side JSON schema compatibility check              | Ported as [mobsuccess#119] (opt-in).                                                                                                                                                                 |
 | [#500](https://github.com/awslabs/aws-glue-schema-registry/issues/500) | issue | Completely remove AWS SDK v1                             | [mobsuccess#72] and the Gradle port; no v1 reference remains.                                                                                                                                        |
+| [#509](https://github.com/awslabs/aws-glue-schema-registry/issues/509) | issue | Upgrade the Kinesis Producer Library to 1.x              | Done with the protobuf 4 major ([mobsuccess#135]): KPL 1.0.7 on the new coordinates; the emulator STS redirect ([mobsuccess#126]) carried over.                                                      |
 | [#511](https://github.com/awslabs/aws-glue-schema-registry/issues/511) | issue | Build fails on JDK 25 (Lombok)                           | The Kotlin conversion removed the problem at the root; the suite runs on JDK 17/21/25 in CI.                                                                                                         |
 | [#522](https://github.com/awslabs/aws-glue-schema-registry/issues/522) | issue | Wire CVE-2026-45799 (wire-runtime 6.3+)                  | Wire 6.4.6 ([mobsuccess#96]).                                                                                                                                                                        |
 | [#526](https://github.com/awslabs/aws-glue-schema-registry/pull/526)   | PR    | Fix deserialization of optional union types (anyOf null) | Ported as [mobsuccess#116]; fixes issue [#218].                                                                                                                                                      |
@@ -241,3 +241,4 @@ inventory when upstream moves.
 [mobsuccess#119]: https://github.com/mobsuccess-devops/aws-glue-schema-registry/pull/119
 [mobsuccess#125]: https://github.com/mobsuccess-devops/aws-glue-schema-registry/pull/125
 [mobsuccess#126]: https://github.com/mobsuccess-devops/aws-glue-schema-registry/pull/126
+[mobsuccess#135]: https://github.com/mobsuccess-devops/aws-glue-schema-registry/pull/135
