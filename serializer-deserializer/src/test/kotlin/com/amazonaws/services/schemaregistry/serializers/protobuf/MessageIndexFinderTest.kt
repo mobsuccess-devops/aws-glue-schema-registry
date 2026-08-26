@@ -9,6 +9,7 @@ import com.google.common.collect.BiMap
 import com.google.protobuf.Descriptors
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Named
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -155,21 +156,25 @@ class MessageIndexFinderTest {
         }
 
         @JvmStatic
-        fun testBasicDescriptorFileProvider(): List<Arguments> = listOf(Arguments.of(Basic.Customer.getDescriptor()))
+        fun testBasicDescriptorFileProvider(): List<Arguments> = listOf(Arguments.of(named(Basic.Customer.getDescriptor())))
 
         @JvmStatic
         fun testDescriptorProvider(): List<Arguments> = listOf(
-            Arguments.of(ComplexNestingSyntax3.A.B.C.X.D.getDescriptor()),
-            Arguments.of(ComplexNestingSyntax2.A.B.C.X.D.getDescriptor()),
+            Arguments.of(named(ComplexNestingSyntax3.A.B.C.X.D.getDescriptor())),
+            Arguments.of(named(ComplexNestingSyntax2.A.B.C.X.D.getDescriptor())),
         )
 
         @JvmStatic
         fun testMissingDescriptorProvider(): List<Arguments> = listOf(
             Arguments.of(
                 // Search for Basic type Address in ComplexNesting.
-                ComplexNestingSyntax3.getDescriptor().file,
-                Basic.Address.getDescriptor(),
+                named(ComplexNestingSyntax3.getDescriptor().file),
+                named(Basic.Address.getDescriptor()),
             ),
         )
+
+        private fun named(descriptor: Descriptors.Descriptor): Named<Descriptors.Descriptor> = Named.of(descriptor.fullName, descriptor)
+
+        private fun named(fileDescriptor: Descriptors.FileDescriptor): Named<Descriptors.FileDescriptor> = Named.of(fileDescriptor.name, fileDescriptor)
     }
 }

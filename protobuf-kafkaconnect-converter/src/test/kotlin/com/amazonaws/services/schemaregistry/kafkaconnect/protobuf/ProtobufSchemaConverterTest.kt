@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Named
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -233,42 +234,42 @@ class ProtobufSchemaConverterTest {
         @JvmStatic
         fun getFromConnectTestCases(): Stream<Arguments> = Stream.of(
             Arguments.of(
-                ToProtobufTestDataGenerator.getPrimitiveTypesData(),
+                Named.of("primitive", ToProtobufTestDataGenerator.getPrimitiveTypesData()),
                 ToProtobufTestDataGenerator.getPrimitiveSchema("primitiveProtobufSchema"),
                 ToProtobufTestDataGenerator.getProtobufPrimitiveMessage(),
             ),
             Arguments.of(
-                ToProtobufTestDataGenerator.getEnumTypeData("EnumType"),
+                Named.of("enum", ToProtobufTestDataGenerator.getEnumTypeData("EnumType")),
                 ToProtobufTestDataGenerator.getEnumSchema("EnumType"),
                 ToProtobufTestDataGenerator.getProtobufEnumMessage("EnumType"),
             ),
             Arguments.of(
-                ToProtobufTestDataGenerator.getArrayTypeData(),
+                Named.of("array", ToProtobufTestDataGenerator.getArrayTypeData()),
                 ToProtobufTestDataGenerator.getArraySchema("arrayProtobufSchema"),
                 ToProtobufTestDataGenerator.getProtobufArrayMessage(),
             ),
             Arguments.of(
-                ToProtobufTestDataGenerator.getMapTypeData(),
+                Named.of("map", ToProtobufTestDataGenerator.getMapTypeData()),
                 ToProtobufTestDataGenerator.getMapSchema("mapProtobufSchema"),
                 ToProtobufTestDataGenerator.getProtobufMapMessage(),
             ),
             Arguments.of(
-                ToProtobufTestDataGenerator.getTimeTypeData(),
+                Named.of("time", ToProtobufTestDataGenerator.getTimeTypeData()),
                 ToProtobufTestDataGenerator.getTimeSchema("timeProtobufSchema"),
                 ToProtobufTestDataGenerator.getProtobufTimeMessage(),
             ),
             Arguments.of(
-                ToProtobufTestDataGenerator.getStructTypeData("NestedType"),
+                Named.of("struct", ToProtobufTestDataGenerator.getStructTypeData("NestedType")),
                 ToProtobufTestDataGenerator.getStructSchema("NestedType"),
                 ToProtobufTestDataGenerator.getProtobufNestedMessage("NestedType"),
             ),
             Arguments.of(
-                ToProtobufTestDataGenerator.getOneofTypeData(),
+                Named.of("oneof", ToProtobufTestDataGenerator.getOneofTypeData()),
                 ToProtobufTestDataGenerator.getOneofSchema("oneofProtobufSchema"),
                 ToProtobufTestDataGenerator.getProtobufOneofMessage(),
             ),
             Arguments.of(
-                ToProtobufTestDataGenerator.getAllTypesData("AllTypes"),
+                Named.of("allTypes", ToProtobufTestDataGenerator.getAllTypesData("AllTypes")),
                 ToProtobufTestDataGenerator.getAllTypesSchema("AllTypes"),
                 ToProtobufTestDataGenerator.getProtobufAllTypesMessage("AllTypes"),
             ),
@@ -279,42 +280,42 @@ class ProtobufSchemaConverterTest {
             Arguments.of(
                 ToConnectTestDataGenerator.getPrimitiveProtobufMessages()[0],
                 ToConnectTestDataGenerator.getPrimitiveSchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getPrimitiveTypesData(PACKAGE_NAME),
+                Named.of("primitive", ToConnectTestDataGenerator.getPrimitiveTypesData(PACKAGE_NAME)),
             ),
             Arguments.of(
                 ToConnectTestDataGenerator.getEnumProtobufMessages()[0],
                 ToConnectTestDataGenerator.getEnumSchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getEnumTypeData(PACKAGE_NAME),
+                Named.of("enum", ToConnectTestDataGenerator.getEnumTypeData(PACKAGE_NAME)),
             ),
             Arguments.of(
                 ToConnectTestDataGenerator.getArrayProtobufMessages()[0],
                 ToConnectTestDataGenerator.getArraySchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getArrayTypeData(PACKAGE_NAME),
+                Named.of("array", ToConnectTestDataGenerator.getArrayTypeData(PACKAGE_NAME)),
             ),
             Arguments.of(
                 ToConnectTestDataGenerator.getMapProtobufMessages()[0],
                 ToConnectTestDataGenerator.getMapSchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getMapTypeData(PACKAGE_NAME),
+                Named.of("map", ToConnectTestDataGenerator.getMapTypeData(PACKAGE_NAME)),
             ),
             Arguments.of(
                 ToConnectTestDataGenerator.getTimeProtobufMessages()[0],
                 ToConnectTestDataGenerator.getTimeSchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getTimeTypeData(PACKAGE_NAME),
+                Named.of("time", ToConnectTestDataGenerator.getTimeTypeData(PACKAGE_NAME)),
             ),
             Arguments.of(
                 ToConnectTestDataGenerator.getStructProtobufMessages()[0],
                 ToConnectTestDataGenerator.getStructSchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getStructTypeData(PACKAGE_NAME),
+                Named.of("struct", ToConnectTestDataGenerator.getStructTypeData(PACKAGE_NAME)),
             ),
             Arguments.of(
                 ToConnectTestDataGenerator.getOneofProtobufMessages()[0],
                 ToConnectTestDataGenerator.getOneofSchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getOneofTypeData(PACKAGE_NAME),
+                Named.of("oneof", ToConnectTestDataGenerator.getOneofTypeData(PACKAGE_NAME)),
             ),
             Arguments.of(
                 ToConnectTestDataGenerator.getAllTypesProtobufMessages()[0],
                 ToConnectTestDataGenerator.getAllTypesSchema(PACKAGE_NAME),
-                ToConnectTestDataGenerator.getAllTypesData(PACKAGE_NAME),
+                Named.of("allTypes", ToConnectTestDataGenerator.getAllTypesData(PACKAGE_NAME)),
             ),
         )
     }
