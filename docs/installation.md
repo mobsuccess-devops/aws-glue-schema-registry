@@ -119,16 +119,16 @@ in production.
 The versions the artifacts are built and tested against. Everything except the JVM row comes
 from `gradle/libs.versions.toml`, which is the single source of truth for the build.
 
-| Component           | Version            | Notes                                                                                                                             |
-| ------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| JVM                 | 17 or later        | Bytecode target is 17, so a JVM 8 or 11 runtime cannot load these artifacts.                                                      |
-| Apache Kafka        | 3.9.x              | `kafka-clients`, `kafka-streams`, `connect-api`, `connect-json`. Shaded into the uber-jars: a consumer cannot override that copy. |
-| Apache Avro         | 1.11.4             |                                                                                                                                   |
-| Protocol Buffers    | 4.36.0             | `protobuf-java`; syntax 2 and 3. A consumer on protobuf 3 has to move: 4 is not binary compatible.                                |
-| AWS SDK for Java v2 | 2.53.1             | Imported as a BOM, so the whole SDK moves together.                                                                               |
-| MSK IAM auth        | 2.3.7              | `schema-registry-serde-msk-iam` only.                                                                                             |
-| SLF4J               | 2.0.x              | `slf4j-api`; the one dependency the uber-jars do not bundle. See below.                                                           |
-| Apache Flink        | 1.12.2, Scala 2.11 | **Not recommended** — see below.                                                                                                  |
+| Component           | Version            | Notes                                                                                                                                                                             |
+| ------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| JVM                 | 17 or later        | Bytecode target is 17, so a JVM 8 or 11 runtime cannot load these artifacts.                                                                                                      |
+| Apache Kafka        | 3.9.x              | `kafka-clients`, `kafka-streams`, `connect-api`, `connect-json`. Shaded into the uber-jars: a consumer cannot override that copy.                                                 |
+| Apache Avro         | 1.11.4             |                                                                                                                                                                                   |
+| Protocol Buffers    | 4.36.0             | `protobuf-java`; syntax 2 and 3. On `master`, shipping in the next major — releases up to 2.1.0 resolve 3.25.5. A consumer on protobuf 3 has to move: 4 is not binary compatible. |
+| AWS SDK for Java v2 | 2.53.1             | Imported as a BOM, so the whole SDK moves together.                                                                                                                               |
+| MSK IAM auth        | 2.3.7              | `schema-registry-serde-msk-iam` only.                                                                                                                                             |
+| SLF4J               | 2.0.x              | `slf4j-api`; the one dependency the uber-jars do not bundle. See below.                                                                                                           |
+| Apache Flink        | 1.12.2, Scala 2.11 | **Not recommended** — see below.                                                                                                                                                  |
 
 The Flink connector is carried over from upstream unchanged and is pinned to Flink 1.12.2 with
 `flink-streaming-java_2.11`, a Scala 2.11 coordinate that Flink stopped publishing after 1.14.
@@ -142,6 +142,12 @@ logging stack in effect is the application's own. A Kafka Connect worker already
 both the API and a binding; a standalone application needs an slf4j 2.x binding of its own
 — `logback-classic` 1.3 or later, `log4j-slf4j2-impl` — or slf4j falls back to its no-op
 logger.
+
+## GraalVM native image
+
+The serde jars carry their own reachability metadata, so a native consumer needs no extra
+configuration for this library. What it does still have to declare, and how far the support
+has been verified, are in [native-image.md](native-image.md).
 
 ## Migrating from the AWS artifact
 
