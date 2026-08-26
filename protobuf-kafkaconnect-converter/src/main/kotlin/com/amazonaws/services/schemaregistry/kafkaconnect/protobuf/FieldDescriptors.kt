@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2026 Mobsuccess.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -12,19 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.amazonaws.services.schemaregistry.integrationtests.kinesis
 
-import java.util.Collections
+package com.amazonaws.services.schemaregistry.kafkaconnect.protobuf
 
-class RecordProcessor {
-    @JvmField
-    @Volatile
-    var creationSuccess: Boolean = false
+import com.google.protobuf.Descriptors
 
-    @JvmField
-    @Volatile
-    var consumptionSuccess: Boolean = false
+internal fun Descriptors.FieldDescriptor.hasOptionalKeyword(): Boolean = toProto().proto3Optional ||
+    (isProto2Syntax && !isRequired && !isRepeated && containingOneof == null)
 
-    @JvmField
-    val consumedRecords: MutableList<Any?> = Collections.synchronizedList(ArrayList())
-}
+private val Descriptors.FieldDescriptor.isProto2Syntax: Boolean
+    get() =
+        when (file.toProto().syntax) {
+            "editions", "proto3" -> false
+            else -> true
+        }

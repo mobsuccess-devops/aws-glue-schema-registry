@@ -444,3 +444,96 @@ The only Java left in the repository is the Avro classes generated into the test
   the generator can be constructed, and no test asks for that combination. The typo is
   corrected rather than carried forward so that wiring the factory up is a one-line change
   instead of a debugging session.
+
+- **protobuf 4, and the Kinesis libraries that come with it.** The pom pins
+  `protobuf.version` at 3.25.5 and, directly above the KPL version, carries the comment
+  _"LATEST KPL will cause integration test failure in Linux environment, update once we
+  find a way to address the issue"_ — with a second one above the KCL version, _"LATEST KCL
+  Does not work with LocalStack yet, remove once new version works"_. Upstream still holds
+  all three pins. This fork moves off them together:
+
+  |                                                             | Original pom                                   | Here                                                    |
+  | ----------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------- |
+  | `com.google.protobuf:protobuf-java`, `-java-util`, `protoc` | 3.25.5                                         | 4.36.0                                                  |
+  | Kinesis Producer Library                                    | `com.amazonaws:amazon-kinesis-producer:0.15.8` | `software.amazon.kinesis:amazon-kinesis-producer:1.0.7` |
+  | `software.amazon.kinesis:amazon-kinesis-client`             | 2.2.9                                          | 3.5.1                                                   |
+  | `io.apicurio:apicurio-registry-protobuf-schema-utilities`   | 2.1.3.Final                                    | 3.3.1                                                   |
+
+  They are one change, not four. The KPL is the only artifact in the build that carries a
+  protobuf version of its own — it ships generated code — and 1.0.7 generates against 4.29.0.
+  On 3.25.5 that mismatch is fatal, which is what #115 diagnosed: Gradle resolves the highest
+  requested version, protobuf 4 displaced the 3.25.5 everything else was compiled against, and
+  every protobuf path died on `NoSuchMethodError: DescriptorProtos$FieldOptions.hasExtension`.
+  #115 restored the old KPL because the alternative was to move protobuf, which is what this
+  entry records instead.
+
+  proto3 the language and the wire format are unchanged; no `.proto` file is touched. The
+  4.x jump is a cross-language version realignment. What moves is the Java binary interface:
+  generated messages now extend `GeneratedMessage` rather than `GeneratedMessageV3`, some
+  overloads are gone, and generated code checks `com.google.protobuf.RuntimeVersion` at class
+  load. Generated sources must therefore be produced by a matching `protoc`, which is why the
+  catalog's `protobuf` version drives `protobuf-java`, `protobuf-java-util` and `protoc`
+  alike. Recompiling is enough; the source-level API is compatible bar the one method below.
+
+  `protobuf-java` is `api` on `schema-registry-serde` and is used by fourteen of its main
+  sources, so this is breaking for consumers of the published artifacts: they have to move to
+  protobuf 4 too. `serializer-deserializer/api/schema-registry-serde.api` records it — the
+  dump for `additionalTypes.Decimals` and `metadata.ProtobufSchemaMetadata` changes
+  superclass.
+
+  This is a durable divergence from upstream, and the first one the identical-behaviour
+  contract does not cover: it is not a conversion artefact but a deliberate step away from a
+  version the source repository still pins. It is taken because 3.25 is the last 3.x line
+  there is — its final patch, 3.25.8, landed in May 2025, and the build was three behind it
+  at 3.25.5 — because the KPL and the KCL cannot be updated without it, and because a fork
+  that cannot take a security bump on protobuf has no path forward. The contract that still
+  holds is the one that matters: the inherited suite runs green and has not shrunk.
+
+- **`FieldDescriptor.hasOptionalKeyword()` reimplemented.** protobuf 4 made the method
+  package-private. `ProtobufDataToConnectDataConverter` and
+  `ProtobufSchemaToConnectSchemaConverter` both call it, so
+  `protobuf-kafkaconnect-converter` carries an internal extension of the same name that
+  reproduces the library's own body through public API — `proto3Optional` from the field's
+  descriptor proto, and proto2 read off the file's `syntax` string. That last part is the one
+  liberty taken: the library tests `getFile().getEdition() == EDITION_PROTO2`, and `getEdition()`
+  is package-private too, but it is itself derived from `syntax` — anything that is neither
+  `"proto3"` nor `"editions"` is `EDITION_PROTO2` — so reading `syntax` back is the same
+  predicate, not an approximation of it. `hasPresence()` is public but is not the same
+  predicate: it also holds for message fields and for oneof members.
+
+- **`truth-proto-extension` moved to 1.4.5.** 1.1.3 calls
+  `Descriptors.FileDescriptor.getSyntax()`, removed in protobuf 4, and takes the sixteen
+  `FileDescriptorUtilsTest` cases down with a `NoSuchMethodError`. Test scope only.
+
+- **`icu4j` excluded from apicurio.** 3.3.1 declares `com.ibm.icu:icu4j`, which no class of
+  its own references, and the uber-jar `protobuf-kafkaconnect-converter` publishes carries
+  every runtime dependency. Excluding it takes that jar from 86.5 MB to 73.0 MB. The apicurio
+  classes themselves are unreachable here in any case — the fork vendors its copy of them
+  under `com.amazonaws.services.schemaregistry.utils.apicurio` — but the dependency is the
+  pom's and is kept.
+
+- **The published AWS serde excluded from the KPL.** `amazon-kinesis-producer:1.0.7` depends
+  on `software.amazon.glue:schema-registry-serde` for its Glue Schema Registry integration.
+  Those classes have the package names this repository's own do, so leaving the dependency in
+  puts two copies of every serde class on the `integration-tests` classpath, one of them
+  compiled against protobuf 3.25.5. The module's own project dependencies supply them.
+
+- **`RecordProcessor` made thread-safe.** All three of its fields are written by the KCL
+  scheduler thread, from `GlueSchemaRegistryRecordProcessor`, and read by the test thread —
+  two flags with no happens-before between the write and the read, and a plain `ArrayList`.
+  Upstream got away with it because the test read them once, after a sleep; the barriers below
+  poll them, which turns a latent data race into a flaky one. The flags carry `@Volatile` now
+  and the list is a `Collections.synchronizedList`, whose `size` and `toArray` both take the
+  list's own monitor — the two operations the barrier and the assertion after it use. This is
+  the same defect #115 fixed in `doProduceRecordsMultithreaded`, in the other half of this
+  fixture.
+
+- **The KCL waits are barriers, not sleeps.** `GlueSchemaRegistryKinesisIntegrationTest`
+  slept a fixed fifteen seconds after starting the `Scheduler` and five more after producing.
+  KCL 3 takes about a hundred seconds to reach its worker loop against LocalStack — an IMDS
+  probe that has to time out, a lease-table GSI to create, a leader election and a lease
+  assignment, each on its own interval — so the producer ran before the consumer held a shard
+  iterator, and with `InitialPositionInStream.LATEST` the records were gone by the time it
+  did. The two sleeps are now `Awaitility` barriers: on `RecordProcessor.creationSuccess`,
+  set from the record processor's `initialize`, and on the consumed count reaching the
+  produced one. Same assertions, no arbitrary timing.
