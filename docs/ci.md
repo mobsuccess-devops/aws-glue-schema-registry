@@ -25,11 +25,20 @@
 
 - **`.mobsuccess.yml` is what mobsuccessbot enforces**, and it holds no comments — the file
   is rewritten by the bot, so the reasoning lives here instead.
+
   - It disables the `linear`, `ms-testers`, `mobsuccess`, `closed` and `python` workflows:
     this repository does not require a Linear ticket per pull request.
-  - `requiredApprovingReviewCount: 0` and `isAdminEnforced: false` on `master` are
-    deliberate — an agent-driven repository, with team Core able to force a merge. Same
-    settings as panoramai.
+  - `requiredApprovingReviewCount: 0` on `master` is deliberate — an agent-driven
+    repository, worked solo most days, and nobody can approve their own pull request:
+    requiring one review would park every merge on a third party. The org-level
+    `Force copilot review` ruleset still puts a Copilot review on each pull request, which
+    reads the diff without gating the merge.
+  - `isAdminEnforced: true` is what keeps that from being a hole. With no review required,
+    an administrator could otherwise push straight to `master`, or merge over a red check:
+    the required checks were the only gate, and admins were exempt from it. They are not
+    any more. Set it in **both** places — the bot owns the value, so the file is what makes
+    it durable, and `POST .../branches/master/protection/enforce_admins` is what makes it
+    effective before the next policy run.
   - `additional-required-job-names` exists because automatic detection only knows the jobs
     of the policy's template workflows; those of `ci.yml`, written by hand, are invisible to
     it, and without the list a red CI still leaves a pull request mergeable. Set these here,
@@ -42,6 +51,25 @@
     repository variable. The job is gated on that variable, and a required check that skips
     counts as green — so listing it while the variable is unset would look like a security
     gate without being one. Unset the variable and the entry has to go with it.
+
+- **`prod` requires the same five checks as `master`**, and that is what makes the release
+  gate real: without them, an administrator pushing a commit that never saw a pull request
+  got a green `publish-release` and a tagged release out of it. The branch is not in
+  `.mobsuccess.yml` — the bot only manages `master` — so `prod` is set through
+  `PUT .../branches/prod/protection` and stays hand-held.
+- **The release push still works because a check run belongs to a commit, not to a
+  branch.** `master → prod` is a fast-forward of a SHA that already carries the five green
+  checks from its own push to `master`, and branch protection evaluates the SHA being
+  pushed, so the gate is already satisfied when the push arrives. It matters that this is
+  the mechanism: `codeql.yml` does not even trigger on a push to `prod`, and the release
+  would deadlock waiting for a run that never starts if the check had to be produced on the
+  branch. The one consequence to know is timing — pushing to `prod` before `master`'s own
+  post-merge run finishes leaves the checks pending and the push refused until they go
+  green.
+- **`prod` takes `strict: false` where `master` takes `strict: true`.** "Up to date before
+  merging" answers a question `prod` does not have: nothing is merged into it, it is
+  fast-forwarded. Enabling it there would only add a way for the release push to be
+  refused.
 
 ## Supply chain
 
@@ -114,14 +142,34 @@ that surface small; none of them survive a careless rewrite, so check them befor
   anti-pattern `.mobsuccess.yml` documents.
 - **CodeQL is still gated on the `ENABLE_CODEQL` repository variable.** It is set now that
   the repository is public and has code scanning; the gate stays so the workflow can be
-  turned off without editing it. `actions/dependency-review-action` needs the same feature
-  and could now be added.
+  turned off without editing it.
+- **`dependency-review.yml` blocks a vulnerable dependency at the pull request**, where
+  `dependency-submission.yml` only tells Dependabot what to alert on after the fact. It
+  runs on `pull_request` alone, holds `contents: read` and nothing else — the action reads
+  the dependency graph through the API and never needs to write — and takes
+  `fail-on-severity: high`, so a high or critical advisory on a newly introduced dependency
+  fails the job while the long tail stays with the Dependabot alerts that already cover the
+  full transitive graph. It carries **no `ENABLE_*` gate**, unlike CodeQL: a gate whose
+  variable is unset makes the job skip, a skipped required check counts as green, and the
+  result would be a security gate that is not one. The job is not in
+  `additional-required-job-names` yet — promoting it is a one-line change to
+  `.mobsuccess.yml` once it has a few pull requests of history.
 - **Releases are attested and checksummed.** `publish-release` builds a `SHA256SUMS.txt`
   over every jar it published and attaches it to the GitHub release, then
   `actions/attest-build-provenance` signs a provenance statement for those same jars. A
   consumer can check a jar pulled from GitHub Packages against the release checksums, or
   verify its build provenance with `gh attestation verify <jar> --repo <this repo>`. The
   job therefore also holds `id-token: write` and `attestations: write`.
+- **Release tags are immutable, and the `Immutable release tags` ruleset is what the
+  attestation above rests on.** A provenance statement binds a jar to the commit a tag
+  pointed at; if the tag can be moved afterwards, the version a consumer resolves and the
+  source that was attested drift apart without a trace. The ruleset targets `refs/tags/v*`
+  with `deletion` and `non_fast_forward`, and deliberately **omits `creation`** —
+  `publish-release` creates `v<version>` with the `GITHUB_TOKEN`, and rulesets apply to the
+  `github-actions` bot like anyone else, so blocking creation would break every release.
+  There are no bypass actors: re-cutting a botched tag means flipping the ruleset's
+  `enforcement` to `disabled` for as long as it takes, which is the audit trail the bypass
+  would not leave.
 - **Redundant runs are cancelled on pull requests only.** `build`, `test-jdk` and `ktlint`
   carry a `concurrency` group keyed on the pull request number — `test-jdk` keys on its
   matrix leg too, or the two legs would cancel each other — with `cancel-in-progress` scoped
