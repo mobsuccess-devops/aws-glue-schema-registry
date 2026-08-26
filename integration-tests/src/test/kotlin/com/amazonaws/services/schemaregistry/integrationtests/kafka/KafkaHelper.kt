@@ -132,13 +132,13 @@ class KafkaHelper(
         records: List<*>,
     ): List<ProducerRecord<String, Any>> {
         val properties = getProducerProperties(producerProperties)
-        val producer: Producer<String, Any> =
-            KafkaProducer(
-                properties,
-                StringSerializer(),
-                GlueSchemaRegistryKafkaSerializer(getMapFromPropertiesFile(properties)),
-            )
-        return produceRecords(producer, producerProperties, records)
+        return KafkaProducer<String, Any>(
+            properties,
+            StringSerializer(),
+            GlueSchemaRegistryKafkaSerializer(getMapFromPropertiesFile(properties)),
+        ).use { producer ->
+            produceRecords(producer, producerProperties, records)
+        }
     }
 
     /**
@@ -170,9 +170,10 @@ class KafkaHelper(
         val properties = getProducerProperties(producerProperties)
         properties["key.serializer"] = StringSerializer::class.java.name
         properties["value.serializer"] = GlueSchemaRegistryKafkaSerializer::class.java.name
-        val producer: Producer<String, T> = KafkaProducer(properties)
 
-        return produceRecords(producer, producerProperties, records)
+        return KafkaProducer<String, T>(properties).use { producer ->
+            produceRecords(producer, producerProperties, records)
+        }
     }
 
     /**
@@ -314,9 +315,10 @@ class KafkaHelper(
         for (i in 0 until numberOfThreads) {
             futures.add(
                 CompletableFuture.runAsync {
-                    val producer: Producer<String, T> = KafkaProducer(properties)
                     try {
-                        producerRecords.addAll(produceRecords(producer, producerProperties, records))
+                        KafkaProducer<String, T>(properties).use { producer ->
+                            producerRecords.addAll(produceRecords(producer, producerProperties, records))
+                        }
                     } catch (e: Exception) {
                         throw CompletionException(e)
                     }
