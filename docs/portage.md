@@ -537,3 +537,21 @@ The only Java left in the repository is the Avro classes generated into the test
   did. The two sleeps are now `Awaitility` barriers: on `RecordProcessor.creationSuccess`,
   set from the record processor's `initialize`, and on the consumed count reaching the
   produced one. Same assertions, no arbitrary timing.
+
+- **The integration-test schema teardown tolerates a schema that is already gone.** Both
+  `@AfterAll` teardowns delete every schema name their class recorded, and a single
+  `EntityNotFoundException` aborted the loop: the class was reported as an `executionError`
+  even with every assertion passed, and the names queued after the failing one were never
+  deleted, leaking them into the registry a later run reuses. Observed on 2026-08-26 running
+  the suite against one long-lived `motoserver/moto:5.2.2` shared by both classes — the Kafka
+  class passed its 45 tests, deleted its 18 topic-derived names, then 404ed on `Basic`, the
+  first name `ProtobufClassName.normalize` derives from a proto file. Running that class alone
+  against the same emulator is clean, and CI, which gets a fresh moto container per run, never
+  saw it; why moto forgets a schema it registered was not pinned down. Each delete is now
+  caught and logged per name, on the reasoning `GlueSchemaRegistryKinesisIntegrationTest.setUp`
+  already applies to a `ResourceInUseException` from a retried `CreateStream`: the
+  postcondition the teardown wants is that the schema is absent, and the exception is evidence
+  that it is. `schemasToCleanUp` became a `LinkedHashSet` at the same time — several tests
+  append to it, and a name recorded twice made the second delete fail for exactly this reason.
+  Nothing a test asserts changes; only a teardown that used to stop at the first missing schema
+  now finishes.

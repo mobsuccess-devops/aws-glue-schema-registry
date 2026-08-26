@@ -52,6 +52,7 @@ import software.amazon.awssdk.services.glue.GlueClient
 import software.amazon.awssdk.services.glue.model.Compatibility
 import software.amazon.awssdk.services.glue.model.DataFormat
 import software.amazon.awssdk.services.glue.model.DeleteSchemaRequest
+import software.amazon.awssdk.services.glue.model.EntityNotFoundException
 import software.amazon.awssdk.services.glue.model.SchemaId
 import java.net.URI
 import java.time.Instant
@@ -545,7 +546,7 @@ class GlueSchemaRegistryKafkaIntegrationTest {
             Compatibility.knownValues().filter { it.toString() == "NONE" }
         private val localKafkaClusterHelper = LocalKafkaClusterHelper()
         private val awsCredentialsProvider = DefaultCredentialsProvider.builder().build()
-        private val schemasToCleanUp = ArrayList<String>()
+        private val schemasToCleanUp = LinkedHashSet<String>()
 
         @JvmStatic
         fun testArgumentsProvider(): Stream<Arguments> {
@@ -594,7 +595,11 @@ class GlueSchemaRegistryKafkaIntegrationTest {
                                 .build(),
                         ).build()
 
-                glueClient.deleteSchema(deleteSchemaRequest)
+                try {
+                    glueClient.deleteSchema(deleteSchemaRequest)
+                } catch (e: EntityNotFoundException) {
+                    log.info("Schema {} is already gone, nothing to clean up: {}", schemaName, e.message)
+                }
             }
 
             log.info("Finished Cleaning up {} schemas created with GSR.", schemasToCleanUp.size)

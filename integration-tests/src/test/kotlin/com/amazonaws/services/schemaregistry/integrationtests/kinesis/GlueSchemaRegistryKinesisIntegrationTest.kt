@@ -57,6 +57,7 @@ import software.amazon.awssdk.services.glue.GlueClient
 import software.amazon.awssdk.services.glue.model.Compatibility
 import software.amazon.awssdk.services.glue.model.DataFormat
 import software.amazon.awssdk.services.glue.model.DeleteSchemaRequest
+import software.amazon.awssdk.services.glue.model.EntityNotFoundException
 import software.amazon.awssdk.services.glue.model.SchemaId
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient
 import software.amazon.awssdk.services.kinesis.model.CreateStreamRequest
@@ -557,7 +558,7 @@ class GlueSchemaRegistryKinesisIntegrationTest {
                 .credentialsProvider(awsCredentialsProvider)
                 .build()
 
-        private val schemasToCleanUp = ArrayList<String>()
+        private val schemasToCleanUp = LinkedHashSet<String>()
 
         private fun getMetadata(): Map<String, String> {
             val metadata = HashMap<String, String>()
@@ -634,7 +635,11 @@ class GlueSchemaRegistryKinesisIntegrationTest {
                                 .build(),
                         ).build()
 
-                glueClient.deleteSchema(deleteSchemaRequest)
+                try {
+                    glueClient.deleteSchema(deleteSchemaRequest)
+                } catch (e: EntityNotFoundException) {
+                    LOGGER.info("Schema {} is already gone, nothing to clean up: {}", schemaName, e.message)
+                }
             }
 
             LOGGER.info("Finished Cleaning up {} schemas created with GSR.", schemasToCleanUp.size)
