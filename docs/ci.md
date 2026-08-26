@@ -30,12 +30,14 @@ Two channels, two audiences.
 | [Maven Central](https://central.sonatype.com/namespace/com.mobsuccess)                                   | releases only          | none         | `publishAggregationToCentralPortal` |
 | [GitHub Packages](https://github.com/orgs/mobsuccess-devops/packages?repo_name=aws-glue-schema-registry) | releases and snapshots | classic PAT  | `publish`                           |
 
-`publish-snapshot` is unchanged: a push to `master` publishes `<next>-SNAPSHOT` to GitHub
-Packages and nothing else. `publish-release` runs both, **Central first**, then GitHub
-Packages. The order is deliberate: GitHub Packages refuses to overwrite a release version it
-already holds, so a Central failure after a successful GitHub Packages publish would leave an
-untagged version behind and wedge the retry on the version number it recomputes. Central
-first means a failure there leaves nothing published anywhere, and a re-run starts clean.
+`publish-snapshot` publishes `<next>-SNAPSHOT` to GitHub Packages on every push to `master`,
+and nothing else. The Central Portal does have a snapshot repository;
+[why snapshots stay on GitHub Packages](#why-snapshots-stay-on-github-packages) is the reason it
+is not used. `publish-release` runs both channels, **Central first**, then GitHub Packages. The
+order is deliberate: GitHub Packages refuses to overwrite a release version it already holds, so
+a Central failure after a successful GitHub Packages publish would leave an untagged version
+behind and wedge the retry on the version number it recomputes. Central first means a failure
+there leaves nothing published anywhere, and a re-run starts clean.
 
 - **The Central path is `com.gradleup.nmcp`, not `com.vanniktech.maven.publish`.** Both
   cover the Portal API; they differ in what they do to the publications. vanniktech _creates_
@@ -87,6 +89,56 @@ first means a failure there leaves nothing published anywhere, and a re-run star
 
   It stages every publication into `build/nmcp/zip/aggregation.zip` and verifies that each
   coordinate carries the files Central requires. No credentials, no upload.
+
+### Why snapshots stay on GitHub Packages
+
+The Central Portal has run a [snapshot repository](https://central.sonatype.org/publish/publish-portal-snapshots/)
+since January 2025, and on paper it fixes the one thing wrong with the snapshot channel: it is
+read anonymously, so a consumer needs no token at all. It requires no signature — "no validation
+is performed" — it keeps a 90-day rolling window rather than the latest build alone, and
+`com.gradleup.nmcp` already registers `publishAggregationToCentralSnapshots` in this build.
+Wiring it into `publish-snapshot` would be a four-line change.
+
+It is not wired, and the reason is volume.
+
+Maven Central introduced [publishing limits](https://central.sonatype.org/publish/maven-central-publishing-limits/)
+for the free tier, rate-limited from **1 October 2026**, evaluated per organization as
+three-month averages:
+
+| Metric        | Free threshold (90th percentile) | 99th percentile |
+| ------------- | -------------------------------- | --------------- |
+| Release size  | 78 MB per month                  | 1,808 MB        |
+| File count    | 1,167 per month                  | 17,724          |
+| Release count | 7 per month                      | 50              |
+
+One publication of this repository is **284 MB across 168 files**, and 276 MB of that is four
+uber-jars of roughly 70 MB each — `schema-registry-serde-msk-iam` and the three Connect
+converters, which bundle every dependency they resolve. `master` took 116 first-parent commits
+in August 2026 and `publish-snapshot` fires on every one of them, so the snapshot channel on
+Central would be on the order of **33 GB and 19,500 files a month**: around eighteen times what
+the busiest one percent of Maven Central publishers push.
+
+Whether that would be metered at all is undocumented. The Usage Center defines a release event
+as "a distinct publish operation to Maven Central", and the snapshot documentation says
+`-SNAPSHOT` releases "are not final releases on Maven Central" — which reads as _not counted_.
+But Sonatype never states it, and the
+[Producer Terms](https://central.sonatype.org/publish/producer-terms/) reserve the right to
+restrict publishing above "reasonable levels ... as determined by Sonatype at its discretion".
+Thirty-three gigabytes a month of free shared infrastructure is not a reasonable level whatever
+the counters say.
+
+The snapshot channel therefore stays on GitHub Packages, classic-PAT friction included, and
+[installation.md](installation.md#snapshots-github-packages) documents the token.
+
+Two things would change the answer, in this order:
+
+1. **The uber-jars getting smaller.** They dominate both channels — a single _release_ is
+   already 284 MB against a 78 MB monthly threshold — so trimming them is worth doing on its own
+   merits, and it makes this question moot rather than merely arguable.
+2. **Sonatype confirming that snapshots sit outside the metered counters.** The documentation
+   points at `central-support@sonatype.com` for exactly this kind of question. The namespace
+   also needs **Enable SNAPSHOTs** switched on in the Portal before anything can be published to
+   it, which is a maintainer action in the web UI, not a build change.
 
 ## Branch protection
 
