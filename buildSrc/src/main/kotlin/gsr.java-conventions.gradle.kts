@@ -9,7 +9,7 @@ plugins {
 
 val libs = the<LibrariesForLibs>()
 
-// The organization group, as in geojson-jackson. Deliberately different from
+// The organization group. Deliberately different from
 // `software.amazon.glue`: an artifact of this fork must never be able to substitute
 // itself for the Maven Central one in a consumer's dependency graph.
 group = "com.mobsuccess"
