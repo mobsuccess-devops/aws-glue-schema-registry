@@ -32,8 +32,10 @@ import org.apache.kafka.connect.data.SchemaAndValue
 import org.apache.kafka.connect.errors.DataException
 import org.apache.kafka.connect.storage.Converter
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 import software.amazon.awssdk.services.sts.StsClient
 import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 
@@ -83,7 +85,7 @@ open class AWSKafkaAvroConverter(
             val sessionName =
                 resolvedConfigs[AWSSchemaRegistryConstants.ASSUME_ROLE_SESSION_NAME]?.toString()
                     ?: AWSKafkaAvroConverterConfig.ASSUME_ROLE_SESSION_NAME_DEFAULT
-            val region = resolvedConfigs[AWSSchemaRegistryConstants.AWS_REGION].toString()
+            val region = resolveRegion(resolvedConfigs)
 
             val credentialsProvider = getCredentialsProvider(roleToAssume, sessionName, region)
 
@@ -179,6 +181,31 @@ open class AWSKafkaAvroConverter(
             "Deserialized object is not a valid Avro record. Expected GenericRecord or SpecificRecord, got: " +
                 (avroObject?.javaClass?.name ?: "null"),
         )
+    }
+
+    /**
+     * Resolves the region the STS client of the assumed role talks to, the way
+     * [com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration] does
+     * it for the Glue client: the configured region, or the one the default AWS region provider
+     * chain resolves.
+     *
+     * @throws AWSSchemaRegistryException when neither resolves a region
+     */
+    private fun resolveRegion(configs: Map<String, *>): String {
+        val configured = configs[AWSSchemaRegistryConstants.AWS_REGION]?.toString()
+        if (!configured.isNullOrEmpty()) {
+            return configured
+        }
+        return try {
+            DefaultAwsRegionProviderChain.builder().build().region.id()
+        } catch (e: SdkClientException) {
+            throw AWSSchemaRegistryException(
+                "${AWSSchemaRegistryConstants.ASSUME_ROLE_ARN} is set but no region could be " +
+                    "resolved for its STS client: set ${AWSSchemaRegistryConstants.AWS_REGION}, or " +
+                    "make the default AWS region provider chain resolve one.",
+                e,
+            )
+        }
     }
 
     @VisibleForTesting

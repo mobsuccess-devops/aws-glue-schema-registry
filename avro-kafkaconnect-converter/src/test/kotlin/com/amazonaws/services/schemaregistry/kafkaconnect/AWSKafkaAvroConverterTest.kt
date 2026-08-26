@@ -241,6 +241,29 @@ class AWSKafkaAvroConverterTest {
     }
 
     /**
+     * Test AWSKafkaAvroConverter assume role, region left to the default AWS region provider chain.
+     */
+    @Test
+    fun testConverter_configure_assumeRoleWithoutRegion_resolvesRegionFromProviderChain() {
+        configs.remove(AWSSchemaRegistryConstants.AWS_REGION)
+        configs[ASSUME_ROLE_ARN] = ROLE_ARN
+        System.setProperty(AWS_REGION_SYSTEM_PROPERTY, REGION)
+
+        try {
+            converter = spy(AWSKafkaAvroConverter())
+            doReturn(mockCredProvider)
+                .whenever(converter)
+                .getCredentialsProvider(any(), any(), any())
+
+            converter.configure(configs, false)
+
+            verify(converter).getCredentialsProvider(ROLE_ARN, "kafka-connect-session", REGION)
+        } finally {
+            System.clearProperty(AWS_REGION_SYSTEM_PROPERTY)
+        }
+    }
+
+    /**
      * Test AWSKafkaAvroConverter assume role empty.
      */
     @Test
@@ -430,5 +453,6 @@ class AWSKafkaAvroConverterTest {
             )
         private const val ROLE_ARN = "arn:aws:iam::123456789012:role/my-role"
         private const val REGION = "us-west-2"
+        private const val AWS_REGION_SYSTEM_PROPERTY = "aws.region"
     }
 }
