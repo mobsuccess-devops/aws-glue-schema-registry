@@ -10,8 +10,17 @@ plugins {
     id("com.github.jk1.dependency-license-report")
 }
 
+val slf4jApi =
+    extensions
+        .getByType<VersionCatalogsExtension>()
+        .named("libs")
+        .findLibrary("slf4j-api")
+        .get()
+        .get()
+
 licenseReport {
     configurations = arrayOf("runtimeClasspath")
+    excludes = arrayOf("${slf4jApi.group}:${slf4jApi.name}")
     renderers = arrayOf(InventoryReportRenderer("THIRD-PARTY-LICENSES.txt", project.name))
     filters = arrayOf(LicenseBundleNormalizer(), ReduceDuplicateLicensesFilter())
 }
@@ -44,6 +53,9 @@ tasks.named<ShadowJar>("shadowJar") {
         from(thirdPartyLicenses)
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependencies {
+        exclude(dependency("${slf4jApi.group}:${slf4jApi.name}:.*"))
+    }
 }
 
 tasks.named<Jar>("jar") {
@@ -68,11 +80,18 @@ publishing.publications.named<MavenPublication>("maven") {
 // The uber-jar already bundles all of its dependencies: repeating them in the pom
 // would have consumers resolve them a second time, with duplicate classes on the
 // classpath. This is exactly what maven-shade-plugin's dependency-reduced-pom avoided.
+// slf4j-api is the exception: it is kept out of the jar, so the pom has to ask for it.
 publishing.publications.named<MavenPublication>("maven") {
     pom.withXml {
         val root = asNode()
         val dependencies = root.get("dependencies") as groovy.util.NodeList
         dependencies.forEach { root.remove(it as groovy.util.Node) }
+        root.appendNode("dependencies").appendNode("dependency").apply {
+            appendNode("groupId", slf4jApi.group)
+            appendNode("artifactId", slf4jApi.name)
+            appendNode("version", slf4jApi.version)
+            appendNode("scope", "runtime")
+        }
     }
 }
 

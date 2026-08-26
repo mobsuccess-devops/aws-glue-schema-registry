@@ -127,6 +127,7 @@ from `gradle/libs.versions.toml`, which is the single source of truth for the bu
 | Protocol Buffers    | 4.36.0             | `protobuf-java`; syntax 2 and 3. A consumer on protobuf 3 has to move: 4 is not binary compatible.                                |
 | AWS SDK for Java v2 | 2.53.1             | Imported as a BOM, so the whole SDK moves together.                                                                               |
 | MSK IAM auth        | 2.3.7              | `schema-registry-serde-msk-iam` only.                                                                                             |
+| SLF4J               | 2.0.x              | `slf4j-api`; the one dependency the uber-jars do not bundle. See below.                                                           |
 | Apache Flink        | 1.12.2, Scala 2.11 | **Not recommended** — see below.                                                                                                  |
 
 The Flink connector is carried over from upstream unchanged and is pinned to Flink 1.12.2 with
@@ -134,6 +135,13 @@ The Flink connector is carried over from upstream unchanged and is pinned to Fli
 It is kept so the fork stays behaviour-identical to its source, not because it is a reasonable
 dependency to take today. New Flink work should use the Glue Schema Registry formats that ship
 with [Apache Flink itself](https://github.com/apache/flink/tree/master/flink-formats).
+
+The uber-jars — the Connect converters and `schema-registry-serde-msk-iam` — bundle every
+dependency they resolve except `slf4j-api`, which their pom declares instead, so that the
+logging stack in effect is the application's own. A Kafka Connect worker already provides
+both the API and a binding; a standalone application needs an slf4j 2.x binding of its own
+— `logback-classic` 1.3 or later, `log4j-slf4j2-impl` — or slf4j falls back to its no-op
+logger.
 
 ## Migrating from the AWS artifact
 

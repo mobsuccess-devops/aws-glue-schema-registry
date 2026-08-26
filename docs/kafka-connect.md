@@ -21,7 +21,7 @@ cd aws-glue-schema-registry
 ```
 
 The resulting uber-jar under `avro-kafkaconnect-converter/build/libs/` already bundles every
-dependency, so there is no separate dependency-copy step.
+dependency but `slf4j-api`, so there is no separate dependency-copy step.
 
 ## Configure the connector
 
@@ -65,6 +65,10 @@ export CLASSPATH="$CLASSPATH:/path/to/schema-registry-kafkaconnect-converter-<ve
 Do not add `schema-registry-common` or `schema-registry-serde` alongside it: the uber-jar
 already bundles them, and a second copy on the classpath is how duplicate-class failures
 start.
+
+`slf4j-api` is the one dependency the jar does not bundle, so that the converter logs through
+the worker's own logging stack rather than a copy of its own. Connect supplies it, and its
+plugin classloader delegates `org.slf4j` to the parent in any case: nothing to add.
 
 ## Optional: trying it with a file source connector
 
