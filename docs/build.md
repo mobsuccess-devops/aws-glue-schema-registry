@@ -88,8 +88,13 @@ new code — anything added from now on is flagged the moment it is written.
   consumer: one whose own BOM pins protobuf lower cannot load
   `metadata.ProtobufSchemaMetadata` at all, and has no fix beyond forcing the version — which
   is what a Quarkus consumer, pinned by an `enforcedPlatform`, had to do. `protobufGencode` is
-  that floor and is deliberately older than the current release; it moves up only when no
-  consumer is left below it, and the fork gains nothing from generating with a newer protoc.
+  that floor, and it is not a free choice: it is the highest gencode present anywhere in what
+  this build publishes or drags, and a third-party jar sets it as surely as our own protoc
+  does. Today `proto-google-common-protos` 2.73.0 holds it up — built against 4.33.2, pulled
+  into `protobuf-kafkaconnect-converter` by apicurio — and below that
+  `FileDescriptorUtils.baseDependencies` dies on `NoClassDefFoundError:
+com/google/protobuf/GeneratedFile`. Otherwise the floor moves up only when no consumer is
+  left below it, and the fork gains nothing from generating with a newer protoc.
   `protobufRuntime` is what the build declares as a dependency, so a consumer with no
   constraint of its own resolves the current release, while a consumer pinned anywhere
   between the floor and it resolves its own pin — a plain `require` is a minimum that a
@@ -101,8 +106,11 @@ new code — anything added from now on is flagged the moment it is written.
 - **Every `*CompileClasspath` is forced to the floor**, so the fork cannot compile against an
   API its floor does not have, while tests and the published metadata keep the current
   runtime. `./gradlew test -PprotobufFloor` forces the whole graph down to the floor instead;
-  that is what the `Tests on the protobuf floor` job runs, and it is also what catches a
-  `protobufGencode` raised without a consumer check.
+  that is what the `Tests on the protobuf floor` job runs. It catches a dependency bump that
+  drags in gencode newer than the floor — which is how the 4.33.2 above was found — but not
+  the floor itself being raised, since raising it makes the job agree with itself. That is
+  what the `com.google.protobuf:protoc` entry of `dependabot.yml` is for: the floor is a
+  promise made to consumers, so it moves by decision, never by a dependency bump.
 - **`serializer-deserializer` publishes a `tests` jar** consumed by `integration-tests`
   through the `testArtifacts` configuration.
 - The Kotlin dependencies pulled in by `mbknor-jackson-jsonschema` and `wire` are pinned at

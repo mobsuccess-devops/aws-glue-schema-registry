@@ -13,6 +13,7 @@ updates:
       include: scope
     ignore:
       - dependency-name: "org.apache.flink:*"
+      - dependency-name: "com.google.protobuf:protoc"
     groups:
       kotlin:
         patterns:
