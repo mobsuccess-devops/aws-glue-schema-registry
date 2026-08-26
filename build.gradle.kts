@@ -2,10 +2,33 @@
 // convention plugins (buildSrc), applied module by module.
 plugins {
     alias(libs.plugins.binaryCompatibilityValidator)
+    id("com.gradleup.nmcp.aggregation")
 }
 
 apiValidation {
     ignoredProjects += listOf("schema-registry-examples", "schema-registry-integration-tests")
+}
+
+nmcpAggregation {
+    centralPortal {
+        username.set(providers.gradleProperty("mavenCentralUsername"))
+        password.set(providers.gradleProperty("mavenCentralPassword"))
+        publishingType.set(
+            providers.gradleProperty("centralPublishingType").orElse("USER_MANAGED"),
+        )
+    }
+}
+
+dependencies {
+    nmcpAggregation(project(":schema-registry-common"))
+    nmcpAggregation(project(":schema-registry-serde"))
+    nmcpAggregation(project(":schema-registry-serde-kotlin"))
+    nmcpAggregation(project(":schema-registry-serde-msk-iam"))
+    nmcpAggregation(project(":schema-registry-kafkastreams-serde"))
+    nmcpAggregation(project(":schema-registry-kafkaconnect-converter"))
+    nmcpAggregation(project(":schema-registry-flink-serde"))
+    nmcpAggregation(project(":jsonschema-kafkaconnect-converter"))
+    nmcpAggregation(project(":protobuf-kafkaconnect-converter"))
 }
 
 tasks.register("printModules") {

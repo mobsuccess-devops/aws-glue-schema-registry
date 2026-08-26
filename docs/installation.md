@@ -1,21 +1,72 @@
 # Installation
 
-How to depend on this fork: the GitHub Packages setup, the versions each release is built
-against, and the move from the AWS artifact on Maven Central. The list of artifacts is in the
+How to depend on this fork: the Maven Central coordinates, the versions each release is built
+against, and the move from the AWS artifact. The list of artifacts is in the
 [README](../README.md#packages).
 
-Artifacts are published to **GitHub Packages**, not to Maven Central.
+Releases are published to **Maven Central** under the `com.mobsuccess` group. Nothing to
+declare beyond the coordinate, and no authentication — `mavenCentral()` is already in every
+JVM build.
 
-> **GitHub Packages requires a token even to read a public repository.** This is a GitHub
-> limitation, not a choice of this project: anonymous reads of the Maven registry are not
-> supported for any repository, public or private. Publishing to Maven Central, which would
-> remove that step, is planned but not done.
+Snapshots are a separate channel: each push to `master` publishes `<next-version>-SNAPSHOT`
+to **GitHub Packages**, which does require a token. See
+[Snapshots](#snapshots-github-packages) below.
 
-## 1. Create a token
+## 1. Add the dependency
 
-GitHub Packages' Maven and Gradle registries only accept a **personal access token
-(classic)** — [fine-grained tokens are not
-supported](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry).
+**Gradle (Kotlin DSL)**:
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.mobsuccess:schema-registry-serde:<version>")
+}
+```
+
+**Gradle (Groovy DSL)**:
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.mobsuccess:schema-registry-serde:<version>'
+}
+```
+
+**Maven**:
+
+```xml
+<dependency>
+  <groupId>com.mobsuccess</groupId>
+  <artifactId>schema-registry-serde</artifactId>
+  <version><!-- version --></version>
+</dependency>
+```
+
+Most applications only need `schema-registry-serde`. The other artifacts are listed in the
+[README](../README.md#packages).
+
+## 2. Pick a version
+
+The latest release is on the [releases page](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest),
+and every published version is listed on
+[Maven Central](https://central.sonatype.com/namespace/com.mobsuccess). Releases are what you
+want in production.
+
+Every release is signed with the project's PGP key and carries a sources jar and a javadoc
+jar, so an IDE resolves documentation and sources without extra configuration.
+
+## Snapshots (GitHub Packages)
+
+Snapshots are not published to Maven Central. Each push to `master` publishes
+`<next-version>-SNAPSHOT` to GitHub Packages, which requires a **personal access token
+(classic)** even to read a public repository —
+[fine-grained tokens are not supported](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry).
 
 Create one at [**Settings → Developer settings → Personal access tokens (classic)**](https://github.com/settings/tokens/new?scopes=read:packages&description=aws-glue-schema-registry),
 with the single scope `read:packages`, and export it:
@@ -27,11 +78,6 @@ export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 The token is what authenticates; the username only has to be a real GitHub login. Keep the
 token out of the build files — pass it through the environment or `~/.gradle/gradle.properties`.
-
-## 2. Declare the repository
-
-**Gradle (Kotlin DSL)** — in `settings.gradle.kts` under `dependencyResolutionManagement`,
-or in `build.gradle.kts`:
 
 ```kotlin
 repositories {
@@ -45,26 +91,7 @@ repositories {
             password = providers.gradleProperty("gpr.token").orNull
                 ?: System.getenv("GITHUB_TOKEN")
         }
-    }
-}
-
-dependencies {
-    implementation("com.mobsuccess:schema-registry-serde:<version>")
-}
-```
-
-**Gradle (Groovy DSL)**:
-
-```groovy
-repositories {
-    mavenCentral()
-    maven {
-        name = 'GitHubPackages'
-        url = 'https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry'
-        credentials {
-            username = findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
-            password = findProperty('gpr.token') ?: System.getenv('GITHUB_TOKEN')
-        }
+        mavenContent { snapshotsOnly() }
     }
 }
 ```
@@ -78,16 +105,10 @@ by the same `<id>`:
   <repository>
     <id>github-mobsuccess</id>
     <url>https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry</url>
+    <releases><enabled>false</enabled></releases>
+    <snapshots><enabled>true</enabled></snapshots>
   </repository>
 </repositories>
-
-<dependencies>
-  <dependency>
-    <groupId>com.mobsuccess</groupId>
-    <artifactId>schema-registry-serde</artifactId>
-    <version><!-- version --></version>
-  </dependency>
-</dependencies>
 ```
 
 ```xml
@@ -101,18 +122,8 @@ by the same `<id>`:
 </servers>
 ```
 
-**In CI**, store the classic token as a secret and export it as `GITHUB_TOKEN`. The
-automatic `GITHUB_TOKEN` of a workflow in _another_ repository does not carry read access to
-this one's packages unless that access has been granted explicitly, so a workflow secret is
-the reliable path.
-
-## 3. Pick a version
-
-The latest release is on the [releases page](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases/latest);
-every published version is listed under the repository's
-[Packages](https://github.com/orgs/mobsuccess-devops/packages?repo_name=aws-glue-schema-registry).
-Each push to `master` also publishes a `<next-version>-SNAPSHOT`; releases are what you want
-in production.
+Releases stay on Maven Central and are also mirrored to GitHub Packages, so an existing
+GitHub Packages setup keeps resolving them. New consumers should take releases from Central.
 
 ## Compatibility
 
@@ -151,22 +162,18 @@ has been verified, are in [native-image.md](native-image.md).
 
 ## Migrating from the AWS artifact
 
-Coming from `software.amazon.glue` on Maven Central, the swap is a coordinate change: the
-artifactIds, the package names and the class names are all unchanged.
+Coming from `software.amazon.glue`, the swap is a coordinate change: both are on Maven
+Central, and the artifactIds, the package names and the class names are all unchanged.
 
 ```diff
 - implementation("software.amazon.glue:schema-registry-serde:1.1.x")
 + implementation("com.mobsuccess:schema-registry-serde:<version>")
 ```
 
-Three things to check on the way:
+Two things to check on the way:
 
-1. **The repository.** GitHub Packages requires authentication even to read a public
-   repository, and its Maven registry only accepts a _classic_ personal access token. Add
-   the repository block and the token from [1. Create a token](#1-create-a-token) — this is the one
-   step that has no equivalent when consuming from Maven Central.
-2. **The JVM.** Upstream targeted 8, this fork targets 17.
-3. **Two behaviour deltas**, both deliberate:
+1. **The JVM.** Upstream targeted 8, this fork targets 17.
+2. **Two behaviour deltas**, both deliberate:
    - A `@NonNull` violation raises a `NullPointerException` rather than the
      `IllegalArgumentException` upstream's `lombok.config` produced. A null argument is still
      rejected, at the same point; only the exception type differs. See
@@ -178,11 +185,30 @@ Three things to check on the way:
      see [Deserializing JSON into a Java POJO](usage.md#deserializing-json-into-a-java-pojo-classname-resolution)
      and [upstream-history.md](upstream-history.md).
 
+## Migrating from GitHub Packages
+
+Consumers wired to GitHub Packages before Maven Central existed can drop the repository block
+and the token entirely, as long as they only resolve releases:
+
+```diff
+ repositories {
+     mavenCentral()
+-    maven {
+-        name = "GitHubPackages"
+-        url = uri("https://maven.pkg.github.com/mobsuccess-devops/aws-glue-schema-registry")
+-        credentials { /* … */ }
+-    }
+ }
+```
+
+Keep the repository block only if you consume `-SNAPSHOT` versions, and restrict it to
+snapshots with `mavenContent { snapshotsOnly() }` so releases resolve from Central. The
+coordinates and versions are identical on both channels.
+
 ## Troubleshooting
 
-| Symptom                                                            | Cause                                                                                         |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `401 Unauthorized`                                                 | No token, an expired token, or a fine-grained token — the Maven registry needs a classic one. |
-| `403 Forbidden`                                                    | The token exists but lacks the `read:packages` scope.                                         |
-| `Could not find com.mobsuccess:...`                                | The repository block is missing, or the version does not exist.                               |
-| `Unsupported class file major version` / `UnsupportedClassVersion` | The runtime is older than JVM 17.                                                             |
+| Symptom                                                            | Cause                                                                                                                                       |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Could not find com.mobsuccess:...`                                | `mavenCentral()` is missing from the repositories, or the version does not exist. A `-SNAPSHOT` version resolves from GitHub Packages only. |
+| `401 Unauthorized` / `403 Forbidden` on GitHub Packages            | Snapshot channel only: no token, an expired token, a fine-grained token, or a token without `read:packages`.                                |
+| `Unsupported class file major version` / `UnsupportedClassVersion` | The runtime is older than JVM 17.                                                                                                           |

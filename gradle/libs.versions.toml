@@ -51,6 +51,8 @@ protobufPlugin = "0.10.0"
 avroPlugin = "1.9.1"
 licenseReport = "2.9"
 binaryCompatibilityValidator = "0.18.1"
+dokka = "2.2.0"
+nmcp = "1.6.1"
 
 [libraries]
 # --- AWS ---
@@ -117,6 +119,8 @@ jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxbApi" }
 shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 licenseReport-plugin = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
+dokka-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+nmcp-plugin = { module = "com.gradleup.nmcp:nmcp", version.ref = "nmcp" }
 
 # --- Logging ---
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }

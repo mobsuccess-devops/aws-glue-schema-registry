@@ -73,6 +73,7 @@ publishing.publications.named<MavenPublication>("maven") {
         listOf(
             tasks.named("shadowJar").get(),
             tasks.named("sourcesJar").get(),
+            tasks.named("javadocJar").get(),
         ),
     )
 }
