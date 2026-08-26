@@ -579,3 +579,22 @@ The only Java left in the repository is the Avro classes generated into the test
   ids used to tell them apart — the same duplication `GlueSchemaRegistrySerializationFacadeTest`
   already has from its fixed `SCHEMA_VERSION_ID_FOR_TESTING`, and the reason its rows do not
   need a wrapper.
+
+- **`KafkaHelper` closes the producers it creates.** Three of its helpers built a
+  `KafkaProducer` and dropped it on the floor: `doProduceRecords` and
+  `doProduceAvroRecordsSerde` one per call, `doProduceRecordsMultithreaded` four — one per
+  thread, every call. Each leak holds a `kafka-producer-network-thread`, a 32 MiB
+  `buffer.memory` allocation and a metrics registry until the JVM exits, so a full run of
+  `GlueSchemaRegistryKafkaIntegrationTest` accumulated the producers of 12 multithreaded
+  cases on top of the single-producer ones. The leak is upstream's, inherited verbatim, and
+  was reported by Copilot on the conversion pull request (#134); it was left out of that one
+  deliberately, since the conversion was measured as behaviour-preserving against a
+  before/after test inventory and a resource-lifetime change is not that. The three are now
+  `use { }` blocks. Closing is safe at exactly the point they return because `produceRecords`
+  ends on `producer.flush()`: every record is delivered before `close()` can run, and the
+  list of `ProducerRecord`s it builds is the block's value, so no caller sees a different
+  result. In the multithreaded path the construction moved inside the existing `try`, which
+  also means a producer that fails to build now surfaces as the `CompletionException` that
+  block already wraps every other failure in, rather than escaping `runAsync` raw — the
+  future fails either way. Nothing a test asserts changes; the suite is the same 73 tests,
+  none failing.
