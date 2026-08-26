@@ -5,6 +5,10 @@ plugins {
 }
 
 dependencies {
+    constraints {
+        api(libs.scala.library)
+    }
+
     api(project(":schema-registry-common"))
     api(platform(libs.aws.bom))
     api(platform(libs.jackson.bom))
