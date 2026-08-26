@@ -37,9 +37,6 @@ dependencies {
     testImplementation(libs.jackson.annotations)
     testImplementation(libs.jackson.databind)
 
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
-
     // Classes generated from serializer-deserializer/src/test/proto, consumed through
     // the test jar just as the Maven `tests` classifier did.
     testImplementation(project(path = ":schema-registry-serde", configuration = "testArtifacts"))

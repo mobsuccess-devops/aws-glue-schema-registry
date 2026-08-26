@@ -1,8 +1,9 @@
 # aws-glue-schema-registry
 
 Mobsuccess fork of [`awslabs/aws-glue-schema-registry`](https://github.com/awslabs/aws-glue-schema-registry),
-reduced to the Java part, ported from Maven to Gradle, and converted to Kotlin —
-everything but `integration-tests`, which is still Java.
+reduced to the Java part, ported from Maven to Gradle, and converted to Kotlin. The
+conversion is complete: the only Java left is the Avro classes generated into the test
+trees.
 
 ## The golden rule
 
@@ -77,7 +78,7 @@ order to work in.
 | Topic                                                   | File                                                 |
 | ------------------------------------------------------- | ---------------------------------------------------- |
 | Port contract, accepted deviations from the Maven build | [docs/portage.md](docs/portage.md)                   |
-| Java interop rules, and the module still in Java        | [docs/kotlin-interop.md](docs/kotlin-interop.md)     |
+| Java interop rules, and the Java that remains           | [docs/kotlin-interop.md](docs/kotlin-interop.md)     |
 | Build layout, ABI dumps, integration tests              | [docs/build.md](docs/build.md)                       |
 | CI, releases, branch protection, supply chain           | [docs/ci.md](docs/ci.md)                             |
 | Upstream release history                                | [docs/upstream-history.md](docs/upstream-history.md) |
