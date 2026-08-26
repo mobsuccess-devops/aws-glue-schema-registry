@@ -141,7 +141,7 @@ class ProtobufDeserializerTest {
 
         for (testCase in testCases) {
             val arguments = testCase.get()
-            val serializedData = protobufSerializer.serialize(arguments[0])
+            val serializedData = protobufSerializer.serialize(arguments[0]!!)
             val schemaObject =
                 Schema(arguments[1] as String, DataFormat.PROTOBUF.name, arguments[2] as String)
             val byteBuffer =

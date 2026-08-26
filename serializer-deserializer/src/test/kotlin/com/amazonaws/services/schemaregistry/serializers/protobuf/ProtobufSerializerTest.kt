@@ -113,7 +113,7 @@ class ProtobufSerializerTest {
         // Get schema definition for repeated messages of different types.
         testMessageProviderForCaching()
             .map { it.get() }
-            .map { objects -> objects[0] }
+            .map { objects -> objects[0]!! }
             .forEach { protobufSerializer.getSchemaDefinition(it) }
 
         assertEquals(3, protobufSerializer.schemaGeneratorCache.size())
