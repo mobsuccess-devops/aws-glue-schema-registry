@@ -3,6 +3,10 @@ plugins {
     id("gsr.publish-conventions")
 }
 
+coverage {
+    enabled.set(false)
+}
+
 dependencies {
     implementation(project(":schema-registry-serde"))
     implementation(platform(libs.aws.bom))

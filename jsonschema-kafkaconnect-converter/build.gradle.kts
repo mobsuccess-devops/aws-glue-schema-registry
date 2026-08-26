@@ -2,6 +2,11 @@ plugins {
     id("gsr.shaded-conventions")
 }
 
+coverage {
+    minimumInstructionCoverage.set(0.86)
+    minimumBranchCoverage.set(0.77)
+}
+
 dependencies {
     api(platform(libs.jackson.bom))
     api(project(":schema-registry-serde"))

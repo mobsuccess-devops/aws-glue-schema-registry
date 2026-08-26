@@ -3,6 +3,10 @@ plugins {
     id("gsr.publish-conventions")
 }
 
+coverage {
+    minimumInstructionCoverage.set(0.97)
+}
+
 dependencies {
     api(project(":schema-registry-serde"))
 

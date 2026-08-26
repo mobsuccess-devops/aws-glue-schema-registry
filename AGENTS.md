@@ -22,6 +22,7 @@ with `git diff eed1506 -- <path>`.
 ./gradlew test          # tests only
 ./gradlew apiCheck      # public ABI against the committed dumps; runs as part of `check`
 ./gradlew apiDump       # accept a deliberate ABI change, then commit the .api diff
+./gradlew jacocoTestCoverageVerification   # per-module coverage floors; runs as part of `check`
 ```
 
 `*IntegrationTest` classes are excluded from `test` and `check`. They run through the
@@ -60,6 +61,10 @@ order to work in.
   `buildSrc/src/main/kotlin/gsr.*.gradle.kts`; the root build has no `subprojects {}`.
 - **A red `apiCheck` is not a formality.** Read the diff it prints, decide whether the
   signature change is deliberate, then run `apiDump`.
+- **The coverage floors mechanize the golden rule.** Each module declares in its
+  `build.gradle.kts` the coverage it already has, and `check` fails below it. A red
+  `jacocoTestCoverageVerification` means the suite shrank — restore the tests rather than
+  lower the floor. See [docs/build.md](docs/build.md).
 - **Everything that lands on GitHub is in English**: commit messages, pull request titles
   and bodies, code comments, documentation.
 - **A licence header names who wrote the file, not what it is about.** A file converted
@@ -70,7 +75,8 @@ order to work in.
   directory are therefore deliberately not uniform; each one tracks provenance.
 - **The pull request title drives the released version.** `feat!:` (or a
   `BREAKING CHANGE:` footer) is major, `feat:` is minor, anything else is a patch bump.
-- Kotlin lint is ktlint 1.4.1, configured in `.editorconfig`. Local hooks:
+- Kotlin lint is ktlint 1.4.1, configured in `.editorconfig`, and is a **required check**:
+  a violation anywhere in the tree fails the `ktlint` job. Local hooks:
   `pre-commit install`.
 
 ## Where the rest lives

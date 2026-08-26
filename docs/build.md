@@ -50,6 +50,56 @@ Two things the dumps deliberately do **not** cover:
 (780 missing a visibility modifier, 136 missing an explicit return type). The value is on
 new code — anything added from now on is flagged the moment it is written.
 
+## Coverage has a floor
+
+`jacocoTestCoverageVerification` is wired into `check`, so a change that removes tests fails
+the build the same way a broken one does. The floors are **anti-regression, not targets**:
+each is the coverage the module already had on 2026-08-26, minus two to three points of
+slack. Raising one is a deliberate act; lowering one to make a build pass is the thing this
+guard exists to prevent.
+
+Each module declares its own, because the spread is wide — `serializer-deserializer` sits at
+69% of instructions, `kafkastreams-serde` at 100%. A single repository-wide floor would have
+to be set at the weakest module and would let every other one halve unnoticed.
+
+```kotlin
+coverage {
+    minimumInstructionCoverage.set(0.76)
+    minimumBranchCoverage.set(0.61)
+}
+```
+
+| Module                              | Instructions | floor | Branches | floor |
+| ----------------------------------- | -----------: | ----: | -------: | ----: |
+| `avro-flink-serde`                  |        96.5% |  0.94 |   100.0% |  0.97 |
+| `avro-kafkaconnect-converter`       |        81.4% |  0.79 |    76.4% |  0.74 |
+| `common`                            |        78.9% |  0.76 |    63.5% |  0.61 |
+| `jsonschema-kafkaconnect-converter` |        88.8% |  0.86 |    79.2% |  0.77 |
+| `kafkastreams-serde`                |       100.0% |  0.97 |        — |     — |
+| `protobuf-kafkaconnect-converter`   |        95.8% |  0.93 |    88.4% |  0.86 |
+| `serde-kotlin`                      |        87.9% |  0.85 |    57.9% |  0.55 |
+| `serializer-deserializer`           |        68.9% |  0.66 |    60.0% |  0.58 |
+
+A module that declares nothing gets the convention default, 0.60 of instructions and 0.50 of
+branches, so a new module is guarded before anyone measures it. `examples` and
+`integration-tests` set `enabled` to `false`, the same two the ABI validator ignores: one is
+a sample application, the other holds no `main` source at all.
+`schema-registry-serde-msk-iam` needs no exclusion — it has no tests, so the task is skipped
+for want of execution data; add a test there and the default floor applies.
+
+Two counters, not four. `LINE` tracks `INSTRUCTION` closely enough to add nothing, and
+`METHOD`/`CLASS` move in whole units, so a small module crosses them in jumps that say
+little about what the tests actually check.
+
+Re-measure with `./gradlew jacocoTestReport` and read
+`<module>/build/reports/jacoco/test/jacocoTestReport.xml` — the `INSTRUCTION` and `BRANCH`
+counters of the root `<report>` element are what the rules compare against.
+
+The `madrapps/jacoco-report` step in `ci.yml` comments the numbers on a pull request and is
+**not** a gate — the action has no failure mode. Its `min-coverage-*` inputs are set to 66,
+the weakest floor any module enforces, so its verdict cannot contradict the one that
+actually blocks a merge.
+
 ## Other build notes
 
 - **The jars carry GraalVM reachability metadata.**

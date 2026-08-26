@@ -2,6 +2,10 @@ plugins {
     id("gsr.java-conventions")
 }
 
+coverage {
+    enabled.set(false)
+}
+
 // Integration test module: nothing to publish, and its tests require real AWS
 // resources (they are excluded from the unit run by the convention plugin).
 dependencies {

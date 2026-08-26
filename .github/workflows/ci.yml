@@ -106,8 +106,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "Coverage Report"
           update-comment: true
-          min-coverage-overall: 60
-          min-coverage-changed-files: 60
+          min-coverage-overall: 66
+          min-coverage-changed-files: 66
 
   test-jdk:
     name: Tests on JDK ${{ matrix.jdk }}
@@ -183,7 +183,6 @@ jobs:
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     permissions:
       contents: read
-      checks: write
       pull-requests: read
     steps:
       - name: Checkout
@@ -194,10 +193,11 @@ jobs:
         uses: ScaCap/action-ktlint@26c5e9b625966139d9956cbbb6217375480d4e14 # v1.9.0
         with:
           ktlint_version: 1.4.1
-          github_token: ${{ secrets.github_token }}
-          filter_mode: file
-          reporter: github-pr-check
-          level: warning
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          filter_mode: nofilter
+          reporter: github-pr-annotations
+          level: error
+          fail_on_error: true
 
   publish-snapshot:
     name: Publish SNAPSHOT

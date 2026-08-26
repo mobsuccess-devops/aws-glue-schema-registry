@@ -16,6 +16,7 @@ policy:
         - Tests on JDK 25
         - Tests on the protobuf floor
         - Analyze java-kotlin
+        - ktlint
 linear:
   team_identifier: FTTECH
   team_label_identifier: Core
