@@ -247,8 +247,9 @@ com/google/protobuf/GeneratedFile`. Otherwise the floor moves up only when no co
   the floor itself being raised, since raising it makes the job agree with itself. That is
   what the `com.google.protobuf:protoc` entry of `dependabot.yml` is for: the floor is a
   promise made to consumers, so it moves by decision, never by a dependency bump.
-- **`serializer-deserializer` publishes a `tests` jar** consumed by `integration-tests`
-  through the `testArtifacts` configuration.
+- **`serializer-deserializer` builds a `tests` jar, and does not publish it.**
+  `integration-tests` consumes it through the `testArtifacts` configuration, which is a
+  project dependency and needs no publication. See [portage.md](portage.md).
 - The Kotlin dependencies pulled in by `mbknor-jackson-jsonschema` and `wire` are pinned at
   `1.9.25` (`kotlinRuntime` in the catalog): that is distinct from the compiler version.
 

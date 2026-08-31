@@ -65,8 +65,6 @@ protobuf {
     }
 }
 
-// The pom published a test jar (classifier `tests`): the classes generated from
-// src/test/proto are reused there by the integration-tests module.
 val testJar by tasks.registering(Jar::class) {
     archiveClassifier.set("tests")
     from(sourceSets["test"].output)
@@ -76,8 +74,4 @@ val testArtifacts by configurations.consumable("testArtifacts")
 
 artifacts {
     add(testArtifacts.name, testJar)
-}
-
-publishing.publications.named<MavenPublication>("maven") {
-    artifact(testJar)
 }

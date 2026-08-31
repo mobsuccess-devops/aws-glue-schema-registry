@@ -81,6 +81,16 @@ The only Java left in the repository is the Avro classes generated into the test
   each GitHub Release instead of being pushed to a Maven repository. A publication goes from
   284 MB to 7.9 MB. What was in those jars, and why the bundle moved rather than shrank, is in
   [build.md](build.md#the-plugin-distributions).
+- **The `tests` classifier of `schema-registry-serde` is built but no longer published.**
+  The Maven build ran `maven-jar-plugin:test-jar` and the port carried the artifact into the
+  publication. What needs it is `integration-tests`, which reuses `ProtobufGenerator` and the
+  classes generated from `src/test/proto` — and it reaches them through the `testArtifacts`
+  project configuration, not through a repository. Published, the artifact was unusable
+  anyway: a `tests` classifier inherits the main pom, which declares neither JUnit 5 nor
+  Mockito while 322 and 234 of the jar's classes reference them, so resolving it gave a
+  `NoClassDefFoundError` until the consumer rebuilt the test classpath by hand. Dropping it
+  takes a release from 231 files to 226, against the 1,167 a month Maven Central meters on the
+  free tier.
 - **Publication coordinates.** Group `com.mobsuccess` instead of `software.amazon.glue`,
   so that an artifact of this fork can never silently substitute itself for the Maven
   Central one in a consumer's dependency graph. The artifactIds are unchanged.
