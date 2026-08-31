@@ -9,6 +9,10 @@ coverage {
 // Integration test module: nothing to publish, and its tests require real AWS
 // resources (they are excluded from the unit run by the convention plugin).
 dependencies {
+    constraints {
+        testImplementation(libs.opentelemetry.api)
+    }
+
     testImplementation(project(":schema-registry-serde"))
     testImplementation(project(":schema-registry-kafkastreams-serde"))
     testImplementation(platform(libs.aws.bom))
@@ -17,6 +21,7 @@ dependencies {
     testImplementation(libs.aws.auth)
     testImplementation(libs.kinesis.client) {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
+        exclude(group = "software.amazon.glue")
     }
     testImplementation(libs.kinesis.producer) {
         // The exclusion the original pom carried on this dependency.
@@ -41,6 +46,8 @@ dependencies {
     testImplementation(libs.jaxb.api)
     testImplementation(libs.jackson.annotations)
     testImplementation(libs.jackson.databind)
+    testImplementation(libs.mbknor.jsonSchema)
+    testImplementation(libs.aws.urlConnectionClient)
 
     // Classes generated from serializer-deserializer/src/test/proto, consumed through
     // the test jar just as the Maven `tests` classifier did.
