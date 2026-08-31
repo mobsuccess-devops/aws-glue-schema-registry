@@ -289,17 +289,25 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
         run: ./gradlew publish
-      - name: Collect published jars
+      - name: Build the plugin distributions
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: ./gradlew pluginDistribution
+      - name: Collect release artifacts
         run: |
           mkdir -p release-artifacts
           find . -path ./buildSrc -prune -o -path '*/build/libs/*.jar' -print0 \
             | xargs -0 -I{} cp {} release-artifacts/
-          (cd release-artifacts && sha256sum ./*.jar > SHA256SUMS.txt)
+          find . -path ./buildSrc -prune -o -path '*/build/distributions/*-plugin.zip' -print0 \
+            | xargs -0 -I{} cp {} release-artifacts/
+          (cd release-artifacts && sha256sum ./*.jar ./*.zip > SHA256SUMS.txt)
           cat release-artifacts/SHA256SUMS.txt
       - name: Attest build provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: release-artifacts/*.jar
+          subject-path: |
+            release-artifacts/*.jar
+            release-artifacts/*.zip
       - name: Tag and release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -309,4 +317,5 @@ jobs:
           gh release create "v${{ steps.version.outputs.version }}" \
             --title "v${{ steps.version.outputs.version }}" \
             --generate-notes \
-            release-artifacts/SHA256SUMS.txt
+            release-artifacts/SHA256SUMS.txt \
+            release-artifacts/*-plugin.zip

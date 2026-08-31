@@ -8,20 +8,34 @@ Three converters are published, one per data format:
 | `jsonschema-kafkaconnect-converter`      | `com.amazonaws.services.schemaregistry.kafkaconnect.jsonschema.JsonSchemaConverter`   | JSON Schema |
 | `protobuf-kafkaconnect-converter`        | `com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ProtobufSchemaConverter` | Protobuf    |
 
-Each is a shaded uber-jar, meant to be dropped onto a Connect plugin path. The keys they
-accept are in the [configuration reference](configuration.md), which also covers what
-`Converter.config()` validates and what it lets through.
+Each is an ordinary jar with a complete pom, and each also ships a **plugin distribution**:
+a zip holding the jar and every dependency it resolves, laid out as a Connect plugin
+directory. The keys the converters accept are in the
+[configuration reference](configuration.md), which also covers what `Converter.config()`
+validates and what it lets through.
 
-## Build the converter
+## Get the plugin distribution
+
+Every [release](https://github.com/mobsuccess-devops/aws-glue-schema-registry/releases)
+carries one zip per converter, next to the `SHA256SUMS.txt` that covers it:
+
+```bash
+gh release download v<version> \
+  --repo mobsuccess-devops/aws-glue-schema-registry \
+  --pattern 'schema-registry-kafkaconnect-converter-*-plugin.zip'
+```
+
+Or build it from source:
 
 ```bash
 git clone git@github.com:mobsuccess-devops/aws-glue-schema-registry.git
 cd aws-glue-schema-registry
-./gradlew :schema-registry-kafkaconnect-converter:shadowJar
+./gradlew :schema-registry-kafkaconnect-converter:pluginDistribution
 ```
 
-The resulting uber-jar under `avro-kafkaconnect-converter/build/libs/` already bundles every
-dependency but `slf4j-api`, so there is no separate dependency-copy step.
+The zip lands in `avro-kafkaconnect-converter/build/distributions/`. It contains a single
+directory, `<artifactId>-<version>/`, with every jar under `lib/` and the licences beside
+them — the layout a Connect worker expects, and the one Confluent Hub packages use.
 
 ## Configure the connector
 
@@ -49,26 +63,39 @@ value.converter.registry.name=my-registry
 
 ## Make the converter visible to the workers
 
-The uber-jar is self-contained, so it only has to be on the worker's classpath. Either drop
-it into a directory listed in the worker's `plugin.path`:
+Unzip the distribution into a directory listed in the worker's `plugin.path`:
+
+```bash
+unzip schema-registry-kafkaconnect-converter-<version>-plugin.zip -d /opt/kafka/connect-plugins
+```
 
 ```properties
 plugin.path=/opt/kafka/connect-plugins
 ```
 
-or, for a standalone worker started through `kafka-run-class.sh`, put it on `CLASSPATH`:
+That leaves `/opt/kafka/connect-plugins/schema-registry-kafkaconnect-converter-<version>/lib/`
+holding the converter and its dependencies, which is one plugin location: the worker builds
+an isolated classloader over it and finds the converter class there. Do not unzip two
+converters into the same directory — one plugin location means one classloader, and the point
+of the layout is that each converter gets its own.
+
+For a standalone worker started through `kafka-run-class.sh`, put the same `lib/` on
+`CLASSPATH` instead:
 
 ```bash
-export CLASSPATH="$CLASSPATH:/path/to/schema-registry-kafkaconnect-converter-<version>.jar"
+export CLASSPATH="$CLASSPATH:/opt/kafka/connect-plugins/schema-registry-kafkaconnect-converter-<version>/lib/*"
 ```
 
-Do not add `schema-registry-common` or `schema-registry-serde` alongside it: the uber-jar
-already bundles them, and a second copy on the classpath is how duplicate-class failures
-start.
+The distribution includes `slf4j-api`. Connect supplies its own, and the plugin classloader
+delegates `org.slf4j` to the parent, so the converter logs through the worker's stack and the
+bundled copy is never loaded — nothing to remove.
 
-`slf4j-api` is the one dependency the jar does not bundle, so that the converter logs through
-the worker's own logging stack rather than a copy of its own. Connect supplies it, and its
-plugin classloader delegates `org.slf4j` to the parent in any case: nothing to add.
+**If you resolve the converter through Maven or Gradle instead**, the pom declares everything
+and the build tool does the rest; there is no plugin zip involved and nothing to exclude:
+
+```kotlin
+implementation("com.mobsuccess:schema-registry-kafkaconnect-converter:<version>")
+```
 
 ## Optional: trying it with a file source connector
 
