@@ -100,6 +100,12 @@ first means a failure there leaves nothing published anywhere, and a re-run star
   attaches them to the tag. Release assets are anonymous to download and are not metered, which
   is the whole point.
 
+- **They are built before either publish step, for the reason the Central-first order exists.**
+  Both publications are irreversible and the tag is written last, so a step that fails between
+  them leaves a version published with no tag — and the retry recomputes the same number, which
+  GitHub Packages then refuses to overwrite. `pluginDistribution` needs no credentials and can
+  fail for ordinary build reasons, so it runs while a failure still costs nothing.
+
 ## Branch protection
 
 - **`.mobsuccess.yml` is what mobsuccessbot enforces**, and it holds no comments — the file

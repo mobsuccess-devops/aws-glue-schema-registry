@@ -274,6 +274,10 @@ jobs:
           eval "$CALCULATED"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Releasing $VERSION"
+      - name: Build the plugin distributions
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: ./gradlew pluginDistribution
       - name: Publish to Maven Central
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
@@ -289,10 +293,6 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
         run: ./gradlew publish
-      - name: Build the plugin distributions
-        env:
-          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
-        run: ./gradlew pluginDistribution
       - name: Collect release artifacts
         run: |
           mkdir -p release-artifacts
