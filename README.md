@@ -174,7 +174,7 @@ Protobuf, POJOs, compression, caching and the rest are in
 | [Configuration reference](docs/configuration.md) | Every property, its default and the side that reads it                         |
 | [Kafka Connect](docs/kafka-connect.md)           | The three converters, plugin path, worker configuration, cross-account role    |
 | [Native image](docs/native-image.md)             | GraalVM: what the jars declare, what a consumer still declares                 |
-| [Flink](docs/flink.md)                           | The Flink serialization schemas, and why they are not recommended              |
+| [Flink](docs/flink.md)                           | The Flink serialization schemas, on Flink 1.20 LTS                             |
 | [Build](docs/build.md)                           | The Gradle build: toolchain, conventions, ABI dumps, code generation           |
 | [CI and supply chain](docs/ci.md)                | Releases, workflow permissions, pinning, dependency policy                     |
 | [Java interop](docs/kotlin-interop.md)           | Where Kotlin and Java do not line up, for anyone writing Kotlin here           |

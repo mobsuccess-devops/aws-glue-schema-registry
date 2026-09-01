@@ -130,22 +130,27 @@ GitHub Packages setup keeps resolving them. New consumers should take releases f
 The versions the artifacts are built and tested against. Everything except the JVM row comes
 from `gradle/libs.versions.toml`, which is the single source of truth for the build.
 
-| Component           | Version            | Notes                                                                                                                                                                             |
-| ------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| JVM                 | 17 or later        | Bytecode target is 17, so a JVM 8 or 11 runtime cannot load these artifacts.                                                                                                      |
-| Apache Kafka        | 3.9.x              | `kafka-clients`, `kafka-streams`, `connect-api`, `connect-json`. Declared, not bundled: a consumer overrides the version as it would any other.                                   |
-| Apache Avro         | 1.11.4             |                                                                                                                                                                                   |
-| Protocol Buffers    | 4.36.0             | `protobuf-java`; syntax 2 and 3. On `master`, shipping in the next major — releases up to 2.1.0 resolve 3.25.5. A consumer on protobuf 3 has to move: 4 is not binary compatible. |
-| AWS SDK for Java v2 | 2.53.1             | Imported as a BOM, so the whole SDK moves together.                                                                                                                               |
-| MSK IAM auth        | 2.3.7              | `schema-registry-serde-msk-iam` only.                                                                                                                                             |
-| SLF4J               | 2.0.x              | `slf4j-api`; the API only, never a binding. See below.                                                                                                                            |
-| Apache Flink        | 1.12.2, Scala 2.11 | **Not recommended** — see below.                                                                                                                                                  |
+| Component           | Version      | Notes                                                                                                                                                                             |
+| ------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| JVM                 | 17 or later  | Bytecode target is 17, so a JVM 8 or 11 runtime cannot load these artifacts.                                                                                                      |
+| Apache Kafka        | 3.9.x        | `kafka-clients`, `kafka-streams`, `connect-api`, `connect-json`. Declared, not bundled: a consumer overrides the version as it would any other.                                   |
+| Apache Avro         | 1.11.4       |                                                                                                                                                                                   |
+| Protocol Buffers    | 4.36.0       | `protobuf-java`; syntax 2 and 3. On `master`, shipping in the next major — releases up to 2.1.0 resolve 3.25.5. A consumer on protobuf 3 has to move: 4 is not binary compatible. |
+| AWS SDK for Java v2 | 2.53.1       | Imported as a BOM, so the whole SDK moves together.                                                                                                                               |
+| MSK IAM auth        | 2.3.7        | `schema-registry-serde-msk-iam` only.                                                                                                                                             |
+| SLF4J               | 2.0.x        | `slf4j-api`; the API only, never a binding. See below.                                                                                                                            |
+| Apache Flink        | 1.20.5 (LTS) | `flink-avro`, `flink-streaming-java`. Declared, not bundled: a job runs the cluster's Flink. See below.                                                                           |
 
-The Flink connector is carried over from upstream unchanged and is pinned to Flink 1.12.2 with
-`flink-streaming-java_2.11`, a Scala 2.11 coordinate that Flink stopped publishing after 1.14.
-It is kept so the fork stays behaviour-identical to its source, not because it is a reasonable
-dependency to take today. New Flink work should use the Glue Schema Registry formats that ship
-with [Apache Flink itself](https://github.com/apache/flink/tree/master/flink-formats).
+The Flink connector was inherited pinned to Flink 1.12.2 with `flink-streaming-java_2.11`, a
+Scala 2.11 coordinate Flink stopped publishing after 1.14. It now targets **Flink 1.20.x**, the
+LTS line, on the suffix-free `flink-streaming-java`. The migration needed no source change: every
+Flink type the module touches — `SchemaCoder`, `RegistryAvroSerializationSchema`,
+`RegistryAvroDeserializationSchema`, `MutableByteArrayInputStream` — is unchanged between the two
+releases, so 1.20 only widens what the module compiles against. See [flink.md](flink.md).
+
+The **runtime floor is Flink 1.19**, not 1.20: `AvroSerializationSchema.getEncoder()` returns
+`Encoder` from 1.19 on and `BinaryEncoder` before it, and the serialization schema calls it, so
+the compiled call site resolves to a signature a Flink 1.18 or earlier runtime does not have.
 
 Nothing published here declares an slf4j **binding**, only `slf4j-api`, so the logging stack
 in effect is the application's own. A Kafka Connect worker already provides both the API and a

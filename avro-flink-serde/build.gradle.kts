@@ -13,19 +13,16 @@ dependencies {
     // (2.0.0 for compile, 1.0.2 for test) rather than at the neighbouring module; the
     // internal dependency is restored, being the only coherent one in a multi-module build.
     api(project(":schema-registry-serde"))
-    api(libs.flink.avro) {
-        exclude(group = "org.apache.commons", module = "commons-compress")
-        exclude(group = "org.lz4", module = "lz4-java")
-    }
-    compileOnly(libs.flink.streamingJava) {
-        exclude(group = "org.apache.commons", module = "commons-compress")
-        exclude(group = "org.lz4", module = "lz4-java")
-    }
+    val withoutConflictingTransitives =
+        Action<ExternalModuleDependency> {
+            exclude(group = "org.apache.commons", module = "commons-compress")
+            exclude(group = "org.lz4", module = "lz4-java")
+        }
 
-    testImplementation(libs.flink.streamingJava) {
-        exclude(group = "org.apache.commons", module = "commons-compress")
-        exclude(group = "org.lz4", module = "lz4-java")
-    }
+    api(libs.flink.avro, withoutConflictingTransitives)
+    compileOnly(libs.flink.streamingJava, withoutConflictingTransitives)
+
+    testImplementation(libs.flink.streamingJava, withoutConflictingTransitives)
     testImplementation(libs.junit4)
     testImplementation(libs.hamcrest)
 }
