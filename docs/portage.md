@@ -549,7 +549,19 @@ The only Java left in the repository is the Avro classes generated into the test
   overloads alongside them. The one signature that moved — `AvroSerializationSchema.getEncoder()`
   returning `Encoder` rather than `BinaryEncoder` — is called for `flush()` only, which
   `Encoder` declares. `avro-flink-serde/api/schema-registry-flink-serde.api` is unchanged, and
-  the module's 21 tests pass untouched.
+  the module's 21 tests pass untouched. Upstream proposes the same three coordinate lines in
+  [awslabs#374](https://github.com/awslabs/aws-glue-schema-registry/pull/374), still open there.
+
+  That one moved signature does set a **runtime floor of Flink 1.19**: `getEncoder()` returns
+  `BinaryEncoder` up to 1.18 and `Encoder` from 1.19, so the compiled call site in
+  `GlueSchemaRegistryAvroSerializationSchema.serialize` resolves to a method an older runtime
+  does not declare.
+
+  The three duplicate `commons-compress` / `lz4-java` exclusion blocks are folded into one
+  `Action<ExternalModuleDependency>`. `runtimeClasspath`, `testRuntimeClasspath` and
+  `compileClasspath` were diffed before and after: identical. The `commons-compress` half is
+  still live — dropping it pulls 1.26.x back in through Avro — while the `org.lz4` half is now
+  inert, and is kept so both Flink dependencies carry the same rule.
 
   Avro does not move with it. `flink-avro` carries a hard `org.apache.avro:avro` dependency,
   and every Flink line through 2.3 pins it at 1.11.4 — the version this build was already on —

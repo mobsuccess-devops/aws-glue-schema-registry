@@ -9,6 +9,12 @@ anywhere Flink takes one — a Kafka source or sink, a Kinesis connector, a file
 against that line. Flink is not bundled: `flink-avro` is an `api` dependency and
 `flink-streaming-java` is `compileOnly`, so the version a job runs is the cluster's own.
 
+**A jar built here needs a Flink runtime of 1.19 or later.** `AvroSerializationSchema.getEncoder()`
+returns `Encoder` from 1.19 on, where 1.18 and earlier returned `BinaryEncoder`;
+`GlueSchemaRegistryAvroSerializationSchema.serialize` calls it, so the compiled call site
+resolves to a method signature that does not exist on an older Flink and fails with
+`NoSuchMethodError`. 1.20.x is what the module is tested against.
+
 Alternatively, Apache Flink ships its own Glue Schema Registry formats —
 [Avro](https://github.com/apache/flink/tree/master/flink-formats/flink-avro-glue-schema-registry)
 and

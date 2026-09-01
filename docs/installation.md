@@ -148,6 +148,10 @@ Flink type the module touches — `SchemaCoder`, `RegistryAvroSerializationSchem
 `RegistryAvroDeserializationSchema`, `MutableByteArrayInputStream` — is unchanged between the two
 releases, so 1.20 only widens what the module compiles against. See [flink.md](flink.md).
 
+The **runtime floor is Flink 1.19**, not 1.20: `AvroSerializationSchema.getEncoder()` returns
+`Encoder` from 1.19 on and `BinaryEncoder` before it, and the serialization schema calls it, so
+the compiled call site resolves to a signature a Flink 1.18 or earlier runtime does not have.
+
 Nothing published here declares an slf4j **binding**, only `slf4j-api`, so the logging stack
 in effect is the application's own. A Kafka Connect worker already provides both the API and a
 binding; a standalone application needs an slf4j 2.x binding of its own — `logback-classic`
