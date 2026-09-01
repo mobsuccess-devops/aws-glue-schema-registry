@@ -288,12 +288,14 @@ that surface small; none of them survive a careless rewrite, so check them befor
 - **`RepositoriesMode.FAIL_ON_PROJECT_REPOS`** in `settings.gradle.kts` turns a module
   declaring its own repository into an error rather than a silent addition to the
   resolution order.
-- **Dependabot is told to leave Flink alone.** The catalog pins `flink` at 1.12.2 because
-  `flink-streaming-java_2.11` exists under no later coordinate: the Scala suffix was dropped
-  upstream. Since both Flink artifacts share the same version reference, any bump Dependabot
-  proposed would either fail to resolve or dead-end at 1.14.6. The `ignore` entry on
-  `org.apache.flink:*` keeps that pull request from being opened; moving off 1.12.2 is a
-  deliberate migration, not a version bump.
+- **Dependabot may bump Flink, but not across a major.** The catalog used to pin `flink` at
+  1.12.2 because `flink-streaming-java_2.11` existed under no later coordinate — the Scala
+  suffix was dropped upstream — so every bump Dependabot could propose either failed to
+  resolve or dead-ended at 1.14.6, and `org.apache.flink:*` was ignored outright. That
+  reasoning expired with the move to 1.20.x LTS on the suffix-free coordinate: patches inside
+  the LTS line are ordinary bumps and are let through. The `ignore` entry is now scoped to
+  `version-update:semver-major`, because Flink 2.x drops APIs this module's consumers use and
+  is a deliberate migration rather than a version bump.
 - **Dependabot is told to leave Avro alone, for now.** `avro-kafkaconnect-converter` carries
   `src/main/kotlin/org/apache/avro/Schemas.kt`, a copy of an upstream helper that lives
   inside Avro's own package so it can reach `Schema.FACTORY`, `Schema.Names` and

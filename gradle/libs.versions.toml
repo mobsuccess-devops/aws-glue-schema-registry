@@ -8,7 +8,7 @@ awsSdkV2 = "2.53.1"
 mskIamAuth = "2.3.7"
 kafka = "3.9.2"
 avro = "1.11.4"
-flink = "1.12.2"
+flink = "1.20.5"
 protobufGencode = "4.33.2"
 protobufRuntime = "4.36.0"
 apicurio = "3.3.1"
@@ -104,7 +104,7 @@ kotlin-scriptingCompilerEmbeddable = { module = "org.jetbrains.kotlin:kotlin-scr
 
 # --- Flink ---
 flink-avro = { module = "org.apache.flink:flink-avro", version.ref = "flink" }
-flink-streamingJava = { module = "org.apache.flink:flink-streaming-java_2.11", version.ref = "flink" }
+flink-streamingJava = { module = "org.apache.flink:flink-streaming-java", version.ref = "flink" }
 
 # --- Utilities ---
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }

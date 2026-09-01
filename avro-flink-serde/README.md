@@ -1,4 +1,9 @@
-## This module is not recommended
+## Upstream README
+
+This is the README the module was forked with, kept as inherited reference. It describes the
+artifact as `awslabs` published it: those coordinates, that Flink version, and those examples
+are upstream's, not this fork's. For the fork, which targets Flink 1.20 LTS, see
+[docs/flink.md](../docs/flink.md).
 
 Please check out [Apache Flink](https://github.com/apache/flink)
 repository for the latest support: [Avro SerializationSchema and DeserializationSchema](https://github.com/apache/flink/tree/master/flink-formats/flink-avro-glue-schema-registry) and [JSON SerializationSchema and Deserialization](https://github.com/apache/flink/tree/master/flink-formats/flink-json-glue-schema-registry). Protobuf integration will be followed up soon.

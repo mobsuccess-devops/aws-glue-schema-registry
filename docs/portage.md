@@ -535,6 +535,32 @@ The only Java left in the repository is the Avro classes generated into the test
   that cannot take a security bump on protobuf has no path forward. The contract that still
   holds is the one that matters: the inherited suite runs green and has not shrunk.
 
+- **Flink 1.12.2 → 1.20.5, the LTS line.** The pom pins `flink.version` at 1.12.2 and takes
+  `org.apache.flink:flink-streaming-java_2.11`. That coordinate is a dead end: Flink dropped
+  the Scala suffix from `flink-streaming-java` after 1.14, so no later version of it exists,
+  and 1.12 last had a patch in 2021. The catalog now pins `flink` at 1.20.5 and takes the
+  suffix-free `org.apache.flink:flink-streaming-java`.
+
+  **No source changed.** Every Flink type the module touches is identical between the two
+  releases: `SchemaCoder` and `SchemaCoder.SchemaCoderProvider` declare the same two methods,
+  `RegistryAvroDeserializationSchema` and `RegistryAvroSerializationSchema` keep the
+  `(Class, Schema, SchemaCoderProvider)` constructor the module extends, and
+  `MutableByteArrayInputStream` is unchanged. 1.20 only adds `AvroFormatOptions.AvroEncoding`
+  overloads alongside them. The one signature that moved — `AvroSerializationSchema.getEncoder()`
+  returning `Encoder` rather than `BinaryEncoder` — is called for `flush()` only, which
+  `Encoder` declares. `avro-flink-serde/api/schema-registry-flink-serde.api` is unchanged, and
+  the module's 21 tests pass untouched.
+
+  Avro does not move with it. `flink-avro` carries a hard `org.apache.avro:avro` dependency,
+  and every Flink line through 2.3 pins it at 1.11.4 — the version this build was already on —
+  so 1.20 resolves the same Avro as 1.12.2 did.
+
+  Like the protobuf entry above, this is a deliberate step away from a version upstream still
+  pins rather than a conversion artefact. It is taken because 1.12.2 is unpatchable and its
+  Scala 2.11 coordinate is unbumpable, so a consumer on any supported Flink was already
+  overriding both. The contract that matters holds: the inherited suite runs green and has not
+  shrunk.
+
 - **`FieldDescriptor.hasOptionalKeyword()` reimplemented.** protobuf 4 made the method
   package-private. `ProtobufDataToConnectDataConverter` and
   `ProtobufSchemaToConnectSchemaConverter` both call it, so
