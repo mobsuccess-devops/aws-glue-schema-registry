@@ -48,9 +48,43 @@ class AvroSchemaTest {
         assertSame(canonicalString, avroSchema.canonicalString())
     }
 
+    @Test
+    fun testCanonicalString_withResolvedReference_rendersTheReferenceByName() {
+        val avroSchema = AvroSchema(REFERRING_DEFINITION, mapOf("com.example.Address" to ADDRESS_DEFINITION))
+
+        assertEquals(REFERRING_CANONICAL, avroSchema.canonicalString())
+    }
+
+    @Test
+    fun testCanonicalString_withoutResolvedReferences_inlinesTheReference() {
+        val parser = Schema.Parser()
+        parser.parse(ADDRESS_DEFINITION)
+
+        val avroSchema = AvroSchema(parser.parse(REFERRING_DEFINITION))
+
+        assertEquals(INLINED_CANONICAL, avroSchema.canonicalString())
+    }
+
     companion object {
         private const val SCHEMA_DEFINITION =
             """{"type":"record","name":"User","namespace":"com.example","fields":""" +
                 """[{"name":"name","type":"string"}]}"""
+
+        private const val ADDRESS_DEFINITION =
+            """{"type":"record","name":"Address","namespace":"com.example","fields":""" +
+                """[{"name":"city","type":"string"}]}"""
+
+        private const val REFERRING_DEFINITION =
+            """{"type":"record","name":"User","namespace":"com.example","fields":""" +
+                """[{"name":"name","type":"string"},{"name":"address","type":"com.example.Address"}]}"""
+
+        private const val REFERRING_CANONICAL =
+            """{"type":"record","name":"User","namespace":"com.example","fields":""" +
+                """[{"name":"name","type":"string"},{"name":"address","type":"Address"}]}"""
+
+        private const val INLINED_CANONICAL =
+            """{"type":"record","name":"User","namespace":"com.example","fields":""" +
+                """[{"name":"name","type":"string"},{"name":"address","type":{"type":"record",""" +
+                """"name":"Address","fields":[{"name":"city","type":"string"}]}}]}"""
     }
 }
