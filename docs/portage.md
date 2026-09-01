@@ -54,6 +54,16 @@ The only Java left in the repository is the Avro classes generated into the test
   only to expose a native library to the C# binding; with no consumer, it has no purpose.
 - **`build-tools` removed.** That module only held the Checkstyle configuration of the
   Maven build, replaced by ktlint.
+- **`org.apache.avro.Schemas` removed.** `avro-kafkaconnect-converter` carried
+  `src/main/kotlin/org/apache/avro/Schemas.kt`, Confluent's helper as Amazon inherited it:
+  a class placed inside Avro's own package so it could reach `Schema.FACTORY`,
+  `Schema.Names` and the package-private `schema.toJson(names, gen)`. Its whole body is a
+  transcription of `Schema.toString(Collection<Schema>, boolean)`, which has been **public**
+  since long before either fork — the hack was never needed. `AvroSchema.canonicalString`
+  now calls that method directly and the file is gone, which also stops the build publishing
+  a class into a package it does not own. The method carries `@Deprecated` from 1.12 on
+  ("should be removed with AVRO-2832"); depending on a deprecated public method is a
+  position the fork can hold, reaching into package-private internals was not.
 - **114 dormant JUnit 4 tests woken up.** `AvroDataTest` (105) and `AdditionalAvroDataTest`
   (9) were run by no engine under Maven, for lack of a `junit-vintage-engine`: they were
   silently skipped. They now run and all pass, taking `avro-kafkaconnect-converter` from

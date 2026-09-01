@@ -234,10 +234,3 @@ public final class com/amazonaws/services/schemaregistry/kafkaconnect/avrodata/S
 	public final fun validateLatest ()Lcom/amazonaws/services/schemaregistry/kafkaconnect/avrodata/SchemaValidator;
 }
 
-public final class org/apache/avro/Schemas {
-	public static final field INSTANCE Lorg/apache/avro/Schemas;
-	public static final fun toString (Lorg/apache/avro/Schema;Ljava/util/Collection;)Ljava/lang/String;
-	public static final fun toString (Lorg/apache/avro/Schema;Ljava/util/Collection;Z)Ljava/lang/String;
-	public static synthetic fun toString$default (Lorg/apache/avro/Schema;Ljava/util/Collection;ZILjava/lang/Object;)Ljava/lang/String;
-}
-
