@@ -15,6 +15,9 @@ updates:
       - dependency-name: "org.apache.flink:*"
         update-types:
           - version-update:semver-major
+      - dependency-name: "org.apache.kafka:*"
+        update-types:
+          - version-update:semver-major
       - dependency-name: "org.apache.avro:*"
         versions:
           - ">= 1.12.2"
