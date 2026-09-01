@@ -19,7 +19,6 @@ import org.apache.avro.Schema
 import org.apache.avro.SchemaValidationException
 import org.apache.avro.SchemaValidator
 import org.apache.avro.SchemaValidatorBuilder
-import org.apache.avro.Schemas
 import org.slf4j.LoggerFactory
 import java.util.Collections
 import java.util.Objects
@@ -91,7 +90,7 @@ class AvroSchema : ParsedSchema {
         if (canonicalString == null) {
             val parser = getParser()
             val schemaRefs = resolvedReferences.values.map { parser.parse(it) }
-            canonicalString = Schemas.toString(schemaObj, schemaRefs)
+            canonicalString = schemaObj.toString(schemaRefs, false)
         }
         return canonicalString
     }
