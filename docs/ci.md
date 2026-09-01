@@ -294,6 +294,14 @@ that surface small; none of them survive a careless rewrite, so check them befor
   proposed would either fail to resolve or dead-end at 1.14.6. The `ignore` entry on
   `org.apache.flink:*` keeps that pull request from being opened; moving off 1.12.2 is a
   deliberate migration, not a version bump.
+- **Dependabot is told to leave Avro alone, for now.** `avro-kafkaconnect-converter` carries
+  `src/main/kotlin/org/apache/avro/Schemas.kt`, a copy of an upstream helper that lives
+  inside Avro's own package so it can reach `Schema.FACTORY`, `Schema.Names` and
+  `schema.toJson(names, gen)` — all package-private. Avro 1.12 reworked those internals
+  (`Names` became a `Set<String>`, `toJson` changed signature), so a version bump alone does
+  not compile and Dependabot cannot re-port the file. The `ignore` entry on
+  `org.apache.avro:*` holds the group until the Flink 1.20 migration moves Avro with it;
+  **it is removed once that lands**, so Avro patches flow again.
 - **Dependency locking is deliberately absent.** The catalog fixes every direct version with
   no range and Maven Central is immutable, so resolution is already deterministic and a
   transitive only moves inside a reviewable commit. Lockfiles would add a manual
