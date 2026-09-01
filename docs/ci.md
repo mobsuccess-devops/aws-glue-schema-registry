@@ -296,14 +296,15 @@ that surface small; none of them survive a careless rewrite, so check them befor
   the LTS line are ordinary bumps and are let through. The `ignore` entry is now scoped to
   `version-update:semver-major`, because Flink 2.x drops APIs this module's consumers use and
   is a deliberate migration rather than a version bump.
-- **Dependabot is told to leave Avro alone, for now.** `avro-kafkaconnect-converter` carries
-  `src/main/kotlin/org/apache/avro/Schemas.kt`, a copy of an upstream helper that lives
-  inside Avro's own package so it can reach `Schema.FACTORY`, `Schema.Names` and
-  `schema.toJson(names, gen)` — all package-private. Avro 1.12 reworked those internals
-  (`Names` became a `Set<String>`, `toJson` changed signature), so a version bump alone does
-  not compile and Dependabot cannot re-port the file. The `ignore` entry on
-  `org.apache.avro:*` holds the group until the Flink 1.20 migration moves Avro with it;
-  **it is removed once that lands**, so Avro patches flow again.
+- **Dependabot is held off Avro 1.12.2 and later.** The build is on Avro 1.12.1, which is a
+  drop-in. 1.12.2 is not: it added `org.apache.avro.util.ClassSecurityValidator`, a
+  **default-deny allowlist** for every class Avro resolves out of a schema. Only sixteen
+  `java.lang` / `java.math` names are trusted and `org.apache.avro.SERIALIZABLE_PACKAGES` has no
+  default, so every `SpecificRecord` path throws `SecurityException` until the consuming
+  application sets that property — 130 failing tests here, and the same hardening is being
+  reported against Camel and Pulsar. Moving to it is a migration with a consumer-facing
+  contract change rather than a version bump, so the `ignore` entry is scoped to `>= 1.12.2`.
+  Patches below that line flow normally.
 - **Dependency locking is deliberately absent.** The catalog fixes every direct version with
   no range and Maven Central is immutable, so resolution is already deterministic and a
   transitive only moves inside a reviewable commit. Lockfiles would add a manual

@@ -16,6 +16,8 @@ updates:
         update-types:
           - version-update:semver-major
       - dependency-name: "org.apache.avro:*"
+        versions:
+          - ">= 1.12.2"
       - dependency-name: "com.google.protobuf:protoc"
     groups:
       kotlin:

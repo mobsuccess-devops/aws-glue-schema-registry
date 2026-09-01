@@ -54,6 +54,22 @@ The only Java left in the repository is the Avro classes generated into the test
   only to expose a native library to the C# binding; with no consumer, it has no purpose.
 - **`build-tools` removed.** That module only held the Checkstyle configuration of the
   Maven build, replaced by ktlint.
+- **Avro 1.11.4 → 1.12.1.** The pom pins `avro.version` at 1.10.2 and the fork had moved to
+  1.11.4 for the 1.11 line's security patches; 1.12.1 is the current line. Nothing under
+  `src/` changes and the inherited suite runs green untouched — the one thing that made the
+  bump impossible was the `org.apache.avro.Schemas` copy removed in the entry below, which
+  reached for internals 1.12 reworked.
+
+  **1.12.2 is deliberately not taken.** It adds `org.apache.avro.util.ClassSecurityValidator`,
+  a default-deny allowlist for every class Avro resolves out of a schema: sixteen `java.lang`
+  and `java.math` names are trusted, `org.apache.avro.SERIALIZABLE_PACKAGES` has no default,
+  and everything else raises `SecurityException`. That is 130 failing tests here, all of them
+  `SpecificRecord` paths, and it is green again the moment the property is set — so it is not a
+  fork defect but a contract change Avro pushes onto every consuming application. Camel and
+  Pulsar are reporting the same. Taking it means telling every consumer of these artifacts to
+  set a system property before their next deploy, which is a migration to schedule rather than
+  a patch to absorb, so `dependabot.yml` holds the group at `>= 1.12.2` until then.
+
 - **`org.apache.avro.Schemas` removed.** `avro-kafkaconnect-converter` carried
   `src/main/kotlin/org/apache/avro/Schemas.kt`, Confluent's helper as Amazon inherited it:
   a class placed inside Avro's own package so it could reach `Schema.FACTORY`,
