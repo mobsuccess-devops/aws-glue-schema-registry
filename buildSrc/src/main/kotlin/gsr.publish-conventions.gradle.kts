@@ -19,6 +19,11 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
             artifact(javadocJar)
+            versionMapping {
+                allVariants {
+                    fromResolutionResult()
+                }
+            }
             pom {
                 name.set(project.name)
                 description.set("AWS Glue Schema Registry — ${project.name} (fork Mobsuccess)")
