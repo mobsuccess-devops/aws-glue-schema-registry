@@ -6,7 +6,7 @@
 [versions]
 awsSdkV2 = "2.53.2"
 mskIamAuth = "2.3.7"
-kafka = "3.9.2"
+kafka = "4.3.1"
 avro = "1.12.1"
 flink = "1.20.5"
 protobufGencode = "4.33.2"
