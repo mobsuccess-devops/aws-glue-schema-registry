@@ -745,3 +745,17 @@ The only Java left in the repository is the Avro classes generated into the test
   by [@subramp](https://github.com/subramp), which fixes the same broken images by moving to
   the Confluent ZooKeeper and Kafka images; the fork follows its own CI instead, so that a
   local failure and a nightly failure mean the same thing.
+- **A missing `SPECIFIC_RECORD` class is named instead of failing on a cast.**
+  `DatumReaderInstance.from` resolved the reader class with
+  `SpecificData.get().getClass(writerSchema) as Class<SpecificRecord>`. `getClass` returns
+  `null` when the class generated from the schema is not on the classpath — the whole
+  premise of `SPECIFIC_RECORD` — and the Java source then threw a `NullPointerException`
+  from the implicit cast, which the Kotlin port turned into
+  `null cannot be cast to non-null type java.lang.Class<…SpecificRecord>`. Either way the
+  message names neither the schema nor the missing class, and it arrives wrapped in the
+  `AWSSchemaRegistryException` of `AvroDeserializer.deserialize`, two levels below the
+  configuration that caused it. The null is now checked and raises an
+  `AWSSchemaRegistryException` naming the schema's full name, the classpath requirement and
+  `avroRecordType=GENERIC_RECORD` as the way out. Only the exception type and the message
+  change: the same schema is rejected at the same point. This closes the remaining half of
+  [awslabs/aws-glue-schema-registry#101](https://github.com/awslabs/aws-glue-schema-registry/issues/101).
