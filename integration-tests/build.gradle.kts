@@ -46,7 +46,10 @@ dependencies {
     testImplementation(libs.jaxb.api)
     testImplementation(libs.jackson.annotations)
     testImplementation(libs.jackson.databind)
-    testImplementation(libs.mbknor.jsonSchema)
+    testImplementation(libs.mbknor.jsonSchema) {
+        exclude(group = "io.github.classgraph", module = "classgraph")
+    }
+    testRuntimeOnly(libs.classgraph)
     testImplementation(libs.aws.urlConnectionClient)
 
     // Classes generated from serializer-deserializer/src/test/proto, consumed through

@@ -226,6 +226,21 @@ that surface small; none of them survive a careless rewrite, so check them befor
   needs to run the build — so `dependency-submission.yml` splits the two, exactly as
   `ci.yml` splits `build` and `report`: `generate` resolves the graph with `contents: read`
   and uploads it as an artifact, `submit` posts that artifact and runs no repository code.
+- **The submitted graph covers the build's own tools, so their CVEs land as alerts too.**
+  `dependency-submission` resolves every configuration of every project plus `buildSrc`, and
+  a Gradle plugin drags its own transitives in: the alert then names `settings.gradle.kts`
+  with no hint that nothing it points at is published. Three chains produced fourteen open
+  alerts at once and are pinned down where each is resolved. `buildSrc` carries the
+  `jackson-bom` platform and constraints on `avro`, `avro-compiler`, `commons-lang3` and
+  `commons-compress`, which is what lifts `gradle-avro-plugin` 1.9.1 off Avro 1.11.3 —
+  hence the plugin being a `buildSrc` dependency applied by id rather than a catalog
+  `alias`, since only a dependency of a real project takes constraints.
+  `gsr.publish-conventions` constrains `dokkaJavadocGeneratorRuntime`, Dokka 2.2.0's
+  generator classpath, which is the last jsoup and the last Jackson 2.15 in the tree. And
+  `mbknor-jackson-jsonschema` pulls ClassGraph 4.8.21, excluded in every module that
+  declares it — `serializer-deserializer` did so from the start, the two test-only
+  consumers did not. Check a new alert against `./gradlew dependencyInsight` before
+  treating it as a runtime one; the resolved runtime classpaths carry none of these.
 - **CodeQL builds with `--no-build-cache`, and that flag is load-bearing.** `codeql.yml`
   analyses `java-kotlin` in manual build mode, which extracts code from the compiler
   invocations `./gradlew assemble` makes. On a branch that touches no source, the restored

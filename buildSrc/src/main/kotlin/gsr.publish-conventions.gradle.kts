@@ -1,9 +1,20 @@
+import org.gradle.accessors.dm.LibrariesForLibs
+
 plugins {
     `java-library`
     `maven-publish`
     signing
     id("org.jetbrains.dokka-javadoc")
     id("com.gradleup.nmcp")
+}
+
+val libs = the<LibrariesForLibs>()
+
+dependencies {
+    "dokkaJavadocGeneratorRuntime"(platform(libs.jackson.bom))
+    constraints {
+        add("dokkaJavadocGeneratorRuntime", libs.jsoup)
+    }
 }
 
 val javadocJar =

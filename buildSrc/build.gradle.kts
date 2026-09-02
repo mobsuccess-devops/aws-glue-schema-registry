@@ -12,6 +12,8 @@ dependencies {
     // convention plugins, which cannot reach them otherwise.
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 
+    implementation(platform(libs.jackson.bom))
+
     implementation(libs.licenseReport.plugin)
 
     implementation(libs.dokka.plugin)
@@ -20,4 +22,13 @@ dependencies {
 
     // Required to apply the Kotlin plugin from gsr.java-conventions.
     implementation(libs.kotlin.gradlePlugin)
+
+    implementation(libs.avro.gradlePlugin)
+
+    constraints {
+        implementation(libs.avro)
+        implementation(libs.avro.compiler)
+        implementation(libs.commons.lang3)
+        implementation(libs.commons.compress)
+    }
 }
