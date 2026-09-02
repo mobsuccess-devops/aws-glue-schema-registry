@@ -287,7 +287,13 @@ brings up the same stack the nightly run faces:
 
 ```bash
 docker compose -f integration-tests/docker-compose.yml up -d
+.github/scripts/wait-for-kafka.sh "$(docker compose -f integration-tests/docker-compose.yml ps -q kafka)"
 ```
+
+The second line is not optional. LocalStack and moto declare health checks, so `up -d` leaves
+them ready; the Kafka image ships none, and an open port is not the same as a broker able to
+serve metadata — which is why the workflow runs that same script before its own Gradle step.
+Starting the suite straight after `up -d` fails intermittently on the first producer.
 
 The file is kept in step with `.github/workflows/integration.yml` — same images, same
 versions, same environment, same health checks — and it is the only reason to prefer it over
