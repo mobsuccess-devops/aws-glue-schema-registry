@@ -28,6 +28,7 @@ import org.apache.kafka.connect.data.SchemaBuilder
 import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.data.Time
 import org.apache.kafka.connect.data.Timestamp
+import org.apache.kafka.connect.errors.DataException
 import org.apache.kafka.connect.json.DecimalFormat
 import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.BooleanSchema
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -910,6 +912,145 @@ class ToConnectTest {
         assertEquals(Schema.Type.STRUCT, connectSchema.type())
         assertEquals(JsonSchemaConverterConstants.JSON_SCHEMA_TYPE_ONEOF, connectSchema.name())
         assertEquals(2, connectSchema.fields().size)
+    }
+
+    @Test
+    fun testToConnect_constString_mapsToString() {
+        val fieldSchema = convertConstProperty("""{ "const": "US" }""", """"US"""")
+
+        assertEquals(Schema.Type.STRING, fieldSchema.type())
+    }
+
+    @Test
+    fun testToConnect_constInteger_mapsToInt64() {
+        val fieldSchema = convertConstProperty("""{ "const": 1 }""", "1")
+
+        assertEquals(Schema.Type.INT64, fieldSchema.type())
+    }
+
+    @Test
+    fun testToConnect_constNumber_mapsToFloat64() {
+        val fieldSchema = convertConstProperty("""{ "const": 1.5 }""", "1.5")
+
+        assertEquals(Schema.Type.FLOAT64, fieldSchema.type())
+    }
+
+    @Test
+    fun testToConnect_constBoolean_mapsToBoolean() {
+        val fieldSchema = convertConstProperty("""{ "const": true }""", "true")
+
+        assertEquals(Schema.Type.BOOLEAN, fieldSchema.type())
+    }
+
+    @Test
+    fun testToConnect_constObject_mapsToStruct() {
+        val fieldSchema =
+            convertConstProperty(
+                """{ "const": { "code": "US", "rank": 1 } }""",
+                """{ "code": "US", "rank": 1 }""",
+            )
+
+        assertEquals(Schema.Type.STRUCT, fieldSchema.type())
+        assertEquals(Schema.Type.STRING, fieldSchema.field("code").schema().type())
+        assertEquals(Schema.Type.INT64, fieldSchema.field("rank").schema().type())
+    }
+
+    @Test
+    fun testToConnect_constArray_mapsToArrayOfElementType() {
+        val fieldSchema = convertConstProperty("""{ "const": [ "a", "b" ] }""", """[ "a", "b" ]""")
+
+        assertEquals(Schema.Type.ARRAY, fieldSchema.type())
+        assertEquals(Schema.Type.STRING, fieldSchema.valueSchema().type())
+    }
+
+    @Test
+    fun testToConnect_constNestedObjectAndArray_mapsRecursively() {
+        val fieldSchema =
+            convertConstProperty(
+                """{ "const": { "name": "x", "tags": [ "a", "b" ] } }""",
+                """{ "name": "x", "tags": [ "a", "b" ] }""",
+            )
+
+        assertEquals(Schema.Type.STRUCT, fieldSchema.type())
+        assertEquals(Schema.Type.STRING, fieldSchema.field("name").schema().type())
+        assertEquals(Schema.Type.ARRAY, fieldSchema.field("tags").schema().type())
+        assertEquals(Schema.Type.STRING, fieldSchema.field("tags").schema().valueSchema().type())
+    }
+
+    @Test
+    fun testToConnect_constObjectValue_deserializesToStruct() {
+        val jsonSchema =
+            loadSchema(
+                """
+                {
+                    "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": { "region": { "const": { "code": "US", "rank": 1 } } },
+                    "additionalProperties": false
+                }
+                """.trimIndent(),
+            )
+        val jsonValue = ObjectMapper().readTree("""{ "region": { "code": "US", "rank": 1 } }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+        val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+
+        val region = (connectValue as Struct).get("region") as Struct
+        assertEquals("US", region.get("code"))
+        assertEquals(1L, region.get("rank"))
+    }
+
+    @Test
+    fun testToConnect_constEmptyArray_throwsClearError() {
+        val exception =
+            assertThrows(DataException::class.java) {
+                convertConstProperty("""{ "const": [] }""", "[]")
+            }
+
+        assertTrue(
+            exception.message!!.contains("empty 'const' array"),
+            "Unexpected message: ${exception.message}",
+        )
+    }
+
+    @Test
+    fun testToConnect_constHeterogeneousArray_throwsClearError() {
+        val exception =
+            assertThrows(DataException::class.java) {
+                convertConstProperty("""{ "const": [ "a", 1 ] }""", """[ "a", 1 ]""")
+            }
+
+        assertTrue(
+            exception.message!!.contains("heterogeneous 'const' array"),
+            "Unexpected message: ${exception.message}",
+        )
+    }
+
+    private fun convertConstProperty(
+        constDefinition: String,
+        valueDefinition: String,
+    ): Schema {
+        val jsonSchema =
+            loadSchema(
+                """
+                {
+                    "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": { "c": $constDefinition },
+                    "additionalProperties": false
+                }
+                """.trimIndent(),
+            )
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+
+        val jsonValue = ObjectMapper().readTree("""{ "c": $valueDefinition }""")
+        val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
+        ConnectSchema.validateValue(connectSchema, connectValue)
+
+        return connectSchema!!.field("c").schema()
     }
 
     private fun nullableSchema(types: String): String = """

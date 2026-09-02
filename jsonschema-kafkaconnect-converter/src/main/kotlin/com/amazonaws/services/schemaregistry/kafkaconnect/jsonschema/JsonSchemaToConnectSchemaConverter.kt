@@ -23,9 +23,11 @@ import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaBuilder
 import org.apache.kafka.connect.errors.DataException
 import org.everit.json.schema.CombinedSchema
+import org.everit.json.schema.ConstSchema
 import org.everit.json.schema.NullSchema
 import org.everit.json.schema.ReferenceSchema
 import org.json.JSONObject
+import java.math.BigInteger
 
 /**
  * Utilities for mapping between JSON Schema to Connect Schema.
@@ -64,6 +66,8 @@ class JsonSchemaToConnectSchemaConverter(
         val builder: SchemaBuilder
         if (typeConverter != null) {
             builder = typeConverter.toConnectSchema(effectiveSchema, jsonSchemaDataConfig)
+        } else if (effectiveSchema is ConstSchema) {
+            builder = inferSchemaFromConstValue(effectiveSchema.permittedValue)
         } else if (effectiveSchema is CombinedSchema) {
             val subSchemas = effectiveSchema.subschemas
             val hasNullSchema = subSchemas.any { it is NullSchema }
@@ -103,6 +107,56 @@ class JsonSchemaToConnectSchemaConverter(
     }
 
     private fun isVacuous(jsonSchema: org.everit.json.schema.Schema): Boolean = JSONObject(jsonSchema.toString()).isEmpty
+
+    private fun inferSchemaFromConstValue(value: Any?): SchemaBuilder = when (value) {
+        null -> throw DataException("Cannot infer a Connect schema for a JSON Schema 'const' with a null value")
+        is Boolean -> SchemaBuilder.bool()
+        is Int, is Long, is Short, is Byte, is BigInteger -> SchemaBuilder.int64()
+        is Number -> SchemaBuilder.float64()
+        is CharSequence -> SchemaBuilder.string()
+        is Map<*, *> -> inferStructFromConstValue(value)
+        is Collection<*> -> inferArrayFromConstValue(value)
+        else -> throw DataException("Unsupported JSON Schema 'const' value type: ${value.javaClass.name}")
+    }
+
+    private fun inferStructFromConstValue(map: Map<*, *>): SchemaBuilder {
+        val builder = SchemaBuilder.struct()
+        map.entries
+            .associate { (key, entryValue) -> key.toString() to entryValue }
+            .toSortedMap()
+            .forEach { (key, entryValue) ->
+                if (entryValue == null) {
+                    throw DataException(
+                        "Cannot infer a Connect schema for the 'const' object field '$key' because its value is null",
+                    )
+                }
+                builder.field(key, inferSchemaFromConstValue(entryValue).build())
+            }
+        return builder
+    }
+
+    private fun inferArrayFromConstValue(collection: Collection<*>): SchemaBuilder {
+        if (collection.isEmpty()) {
+            throw DataException("Cannot infer a Connect element schema for an empty 'const' array")
+        }
+
+        var elementSchema: Schema? = null
+        collection.forEach { element ->
+            if (element == null) {
+                throw DataException("Cannot infer a Connect schema for a null element in a 'const' array")
+            }
+            val candidate = inferSchemaFromConstValue(element).build()
+            if (elementSchema == null) {
+                elementSchema = candidate
+            } else if (elementSchema != candidate) {
+                throw DataException(
+                    "Cannot convert a heterogeneous 'const' array to a Connect ARRAY; all elements must have " +
+                        "the same type, but found ${elementSchema!!.type()} and ${candidate.type()}",
+                )
+            }
+        }
+        return SchemaBuilder.array(elementSchema)
+    }
 
     private fun buildOptionalUnionSchema(subSchemas: Collection<org.everit.json.schema.Schema>): Schema? {
         val nonNullSubSchemas = subSchemas.filter { it !is NullSchema }
