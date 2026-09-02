@@ -728,3 +728,20 @@ The only Java left in the repository is the Avro classes generated into the test
   read by the Avro converter alone; the upstream TODO next to it, "add this feature to all other
   converters", is still open, so the JSON Schema and Protobuf converters have no such line to
   fix, and this change does not add the feature to them.
+- **`integration-tests/docker-compose.yml` mirrors the CI service set.** The inherited file
+  described the stack the Maven build used in 2021: `public.ecr.aws/bitnami/zookeeper` and
+  `public.ecr.aws/bitnami/kafka:2.8`, images Bitnami withdrew from its public catalogue, so
+  `docker compose up` failed on the pull. It also carried a `zookeeper` port mapping of
+  `2181:2182`, which had never pointed at the ZooKeeper client port. The fork's own
+  integration stack has meanwhile been written down twice — once in
+  `.github/workflows/integration.yml`, once as `docker run` lines in
+  [build.md](build.md#running-the-suite-locally) — and the compose file matched neither. It is
+  now the workflow's three services and nothing else: `apache/kafka:3.9.1` in KRaft mode (so
+  no ZooKeeper at all), `localstack/localstack:3.8` with `sts` in `SERVICES`, and
+  `motoserver/moto:5.2.2` for the Glue calls, with the same health checks. The obsolete
+  `version:` key and the `links:` block go with them — Compose v2 ignores the first and
+  supersedes the second. This adopts the intent of
+  [awslabs/aws-glue-schema-registry#534](https://github.com/awslabs/aws-glue-schema-registry/pull/534)
+  by [@subramp](https://github.com/subramp), which fixes the same broken images by moving to
+  the Confluent ZooKeeper and Kafka images; the fork follows its own CI instead, so that a
+  local failure and a nightly failure mean the same thing.
