@@ -759,3 +759,19 @@ The only Java left in the repository is the Avro classes generated into the test
   `avroRecordType=GENERIC_RECORD` as the way out. Only the exception type and the message
   change: the same schema is rejected at the same point. This closes the remaining half of
   [awslabs/aws-glue-schema-registry#101](https://github.com/awslabs/aws-glue-schema-registry/issues/101).
+- **A single-type `allOf` is unwrapped instead of read as a union.** everit loads a schema by
+  keyword group, so `format` — a string keyword — pulls a `StringSchema` out of any schema
+  that carries it, whatever the declared type. `{"type": "integer", "format": "int64"}` loads
+  as `CombinedSchema allOf [StringSchema {}, NumberSchema integer]`, and the extra subschema
+  is an artefact of that split: it constrains nothing, since everit builds it with
+  `requiresString` false. `JsonSchemaToConnectSchemaConverter` treated every `CombinedSchema`
+  as a union, so the field became a `…Oneof` struct with two _required_ branches, and the
+  first record failed with
+  `DataException: Did not find matching union field for data: 1627335205`.
+  `allOf` is a conjunction, not a union, so it is now reduced first: subschemas
+  that carry no keyword at all are dropped, and a conjunction left with exactly one subschema
+  is replaced by it. The reduction feeds the type converter only — `connect.type`,
+  `connect.name`, `connect.doc`, `connect.version`, `connect.parameters` and `default` are
+  read from the outer schema as before, which is where everit puts them. An `allOf` with two
+  subschemas that do carry keywords is untouched, and so is every `oneOf` and `anyOf`. This is
+  [awslabs/aws-glue-schema-registry#369](https://github.com/awslabs/aws-glue-schema-registry/issues/369).
