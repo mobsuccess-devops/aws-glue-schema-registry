@@ -26,6 +26,7 @@ ignored.
 | `compression`                         | string (enum)                  | `NONE`                                    | serializer             | `NONE` or `ZLIB`. The consumer reads either: the choice is recorded in the record header.                                                                                                                                                          |
 | `dataFormat`                          | string (enum)                  | none                                      | serializer             | `AVRO`, `JSON` or `PROTOBUF`. A producer on the format-agnostic serializer has to set it; a consumer reads the format from the record header. Each Connect converter accepts only its own format.                                                  |
 | `avroRecordType`                      | string (enum)                  | `GENERIC_RECORD`                          | deserializer           | `GENERIC_RECORD` or `SPECIFIC_RECORD`. Case-sensitive.                                                                                                                                                                                             |
+| `avroReaderSchema`                    | string (Avro schema)           | none                                      | deserializer           | Opt-in reader schema the `GENERIC_RECORD` path resolves records against, for projection and evolution. Ignored by `SPECIFIC_RECORD` and by the Avro Connect converter — see [Avro reader schema](#avro-reader-schema).                             |
 | `protobufMessageType`                 | string (enum)                  | none                                      | deserializer           | `DYNAMIC_MESSAGE` or `POJO`. Case-sensitive.                                                                                                                                                                                                       |
 | `jsonSchemaNullableEnabled`           | boolean                        | `false`                                   | serializer             | Generates `oneOf [null, type]` for an optional field when a schema is **derived from a POJO**. No effect through the Kafka Connect converter, which supplies its own schema. Off by default: it changes the schema text, hence the schema version. |
 | `jsonSchemaCompatibilityCheckEnabled` | boolean                        | `false`                                   | serializer             | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only, under the local mode — [limits](#limits-of-the-json-compatibility-check).   |
@@ -142,6 +143,39 @@ The map shape is not reachable from a Kafka Connect worker properties file: the 
 these keys as `ConfigDef.Type.LIST`, and a properties file has no map syntax — the same reason
 `tags` and `metadata` are absent from the `ConfigDef`. A converter configured programmatically
 accepts either shape.
+
+## Avro reader schema
+
+By default a `GENERIC_RECORD` deserializer reads every record under the schema its producer
+wrote, so a consumer sees whatever the registry's writer schema happens to contain that day.
+`avroReaderSchema` sets a **reader schema** instead, and Avro's schema resolution runs between
+the two:
+
+```java
+configs.put(AWSSchemaRegistryConstants.AVRO_READER_SCHEMA, Files.readString(Path.of("user-v1.avsc")));
+```
+
+The returned `GenericRecord` then carries the reader schema, not the writer one. A field the
+reader schema omits is skipped; a field it adds is filled from that field's default; a field
+whose type widened is promoted. This is the projection and evolution behaviour a Confluent
+`KafkaAvroDeserializer` gives through `specific.avro.reader` / a supplied reader schema, and it
+means a consumer can pin the shape it compiles against rather than tracking the producer.
+
+The value is a schema **definition**, the JSON text, not a file path. It is parsed once when the
+configuration is built, so a malformed schema is rejected at construction rather than on the
+first record. A reader schema that Avro cannot resolve against a given writer schema fails on the
+record that uses that writer schema, with Avro's own resolution error.
+
+The key is deliberately not read anywhere else:
+
+- **`SPECIFIC_RECORD` ignores it.** That path already has a reader schema: the one carried by the
+  generated class it resolves from the writer schema.
+- **The Avro Kafka Connect converter ignores it**, and it is absent from the converter's
+  `ConfigDef`. `AWSKafkaAvroConverter` builds the Connect schema from the **writer** definition it
+  reads back from the registry, not from the record it was handed. Projecting the record without
+  projecting the Connect schema would hand Connect a record and a schema that disagree, so the key
+  would have to move the converter's schema extraction too — a larger change than this key, and
+  one Connect users can already make with a Single Message Transform.
 
 ## Limits of the JSON compatibility check
 

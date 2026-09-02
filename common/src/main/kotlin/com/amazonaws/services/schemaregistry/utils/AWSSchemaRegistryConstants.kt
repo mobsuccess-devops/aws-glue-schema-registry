@@ -37,6 +37,7 @@ object AWSSchemaRegistryConstants {
     const val CACHE_SIZE = "cacheSize"
     const val DEFAULT_CACHE_SIZE = 200
     const val AVRO_RECORD_TYPE = "avroRecordType"
+    const val AVRO_READER_SCHEMA = "avroReaderSchema"
     const val PROTOBUF_MESSAGE_TYPE = "protobufMessageType"
     const val REGISTRY_NAME = "registry.name"
     const val DEFAULT_REGISTRY_NAME = "default-registry"

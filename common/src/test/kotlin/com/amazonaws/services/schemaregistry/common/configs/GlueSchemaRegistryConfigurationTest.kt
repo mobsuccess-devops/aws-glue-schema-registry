@@ -42,6 +42,9 @@ import java.util.Properties
 class GlueSchemaRegistryConfigurationTest {
     private val configs = HashMap<String, Any>()
 
+    private val userReaderSchema =
+        """{"type":"record","name":"User","namespace":"test","fields":[{"name":"name","type":"string"}]}"""
+
     /**
      * Sets up test data before each test is run.
      */
@@ -418,6 +421,51 @@ class GlueSchemaRegistryConfigurationTest {
         assertEquals(
             "Configuration property ${AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES} " +
                 "must only contain String entries, not a java.lang.Integer",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_avroReaderSchema_isKeptAsGiven() {
+        configs[AWSSchemaRegistryConstants.AVRO_READER_SCHEMA] = userReaderSchema
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(userReaderSchema, configuration.avroReaderSchema)
+    }
+
+    @Test
+    fun testBuildConfig_noAvroReaderSchema_leavesItUnset() {
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertNull(configuration.avroReaderSchema)
+    }
+
+    @Test
+    fun testBuildConfig_avroReaderSchemaNotParseable_throwsNamedException() {
+        configs[AWSSchemaRegistryConstants.AVRO_READER_SCHEMA] = """{"type":"record"}"""
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertTrue(
+            exception.message!!.startsWith(
+                "Configuration property ${AWSSchemaRegistryConstants.AVRO_READER_SCHEMA} is not a valid Avro schema",
+            ),
+            "Unexpected message: ${exception.message}",
+        )
+    }
+
+    @Test
+    fun testBuildConfig_avroReaderSchemaNotAString_throwsNamedException() {
+        configs[AWSSchemaRegistryConstants.AVRO_READER_SCHEMA] = 1
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.AVRO_READER_SCHEMA} must be a String, " +
+                "not a java.lang.Integer",
             exception.message,
         )
     }

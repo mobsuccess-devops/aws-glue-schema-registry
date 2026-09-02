@@ -833,3 +833,21 @@ The only Java left in the repository is the Avro classes generated into the test
   two keys directly for its own `ObjectMapper` and accepts both shapes there too, rather than
   failing on a cast. This is
   [awslabs/aws-glue-schema-registry#325](https://github.com/awslabs/aws-glue-schema-registry/issues/325).
+- **A reader schema can be set for the generic Avro deserializer.** `DatumReaderInstance` built
+  its `GENERIC_RECORD` reader as `GenericDatumReader(writerSchema)`, so a consumer read every
+  record under whatever schema its producer wrote and had no way to pin the shape its own code
+  compiles against — the projection and evolution a Confluent `KafkaAvroDeserializer` gives for
+  free. The opt-in `avroReaderSchema` key takes an Avro schema definition, parsed and rejected by
+  name at configuration time, and the generic branch then builds
+  `GenericDatumReader(writerSchema, readerSchema)`. Unset — the default — nothing changes: the
+  same one-argument reader is built and the records come back under the writer schema. The
+  three-argument `DatumReaderInstance.from` carries `@JvmOverloads`, so the two-argument entry
+  point stays in the ABI. The datum-reader cache is keyed on the writer definition alone, which
+  stays correct because the reader schema belongs to the configuration and the cache belongs to
+  the `AvroDeserializer` instance the `GlueSchemaRegistryDeserializerFactory` of one facade
+  creates — one configuration, one cache. `SPECIFIC_RECORD` ignores the key, having a reader
+  schema already, and so does the Avro Connect converter, which builds its Connect schema from
+  the writer definition it reads back from the registry rather than from the record: projecting
+  one without the other would hand Connect a record and a schema that disagree, so the key is
+  absent from that converter's `ConfigDef`. This is
+  [awslabs/aws-glue-schema-registry#38](https://github.com/awslabs/aws-glue-schema-registry/issues/38).

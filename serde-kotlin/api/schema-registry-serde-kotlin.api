@@ -13,6 +13,7 @@ public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistry {
 public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfigBuilder {
 	public final fun build ()Ljava/util/Map;
 	public final fun getAutoRegistration ()Ljava/lang/Boolean;
+	public final fun getAvroReaderSchema ()Ljava/lang/String;
 	public final fun getAvroRecordType ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
 	public final fun getCacheSize ()Ljava/lang/Integer;
 	public final fun getCacheTimeToLiveMillis ()Ljava/lang/Long;
@@ -41,6 +42,7 @@ public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfig
 	public final fun metadata (Ljava/util/Map;)V
 	public final fun property (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun setAutoRegistration (Ljava/lang/Boolean;)V
+	public final fun setAvroReaderSchema (Ljava/lang/String;)V
 	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
 	public final fun setCacheSize (Ljava/lang/Integer;)V
 	public final fun setCacheTimeToLiveMillis (Ljava/lang/Long;)V

@@ -192,6 +192,20 @@ class GlueSchemaRegistryConfigBuilderTest {
     }
 
     @Test
+    fun testAvroReaderSchema_isHandedOverAsTheSchemaDefinition() {
+        val readerSchema =
+            """{"type":"record","name":"User","namespace":"test","fields":[{"name":"name","type":"string"}]}"""
+
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                avroReaderSchema = readerSchema
+            }
+
+        assertEquals(readerSchema, configuration.avroReaderSchema)
+    }
+
+    @Test
     fun testAllowlist_acceptsNamesAndClasses() {
         val fromNames =
             glueSchemaRegistryConfiguration {

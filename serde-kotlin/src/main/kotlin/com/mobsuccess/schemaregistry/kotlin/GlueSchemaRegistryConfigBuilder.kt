@@ -103,6 +103,14 @@ public class GlueSchemaRegistryConfigBuilder internal constructor() {
         get() = (properties[AWSSchemaRegistryConstants.AVRO_RECORD_TYPE] as String?)?.let(AvroRecordType::valueOf)
         set(value) = put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, value?.name)
 
+    /**
+     * Avro reader schema the `GENERIC_RECORD` deserializer resolves records against, as a JSON
+     * schema definition. Unset, records come back under the writer schema.
+     */
+    public var avroReaderSchema: String?
+        get() = properties[AWSSchemaRegistryConstants.AVRO_READER_SCHEMA] as String?
+        set(value) = put(AWSSchemaRegistryConstants.AVRO_READER_SCHEMA, value)
+
     /** Protobuf message representation handed to the application. */
     public var protobufMessageType: ProtobufMessageType?
         get() = (properties[AWSSchemaRegistryConstants.PROTOBUF_MESSAGE_TYPE] as String?)

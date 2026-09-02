@@ -188,6 +188,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public fun <init> (Ljava/util/Map;)V
 	public fun <init> (Ljava/util/Properties;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAvroReaderSchema ()Ljava/lang/String;
 	public final fun getAvroRecordType ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
 	public final fun getCacheSize ()I
 	public final fun getCompatibilitySetting ()Lsoftware/amazon/awssdk/services/glue/model/Compatibility;
@@ -214,6 +215,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun isJsonSchemaCompatibilityCheckEnabled ()Z
 	public final fun isJsonSchemaNullableEnabled ()Z
 	public final fun isSchemaAutoRegistrationEnabled ()Z
+	public final fun setAvroReaderSchema (Ljava/lang/String;)V
 	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
 	public final fun setCacheSize (I)V
 	public final fun setCompatibilitySetting (Lsoftware/amazon/awssdk/services/glue/model/Compatibility;)V
@@ -280,6 +282,7 @@ public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistry
 	public static final field ASSUME_ROLE_ARN Ljava/lang/String;
 	public static final field ASSUME_ROLE_SESSION_NAME Ljava/lang/String;
 	public static final field AUTO_REGISTRATION_IS_DISABLED_MSG Ljava/lang/String;
+	public static final field AVRO_READER_SCHEMA Ljava/lang/String;
 	public static final field AVRO_RECORD_TYPE Ljava/lang/String;
 	public static final field AWS_ENDPOINT Ljava/lang/String;
 	public static final field AWS_REGION Ljava/lang/String;

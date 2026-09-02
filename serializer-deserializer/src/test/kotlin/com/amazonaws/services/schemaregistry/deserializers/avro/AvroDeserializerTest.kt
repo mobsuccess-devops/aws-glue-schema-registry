@@ -29,6 +29,7 @@ import com.amazonaws.services.schemaregistry.utils.RecordGenerator
 import com.amazonaws.services.schemaregistry.utils.SchemaLoader
 import com.amazonaws.services.schemaregistry.utils.SerializedByteArrayGenerator
 import com.amazonaws.services.schemaregistry.utils.nullOf
+import org.apache.avro.AvroRuntimeException
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.util.Utf8
@@ -317,6 +318,78 @@ class AvroDeserializerTest {
         assertGenericRecord(genericRecord, deserializedObject)
         // Assert the instance is getting cached.
         assertEquals(1, avroDeserializer.getDatumReaderCache().size())
+    }
+
+    @Test
+    fun testDeserialize_genericRecordWithReaderSchema_projectsOntoTheReaderSchema() {
+        val genericRecord = RecordGenerator.createGenericAvroRecord()
+
+        val serializedData =
+            createBasicSerializedData(genericRecord, AWSSchemaRegistryConstants.COMPRESSION.NONE.name, DataFormat.AVRO)
+        val writerSchema = SchemaLoader.loadAvroSchema(AVRO_USER_SCHEMA_FILE)
+        val readerSchema = SchemaLoader.loadAvroSchema(AVRO_USER_READER_PROJECTION_SCHEMA_FILE)
+        val avroDeserializer = createAvroDeserializerWithReaderSchema(readerSchema.toString())
+
+        val schemaObject = Schema(writerSchema.toString(), DataFormat.AVRO.name, "testAvroSchema")
+        val deserializedObject = avroDeserializer.deserialize(serializedData, schemaObject)
+
+        assertTrue(deserializedObject is GenericRecord)
+        val deserializedRecord = deserializedObject as GenericRecord
+        assertEquals(readerSchema, deserializedRecord.schema)
+        assertEquals(1, deserializedRecord.schema.fields.size)
+        assertEquals(Utf8("sansa"), deserializedRecord.get("name"))
+        assertThrows(AvroRuntimeException::class.java) { deserializedRecord.get("favorite_number") }
+    }
+
+    @Test
+    fun testDeserialize_genericRecordWithoutReaderSchema_keepsTheWriterSchema() {
+        val genericRecord = RecordGenerator.createGenericAvroRecord()
+
+        val serializedData =
+            createBasicSerializedData(genericRecord, AWSSchemaRegistryConstants.COMPRESSION.NONE.name, DataFormat.AVRO)
+        val writerSchema = SchemaLoader.loadAvroSchema(AVRO_USER_SCHEMA_FILE)
+        val avroDeserializer = createAvroDeserializer(AvroRecordType.GENERIC_RECORD)
+
+        val schemaObject = Schema(writerSchema.toString(), DataFormat.AVRO.name, "testAvroSchema")
+        val deserializedObject = avroDeserializer.deserialize(serializedData, schemaObject)
+
+        assertEquals(writerSchema, (deserializedObject as GenericRecord).schema)
+        assertEquals(genericRecord, deserializedObject)
+    }
+
+    @Test
+    fun testDeserialize_readerSchemaIsPerDeserializerInstance_soTheDatumReaderCacheStaysValid() {
+        val genericRecord = RecordGenerator.createGenericAvroRecord()
+
+        val serializedData =
+            createBasicSerializedData(genericRecord, AWSSchemaRegistryConstants.COMPRESSION.NONE.name, DataFormat.AVRO)
+        val writerSchema = SchemaLoader.loadAvroSchema(AVRO_USER_SCHEMA_FILE)
+        val readerSchema = SchemaLoader.loadAvroSchema(AVRO_USER_READER_PROJECTION_SCHEMA_FILE)
+        val schemaObject = Schema(writerSchema.toString(), DataFormat.AVRO.name, "testAvroSchema")
+
+        val projecting = createAvroDeserializerWithReaderSchema(readerSchema.toString())
+        val plain = createAvroDeserializer(AvroRecordType.GENERIC_RECORD)
+
+        val projected = projecting.deserialize(serializedData, schemaObject)
+        val whole = plain.deserialize(serializedData, schemaObject)
+
+        assertEquals(readerSchema, (projected as GenericRecord).schema)
+        assertEquals(writerSchema, (whole as GenericRecord).schema)
+        assertEquals(1, projecting.getDatumReaderCache().size())
+        assertEquals(1, plain.getDatumReaderCache().size())
+        assertTrue(projecting.getDatumReaderCache() !== plain.getDatumReaderCache())
+    }
+
+    private fun createAvroDeserializerWithReaderSchema(readerSchemaDefinition: String): AvroDeserializer {
+        val readerConfigs = HashMap(configs)
+        readerConfigs[AWSSchemaRegistryConstants.AVRO_READER_SCHEMA] = readerSchemaDefinition
+        val avroDeserializer =
+            AvroDeserializer
+                .builder()
+                .configs(GlueSchemaRegistryConfiguration(readerConfigs))
+                .build()
+        avroDeserializer.avroRecordType = AvroRecordType.GENERIC_RECORD
+        return avroDeserializer
     }
 
     fun assertGenericRecord(
@@ -850,6 +923,7 @@ class AvroDeserializerTest {
 
     companion object {
         const val AVRO_USER_SCHEMA_FILE = "src/test/resources/avro/user.avsc"
+        const val AVRO_USER_READER_PROJECTION_SCHEMA_FILE = "src/test/resources/avro/user_reader_projection.avsc"
         const val AVRO_USER_ENUM_SCHEMA_FILE = "src/test/resources/avro/user_enum.avsc"
         const val AVRO_USER_ARRAY_SCHEMA_FILE = "src/test/resources/avro/user_array.avsc"
         const val AVRO_USER_UNION_SCHEMA_FILE = "src/test/resources/avro/user_union.avsc"
