@@ -4,7 +4,7 @@
 # reason to move them — a security fix, most often — and `git diff eed1506` still shows
 # every such deviation.
 [versions]
-awsSdkV2 = "2.53.2"
+awsSdkV2 = "2.53.3"
 mskIamAuth = "2.3.7"
 kafka = "3.9.2"
 avro = "1.12.1"
