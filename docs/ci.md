@@ -70,12 +70,20 @@ first means a failure there leaves nothing published anywhere, and a re-run star
 
   The account password is never one of them: the Portal issues a token pair for publishing.
 
-- **A release waits for a human in the Portal.** `publishingType` defaults to `USER_MANAGED`:
-  the upload is validated automatically, then the deployment sits in
-  [Deployments](https://central.sonatype.com/publishing/deployments) until a maintainer
-  presses **Publish**. Passing `-PcentralPublishingType=AUTOMATIC` releases without that
-  click; the workflow does not, on purpose, and flipping it is a one-word change once a few
-  releases have gone through.
+- **A release publishes without a human step.** `publishingType` defaults to `AUTOMATIC`: the
+  bundle is uploaded, validated and published, and the task waits for the deployment to reach
+  `PUBLISHED` before the job moves on — so a green `publish-release` means the version landed
+  on Central, and a red one means it did not. Passing `-PcentralPublishingType=USER_MANAGED`
+  restores the manual gate, parking the deployment in
+  [Deployments](https://central.sonatype.com/publishing/deployments) for a maintainer to press
+  **Publish**.
+
+  What that gives up is worth stating, because nothing else covers it: the portal screen was
+  the last place to catch a **wrong version number** before it became permanent. `version.sh`
+  derives the version from the pull request title, and a title with no recognized prefix
+  silently yields a patch bump — a mistake no test can see and Central cannot undo, since a
+  published version is never replaced or removed. Automatic publishing trades that one check
+  for one less step.
 
 - **The bundle can be built and checked without publishing anything.**
 
