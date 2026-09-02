@@ -785,7 +785,10 @@ The only Java left in the repository is the Avro classes generated into the test
   `ARRAY` of its homogeneous element type. The cases with no inferable type — an empty
   `const` array, a heterogeneous one, a null value or null object field — raise a
   `DataException` naming which of them it is, rather than deferring the failure to the value
-  path. Inferring the type is all this does: Connect's schema model has no equality
+  path. The heterogeneous-array message deviates from the ported patch: that one compares whole
+  schemas but reports `.type()`, so two objects differing only in their fields read as "found
+  STRUCT and STRUCT". It now names the offending element's position and renders both shapes —
+  `element 2 is STRUCT{b: STRING} where the first is STRUCT{a: INT64}`. Inferring the type is all this does: Connect's schema model has no equality
   constraint, so the `const` **constraint** is neither enforced nor round-tripped back, which
   is how the converter already treats `pattern`, `minimum` and `format`. This is a port of
   [awslabs/aws-glue-schema-registry#527](https://github.com/awslabs/aws-glue-schema-registry/pull/527)

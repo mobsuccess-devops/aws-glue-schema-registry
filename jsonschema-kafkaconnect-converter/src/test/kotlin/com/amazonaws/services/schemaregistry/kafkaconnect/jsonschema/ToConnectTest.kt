@@ -1022,9 +1022,27 @@ class ToConnectTest {
                 convertConstProperty("""{ "const": [ "a", 1 ] }""", """[ "a", 1 ]""")
             }
 
-        assertTrue(
-            exception.message!!.contains("heterogeneous 'const' array"),
-            "Unexpected message: ${exception.message}",
+        assertEquals(
+            "Cannot convert a heterogeneous 'const' array to a Connect ARRAY; all elements must have " +
+                "the same schema, but element 2 is INT64 where the first is STRING",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testToConnect_constArrayOfDifferentStructs_namesBothShapes() {
+        val exception =
+            assertThrows(DataException::class.java) {
+                convertConstProperty(
+                    """{ "const": [ { "a": 1 }, { "b": "x" } ] }""",
+                    """[ { "a": 1 }, { "b": "x" } ]""",
+                )
+            }
+
+        assertEquals(
+            "Cannot convert a heterogeneous 'const' array to a Connect ARRAY; all elements must have " +
+                "the same schema, but element 2 is STRUCT{b: STRING} where the first is STRUCT{a: INT64}",
+            exception.message,
         )
     }
 

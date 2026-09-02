@@ -141,7 +141,7 @@ class JsonSchemaToConnectSchemaConverter(
         }
 
         var elementSchema: Schema? = null
-        collection.forEach { element ->
+        collection.forEachIndexed { index, element ->
             if (element == null) {
                 throw DataException("Cannot infer a Connect schema for a null element in a 'const' array")
             }
@@ -151,11 +151,20 @@ class JsonSchemaToConnectSchemaConverter(
             } else if (elementSchema != candidate) {
                 throw DataException(
                     "Cannot convert a heterogeneous 'const' array to a Connect ARRAY; all elements must have " +
-                        "the same type, but found ${elementSchema!!.type()} and ${candidate.type()}",
+                        "the same schema, but element ${index + 1} is ${describeInferredSchema(candidate)} " +
+                        "where the first is ${describeInferredSchema(elementSchema!!)}",
                 )
             }
         }
         return SchemaBuilder.array(elementSchema)
+    }
+
+    private fun describeInferredSchema(schema: Schema): String = when (schema.type()) {
+        Schema.Type.STRUCT ->
+            schema.fields().joinToString(", ", "STRUCT{", "}") { "${it.name()}: ${describeInferredSchema(it.schema())}" }
+
+        Schema.Type.ARRAY -> "ARRAY<${describeInferredSchema(schema.valueSchema())}>"
+        else -> schema.type().toString()
     }
 
     private fun buildOptionalUnionSchema(subSchemas: Collection<org.everit.json.schema.Schema>): Schema? {
