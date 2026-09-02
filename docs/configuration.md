@@ -99,6 +99,7 @@ can go wrong fail at different moments:
 
 The second case is only reached when `schemaName` is unset, since an explicit `schemaName`
 wins over any strategy.
+
 ## Enabling and disabling Jackson features
 
 `jacksonSerializationFeatures` and `jacksonDeserializationFeatures` take two shapes.
@@ -128,8 +129,9 @@ glueSchemaRegistryConfiguration {
 ```
 
 The two shapes are mutually exclusive per key: the value is one or the other. A value that is
-neither is rejected at configuration time, and so is a map entry whose value is not a boolean —
-`"true"` and `"false"` are accepted as strings, nothing else is.
+neither is rejected at configuration time, and so is a map entry whose value is not a boolean.
+`"true"` and `"false"` are accepted as strings, nothing else is; the error names both accepted
+shapes and quotes the value it was given.
 
 Both keys are applied to the JSON serializer **and** to the JSON deserializer, whichever shape is
 used. A feature only takes effect on its own side of Jackson, so the cross-application is inert;

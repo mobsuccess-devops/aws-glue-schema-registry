@@ -826,8 +826,8 @@ The only Java left in the repository is the Avro classes generated into the test
   accepted before is rejected. Two error messages change — "Jackson Serialization features should
   be a list" now reads "…should be a list of names, or a map of name to boolean" (likewise for
   deserialization), since a list is no longer the only right answer — and a map entry whose value
-  is neither a boolean nor `"true"`/`"false"` is rejected by name, in the style of the other
-  configuration errors. The Connect `ConfigDef` still declares both keys as `Type.LIST`: a
+  is neither a boolean nor `"true"`/`"false"` is rejected with a message that states both
+  accepted shapes and quotes the value it got, in the style of the other configuration errors. The Connect `ConfigDef` still declares both keys as `Type.LIST`: a
   properties file has no map syntax, so the map shape is reachable only from a programmatic
   configuration, which is also where `tags` and `metadata` stand. `JsonSchemaConverter` reads the
   two keys directly for its own `ObjectMapper` and accepts both shapes there too, rather than

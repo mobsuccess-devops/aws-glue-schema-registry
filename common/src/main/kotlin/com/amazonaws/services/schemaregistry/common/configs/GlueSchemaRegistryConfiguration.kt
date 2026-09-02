@@ -444,7 +444,8 @@ class GlueSchemaRegistryConfiguration {
             return entry.toBoolean()
         }
         throw AWSSchemaRegistryException(
-            "Configuration property $key must only map to Boolean values, not ${describeType(entry)}",
+            "Configuration property $key must only map to a Boolean, or to \"true\" or \"false\"; " +
+                "got ${describeValue(entry)}",
         )
     }
 
@@ -477,6 +478,8 @@ class GlueSchemaRegistryConfiguration {
     }
 
     private fun describeType(value: Any?): String = if (value == null) "null" else "a ${value.javaClass.name}"
+
+    private fun describeValue(value: Any?): String = if (value is String) "the String \"$value\"" else describeType(value)
 
     private fun isPresent(
         configs: Map<String, *>,

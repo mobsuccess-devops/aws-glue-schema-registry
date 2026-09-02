@@ -388,7 +388,22 @@ class GlueSchemaRegistryConfigurationTest {
 
         assertEquals(
             "Configuration property ${AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES} " +
-                "must only map to Boolean values, not a java.lang.Integer",
+                "must only map to a Boolean, or to \"true\" or \"false\"; got a java.lang.Integer",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeatureToggleWithUnrecognisedString_namesTheValue() {
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.name to "yes")
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES} " +
+                "must only map to a Boolean, or to \"true\" or \"false\"; got the String \"yes\"",
             exception.message,
         )
     }
