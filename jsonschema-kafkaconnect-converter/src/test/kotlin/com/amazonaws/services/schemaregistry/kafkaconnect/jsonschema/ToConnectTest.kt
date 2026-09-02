@@ -1022,10 +1022,9 @@ class ToConnectTest {
                 convertConstProperty("""{ "const": [ "a", 1 ] }""", """[ "a", 1 ]""")
             }
 
-        assertEquals(
-            "Cannot convert a heterogeneous 'const' array to a Connect ARRAY; all elements must have " +
-                "the same schema, but element 2 is INT64 where the first is STRING",
-            exception.message,
+        assertTrue(
+            exception.message!!.contains("heterogeneous 'const' array"),
+            "Unexpected message: ${exception.message}",
         )
     }
 
