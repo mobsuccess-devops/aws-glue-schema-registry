@@ -37,17 +37,25 @@ class ConnectDataToProtobufDataConverter {
     ): Message {
         // TODO: add caching of fileDescriptor to messages by name map
         val allMessagesByName = DescriptorTree.parseAllDescriptors(fileDescriptor)
-        val pathName = getPathName(fileDescriptor.getPackage(), schema.name())
+        val pathName = schema.name()?.let { getPathName(fileDescriptor.getPackage(), it) }
 
-        return convert(fileDescriptor, schema, value, allMessagesByName[pathName])
+        return convert(fileDescriptor, schema, value, pathName?.let { allMessagesByName[it] })
     }
 
-    private fun convert(
+    internal fun convert(
         fileDescriptor: Descriptors.FileDescriptor,
         schema: Schema,
         value: Any,
         descriptor: Descriptors.Descriptor?,
     ): Message {
+        if (descriptor == null) {
+            throw DataException(
+                "No protobuf message type for STRUCT schema ${schema.name() ?: "<unnamed>"}. A nested STRUCT is " +
+                    "resolved from the field descriptor of its parent; a top-level one is resolved by schema name, " +
+                    "which requires the schema to carry one.",
+            )
+        }
+
         val data = value as Struct
         val dynamicMessageBuilder = DynamicMessage.newBuilder(descriptor)
 

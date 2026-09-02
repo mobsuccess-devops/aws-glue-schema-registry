@@ -168,6 +168,33 @@ class ConnectDataToProtobufDataConverterTest {
     }
 
     @Test
+    fun convert_ForTopLevelSchemaWithoutAName_ThrowsNamedException() {
+        val namedSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .name("NamedParent")
+                .field("innerField", Schema.STRING_SCHEMA)
+                .build()
+        val fileDescriptor = ConnectSchemaToProtobufSchemaConverter().convert(namedSchema)
+        val unnamedSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .field("innerField", Schema.STRING_SCHEMA)
+                .build()
+        val data = Struct(unnamedSchema).put("innerField", "value")
+
+        val exception =
+            assertThrows(DataException::class.java) {
+                connectDataToProtobufDataConverter.convert(fileDescriptor, unnamedSchema, data)
+            }
+
+        assertEquals(
+            "No protobuf message type for STRUCT schema <unnamed>. A nested STRUCT is resolved from the field " +
+                "descriptor of its parent; a top-level one is resolved by schema name, which requires the schema " +
+                "to carry one.",
+            exception.message,
+        )
+    }
+
+    @Test
     fun convert_ForOneofType_ConvertsSuccessfully() {
         val oneofMessage = ToProtobufTestDataGenerator.getProtobufOneofMessage()
         val fileDescriptor = oneofMessage.descriptorForType.file

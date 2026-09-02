@@ -35,5 +35,10 @@ class StructDataConverter : DataConverter {
         schema: Schema,
         value: Any?,
         fieldDescriptor: Descriptors.FieldDescriptor?,
-    ): Any = ConnectDataToProtobufDataConverter().convert(fileDescriptor, schema, value!!)
+    ): Any = ConnectDataToProtobufDataConverter().convert(
+        fileDescriptor,
+        schema,
+        value!!,
+        fieldDescriptor?.messageType,
+    )
 }
