@@ -775,3 +775,23 @@ The only Java left in the repository is the Avro classes generated into the test
   read from the outer schema as before, which is where everit puts them. An `allOf` with two
   subschemas that do carry keywords is untouched, and so is every `oneOf` and `anyOf`. This is
   [awslabs/aws-glue-schema-registry#369](https://github.com/awslabs/aws-glue-schema-registry/issues/369).
+- **JSON Schema `const` converts instead of failing.** `JsonSchemaToConnectSchemaConverter`
+  knew no `ConstSchema`, so any draft-06+ schema using `const` — a discriminator on a union
+  branch, a pinned enum of one — died on
+  `DataException: Unsupported schema type org.everit.json.schema.ConstSchema` before a single
+  record was read. A Connect schema is now inferred recursively from the permitted value:
+  scalars map to their Connect type, an object becomes a `STRUCT` with its fields sorted by
+  name so the order does not depend on the map everit returns, and an array becomes an
+  `ARRAY` of its homogeneous element type. The cases with no inferable type — an empty
+  `const` array, a heterogeneous one, a null value or null object field — raise a
+  `DataException` naming which of them it is, rather than deferring the failure to the value
+  path. The heterogeneous-array message deviates from the ported patch: that one compares whole
+  schemas but reports `.type()`, so two objects differing only in their fields read as "found
+  STRUCT and STRUCT". It now names the offending element's position and renders both shapes —
+  `element 2 is STRUCT{b: STRING} where the first is STRUCT{a: INT64}`. Inferring the type is all this does: Connect's schema model has no equality
+  constraint, so the `const` **constraint** is neither enforced nor round-tripped back, which
+  is how the converter already treats `pattern`, `minimum` and `format`. This is a port of
+  [awslabs/aws-glue-schema-registry#527](https://github.com/awslabs/aws-glue-schema-registry/pull/527)
+  by [@shakhihali](https://github.com/shakhihali), with its tests; it also closes the `const`
+  part of
+  [awslabs/aws-glue-schema-registry#368](https://github.com/awslabs/aws-glue-schema-registry/issues/368).
