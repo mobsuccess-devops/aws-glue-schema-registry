@@ -794,6 +794,124 @@ class ToConnectTest {
         assertEquals(2, field.schema().fields().size)
     }
 
+    @Test
+    fun testToConnect_integerWithFormat_isAFlatFieldNotAUnion() {
+        val jsonSchema =
+            loadSchema(
+                """
+                {
+                    "${'$'}id": "https://example.com/weather-report.schema.json",
+                    "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+                    "title": "WeatherReport",
+                    "type": "object",
+                    "properties": {
+                        "location": { "type": "string" },
+                        "temperature": { "type": "integer", "format": "int32" },
+                        "timestamp": {
+                            "description": "Timestamp in epoch format at which the weather was noted.",
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "location", "temperature", "timestamp" ]
+                }
+                """.trimIndent(),
+            )
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)!!
+
+        assertEquals(Schema.Type.STRUCT, connectSchema.type())
+        assertNull(connectSchema.name())
+        assertEquals(Schema.Type.STRING, connectSchema.field("location").schema().type())
+        assertEquals(Schema.Type.FLOAT64, connectSchema.field("temperature").schema().type())
+
+        val timestamp = connectSchema.field("timestamp").schema()
+        assertEquals(Schema.Type.FLOAT64, timestamp.type())
+        assertNull(timestamp.name())
+        assertFalse(timestamp.isOptional)
+    }
+
+    @Test
+    fun testToConnect_integerWithFormat_carriesTheValue() {
+        val jsonSchema =
+            loadSchema(
+                """
+                {
+                    "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "timestamp": { "type": "integer", "format": "int64" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "timestamp" ]
+                }
+                """.trimIndent(),
+            )
+
+        val jsonValue = ObjectMapper().readTree("""{ "timestamp": 1627335205 }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)
+        val connectValue = jsonNodeToConnectValueConverter.toConnectValue(connectSchema, jsonValue)
+
+        assertDoesNotThrow { ConnectSchema.validateValue(connectSchema, connectValue) }
+        assertEquals(1.627335205E9, (connectValue as Struct).get("timestamp"))
+    }
+
+    @Test
+    fun testToConnect_integerWithFormatAndConnectType_keepsTheConnectType() {
+        val jsonSchema =
+            loadSchema("""{ "type": "integer", "format": "int64", "connect.type": "int64" }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)!!
+
+        assertEquals(Schema.Type.INT64, connectSchema.type())
+    }
+
+    @Test
+    fun testToConnect_objectWithFormat_isStillAStruct() {
+        val jsonSchema =
+            loadSchema(
+                """
+                {
+                    "type": "object",
+                    "format": "custom",
+                    "properties": { "value": { "type": "string" } },
+                    "additionalProperties": false,
+                    "required": [ "value" ]
+                }
+                """.trimIndent(),
+            )
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)!!
+
+        assertEquals(Schema.Type.STRUCT, connectSchema.type())
+        assertEquals(Schema.Type.STRING, connectSchema.field("value").schema().type())
+    }
+
+    @Test
+    fun testToConnect_nullableIntegerWithFormat_isAnOptionalField() {
+        val jsonSchema =
+            loadSchema("""{ "type": [ "integer", "null" ], "format": "int64" }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)!!
+
+        assertEquals(Schema.Type.FLOAT64, connectSchema.type())
+        assertTrue(connectSchema.isOptional)
+    }
+
+    @Test
+    fun testToConnect_allOfWithTwoConstrainingSubschemas_isStillAUnionStruct() {
+        val jsonSchema =
+            loadSchema("""{ "allOf": [ { "type": "integer" }, { "minimum": 3 } ] }""")
+
+        val connectSchema = jsonSchemaToConnectSchemaConverter.toConnectSchema(jsonSchema)!!
+
+        assertEquals(Schema.Type.STRUCT, connectSchema.type())
+        assertEquals(JsonSchemaConverterConstants.JSON_SCHEMA_TYPE_ONEOF, connectSchema.name())
+        assertEquals(2, connectSchema.fields().size)
+    }
+
     private fun nullableSchema(types: String): String = """
         {
             "${'$'}schema": "http://json-schema.org/draft-07/schema#",

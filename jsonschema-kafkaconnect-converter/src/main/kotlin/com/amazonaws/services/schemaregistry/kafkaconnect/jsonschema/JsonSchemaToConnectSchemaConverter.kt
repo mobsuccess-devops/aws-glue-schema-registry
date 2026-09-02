@@ -25,6 +25,7 @@ import org.apache.kafka.connect.errors.DataException
 import org.everit.json.schema.CombinedSchema
 import org.everit.json.schema.NullSchema
 import org.everit.json.schema.ReferenceSchema
+import org.json.JSONObject
 
 /**
  * Utilities for mapping between JSON Schema to Connect Schema.
@@ -57,16 +58,17 @@ class JsonSchemaToConnectSchemaConverter(
         val connectName =
             jsonSchema.unprocessedProperties[JsonSchemaConverterConstants.CONNECT_NAME_PROP] as String?
 
-        val typeConverter = typeConverterFactory.get(jsonSchema, connectType)
+        val effectiveSchema = unwrapSingleTypeConjunction(jsonSchema)
+        val typeConverter = typeConverterFactory.get(effectiveSchema, connectType)
 
         val builder: SchemaBuilder
         if (typeConverter != null) {
-            builder = typeConverter.toConnectSchema(jsonSchema, jsonSchemaDataConfig)
-        } else if (jsonSchema is CombinedSchema) {
-            val subSchemas = jsonSchema.subschemas
+            builder = typeConverter.toConnectSchema(effectiveSchema, jsonSchemaDataConfig)
+        } else if (effectiveSchema is CombinedSchema) {
+            val subSchemas = effectiveSchema.subschemas
             val hasNullSchema = subSchemas.any { it is NullSchema }
 
-            val criterion = jsonSchema.criterion
+            val criterion = effectiveSchema.criterion
             val isNullableUnion =
                 hasNullSchema &&
                     (CombinedSchema.ONE_CRITERION == criterion || CombinedSchema.ANY_CRITERION == criterion)
@@ -75,10 +77,10 @@ class JsonSchemaToConnectSchemaConverter(
             }
 
             builder = buildNonOptionalUnionSchema(subSchemas, hasNullSchema)
-        } else if (jsonSchema is ReferenceSchema) {
-            return toConnectSchema(jsonSchema.referredSchema, required)
+        } else if (effectiveSchema is ReferenceSchema) {
+            return toConnectSchema(effectiveSchema.referredSchema, required)
         } else {
-            throw DataException("Unsupported schema type ${jsonSchema.javaClass.name}")
+            throw DataException("Unsupported schema type ${effectiveSchema.javaClass.name}")
         }
 
         populateConnectProperties(builder, jsonSchema, required, connectName)
@@ -87,6 +89,20 @@ class JsonSchemaToConnectSchemaConverter(
         toConnectSchemaCache.put(cacheKey, result)
         return result
     }
+
+    private fun unwrapSingleTypeConjunction(jsonSchema: org.everit.json.schema.Schema): org.everit.json.schema.Schema {
+        var current = jsonSchema
+        while (current is CombinedSchema && CombinedSchema.ALL_CRITERION == current.criterion) {
+            val constraining = current.subschemas.filterNot { isVacuous(it) }
+            if (constraining.size != 1) {
+                return current
+            }
+            current = constraining.first()
+        }
+        return current
+    }
+
+    private fun isVacuous(jsonSchema: org.everit.json.schema.Schema): Boolean = JSONObject(jsonSchema.toString()).isEmpty
 
     private fun buildOptionalUnionSchema(subSchemas: Collection<org.everit.json.schema.Schema>): Schema? {
         val nonNullSubSchemas = subSchemas.filter { it !is NullSchema }
