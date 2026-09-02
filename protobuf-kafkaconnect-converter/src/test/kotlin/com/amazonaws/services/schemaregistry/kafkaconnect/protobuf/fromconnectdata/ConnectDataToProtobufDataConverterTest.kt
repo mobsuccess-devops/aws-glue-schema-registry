@@ -16,8 +16,10 @@
 package com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectdata
 
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToProtobufTestDataGenerator
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ConnectSchemaToProtobufSchemaConverter
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.nullOf
 import com.google.protobuf.Descriptors
+import com.google.protobuf.Message
 import org.apache.kafka.connect.data.Field
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaBuilder
@@ -137,6 +139,32 @@ class ConnectDataToProtobufDataConverterTest {
             )
 
         assertEquals(nestedMessage, actualMessage)
+    }
+
+    @Test
+    fun convert_ForNestedTypeWithoutProtobufMetadata_ConvertsSuccessfully() {
+        val nestedSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .field("innerField", Schema.STRING_SCHEMA)
+                .build()
+        val parentSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .name("ParentMessage")
+                .field("nestedField", nestedSchema)
+                .build()
+        val fileDescriptor = ConnectSchemaToProtobufSchemaConverter().convert(parentSchema)
+        val data =
+            Struct(parentSchema)
+                .put("nestedField", Struct(nestedSchema).put("innerField", "inner-value"))
+
+        val actualMessage = connectDataToProtobufDataConverter.convert(fileDescriptor, parentSchema, data)
+
+        val nestedMessage =
+            actualMessage.getField(actualMessage.descriptorForType.findFieldByName("nestedField")) as Message
+        assertEquals(
+            "inner-value",
+            nestedMessage.getField(nestedMessage.descriptorForType.findFieldByName("innerField")),
+        )
     }
 
     @Test

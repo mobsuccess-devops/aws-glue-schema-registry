@@ -35,12 +35,21 @@ class ConnectDataToProtobufDataConverter {
         schema: Schema,
         value: Any,
     ): Message {
-        val data = value as Struct
-
         // TODO: add caching of fileDescriptor to messages by name map
         val allMessagesByName = DescriptorTree.parseAllDescriptors(fileDescriptor)
         val pathName = getPathName(fileDescriptor.getPackage(), schema.name())
-        val dynamicMessageBuilder = DynamicMessage.newBuilder(allMessagesByName[pathName])
+
+        return convert(fileDescriptor, schema, value, allMessagesByName[pathName])
+    }
+
+    private fun convert(
+        fileDescriptor: Descriptors.FileDescriptor,
+        schema: Schema,
+        value: Any,
+        descriptor: Descriptors.Descriptor?,
+    ): Message {
+        val data = value as Struct
+        val dynamicMessageBuilder = DynamicMessage.newBuilder(descriptor)
 
         for (field in schema.fields()) {
             val fieldValue = data.get(field)
@@ -48,16 +57,17 @@ class ConnectDataToProtobufDataConverter {
             if (field.schema().type() == Schema.Type.MAP) {
                 addMapField(fileDescriptor, dynamicMessageBuilder, field, fieldValue)
             } else if (field.schema().type() == Schema.Type.STRUCT) {
-                if (field.schema().parameters().containsKey(PROTOBUF_TYPE) &&
-                    field.schema().parameters()[PROTOBUF_TYPE] == PROTOBUF_ONEOF_TYPE
-                ) {
+                if (field.schema().parameters()?.get(PROTOBUF_TYPE) == PROTOBUF_ONEOF_TYPE) {
                     for (oneofField in field.schema().fields()) {
                         addField(fileDescriptor, dynamicMessageBuilder, oneofField, (fieldValue as Struct).get(oneofField))
                     }
                     continue
                 }
                 val fieldDescriptor = dynamicMessageBuilder.descriptorForType.findFieldByName(field.name())
-                dynamicMessageBuilder.setField(fieldDescriptor, convert(fileDescriptor, field.schema(), fieldValue))
+                dynamicMessageBuilder.setField(
+                    fieldDescriptor,
+                    convert(fileDescriptor, field.schema(), fieldValue, fieldDescriptor.messageType),
+                )
             } else {
                 addField(fileDescriptor, dynamicMessageBuilder, field, fieldValue)
             }
