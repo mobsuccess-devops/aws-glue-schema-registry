@@ -229,7 +229,7 @@ that surface small; none of them survive a careless rewrite, so check them befor
 - **The submitted graph covers the build's own tools, so their CVEs land as alerts too.**
   `dependency-submission` resolves every configuration of every project plus `buildSrc`, and
   a Gradle plugin drags its own transitives in: the alert then names `settings.gradle.kts`
-  with no hint that nothing it points at is published. Three chains produced fourteen open
+  with no hint that nothing it points at is published. Three chains produced fifteen open
   alerts at once and are pinned down where each is resolved. `buildSrc` carries the
   `jackson-bom` platform and constraints on `avro`, `avro-compiler`, `commons-lang3` and
   `commons-compress`, which is what lifts `gradle-avro-plugin` 1.9.1 off Avro 1.11.3 —
