@@ -13,5 +13,8 @@ dependencies {
     testImplementation(platform(libs.jackson.bom))
     testImplementation(libs.jackson.annotations)
     testImplementation(libs.jackson.databind)
-    testImplementation(libs.mbknor.jsonSchema)
+    testImplementation(libs.mbknor.jsonSchema) {
+        exclude(group = "io.github.classgraph", module = "classgraph")
+    }
+    testRuntimeOnly(libs.classgraph)
 }

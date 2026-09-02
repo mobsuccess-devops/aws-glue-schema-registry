@@ -1,6 +1,6 @@
 plugins {
     id("gsr.distribution-conventions")
-    alias(libs.plugins.avro)
+    id("com.github.davidmc24.gradle.plugin.avro")
 }
 
 coverage {

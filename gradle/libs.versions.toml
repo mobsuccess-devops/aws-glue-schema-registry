@@ -19,9 +19,11 @@ scalaLibrary = "2.13.18"
 everitJsonSchema = "1.14.6"
 classgraph = "4.8.192"
 commonsLang3 = "3.20.0"
+commonsCompress = "1.28.0"
 commonsCollections4 = "4.6.0"
 commonsCli = "1.11.0"
 guava = "33.6.0-jre"
+jsoup = "1.23.2"
 jackson = "2.22.2"
 lz4 = "1.11.2"
 opentelemetry = "1.62.0"
@@ -109,15 +111,18 @@ flink-streamingJava = { module = "org.apache.flink:flink-streaming-java", versio
 # --- Utilities ---
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commonsCollections4" }
 commons-cli = { module = "commons-cli:commons-cli", version.ref = "commonsCli" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 lz4 = { module = "at.yawk.lz4:lz4-java", version.ref = "lz4" }
 opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref = "opentelemetry" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakeFileSystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okioFakeFs" }
 jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxbApi" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+avro-gradlePlugin = { module = "com.github.davidmc24.gradle.plugin:gradle-avro-plugin", version.ref = "avroPlugin" }
 licenseReport-plugin = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
 dokka-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 nmcp-plugin = { module = "com.gradleup.nmcp:nmcp", version.ref = "nmcp" }
@@ -151,5 +156,4 @@ podam = { module = "uk.co.jemos.podam:podam", version.ref = "podam" }
 
 [plugins]
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
-avro = { id = "com.github.davidmc24.gradle.plugin.avro", version.ref = "avroPlugin" }
 binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
