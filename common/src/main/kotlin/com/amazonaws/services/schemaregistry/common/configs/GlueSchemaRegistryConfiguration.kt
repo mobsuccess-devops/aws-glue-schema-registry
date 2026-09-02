@@ -64,6 +64,8 @@ class GlueSchemaRegistryConfiguration {
      */
     var userAgentApp: String? = "default"
 
+    var avroReaderSchema: String? = null
+
     var jacksonSerializationFeatures: List<SerializationFeature>? = null
     var jacksonDeserializationFeatures: List<DeserializationFeature>? = null
     var jacksonSerializationFeatureToggles: Map<SerializationFeature, Boolean>? = null
@@ -94,6 +96,7 @@ class GlueSchemaRegistryConfiguration {
         validateAndSetRegistryName(configs)
         validateAndSetDescription(configs)
         validateAndSetAvroRecordType(configs)
+        validateAndSetAvroReaderSchema(configs)
         validateAndSetProtobufMessageType(configs)
         validateAndSetCompatibility(configs)
         validateAndSetCompressionType(configs)
@@ -387,6 +390,24 @@ class GlueSchemaRegistryConfiguration {
         }
     }
 
+    private fun validateAndSetAvroReaderSchema(configs: Map<String, *>) {
+        if (isPresent(configs, AWSSchemaRegistryConstants.AVRO_READER_SCHEMA)) {
+            val definition = stringConfig(configs, AWSSchemaRegistryConstants.AVRO_READER_SCHEMA)
+            try {
+                org.apache.avro.Schema
+                    .Parser()
+                    .parse(definition)
+            } catch (e: Exception) {
+                throw AWSSchemaRegistryException(
+                    "Configuration property ${AWSSchemaRegistryConstants.AVRO_READER_SCHEMA} is not a valid " +
+                        "Avro schema: ${e.message}",
+                    e,
+                )
+            }
+            avroReaderSchema = definition
+        }
+    }
+
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES)) {
             val key = AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES
@@ -504,6 +525,7 @@ class GlueSchemaRegistryConfiguration {
             timeToLiveMillis == other.timeToLiveMillis &&
             cacheSize == other.cacheSize &&
             avroRecordType == other.avroRecordType &&
+            avroReaderSchema == other.avroReaderSchema &&
             protobufMessageType == other.protobufMessageType &&
             registryName == other.registryName &&
             compatibilitySetting == other.compatibilitySetting &&
@@ -525,7 +547,7 @@ class GlueSchemaRegistryConfiguration {
     }
 
     override fun hashCode(): Int = listOf(
-        compressionType, endPoint, region, timeToLiveMillis, cacheSize, avroRecordType,
+        compressionType, endPoint, region, timeToLiveMillis, cacheSize, avroRecordType, avroReaderSchema,
         protobufMessageType, registryName, compatibilitySetting, description,
         isSchemaAutoRegistrationEnabled, isJsonClassNameResolutionEnabled, isJsonSchemaNullableEnabled,
         isJsonSchemaCompatibilityCheckEnabled, jsonClassNameAllowlist,
@@ -536,7 +558,8 @@ class GlueSchemaRegistryConfiguration {
 
     override fun toString(): String = "GlueSchemaRegistryConfiguration(compressionType=$compressionType, endPoint=$endPoint, " +
         "region=$region, timeToLiveMillis=$timeToLiveMillis, cacheSize=$cacheSize, " +
-        "avroRecordType=$avroRecordType, protobufMessageType=$protobufMessageType, " +
+        "avroRecordType=$avroRecordType, avroReaderSchema=$avroReaderSchema, " +
+        "protobufMessageType=$protobufMessageType, " +
         "registryName=$registryName, compatibilitySetting=$compatibilitySetting, " +
         "description=$description, schemaAutoRegistrationEnabled=$isSchemaAutoRegistrationEnabled, " +
         "jsonClassNameResolutionEnabled=$isJsonClassNameResolutionEnabled, " +

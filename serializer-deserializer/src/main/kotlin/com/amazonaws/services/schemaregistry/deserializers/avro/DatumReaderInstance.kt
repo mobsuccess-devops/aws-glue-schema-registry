@@ -21,10 +21,12 @@ object DatumReaderInstance {
      * schema class to be present locally.
      */
     @JvmStatic
+    @JvmOverloads
     @Throws(InstantiationException::class, IllegalAccessException::class)
     fun from(
         writerSchemaDefinition: String,
         avroRecordType: AvroRecordType,
+        readerSchemaDefinition: String? = null,
     ): DatumReader<Any> {
         val writerSchema = AVRO_UTILS.parseSchema(writerSchemaDefinition)
 
@@ -48,7 +50,11 @@ object DatumReaderInstance {
 
             AvroRecordType.GENERIC_RECORD -> {
                 log.debug("Using GenericDatumReader for de-serializing Avro message, schema: {})", writerSchema.toString())
-                GenericDatumReader(writerSchema)
+                if (readerSchemaDefinition == null) {
+                    GenericDatumReader(writerSchema)
+                } else {
+                    GenericDatumReader(writerSchema, AVRO_UTILS.parseSchema(readerSchemaDefinition))
+                }
             }
 
             else -> throw UnsupportedOperationException("Unsupported AvroRecordType: ${avroRecordType.getName()}")

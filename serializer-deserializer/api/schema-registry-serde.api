@@ -228,6 +228,8 @@ public final class com/amazonaws/services/schemaregistry/deserializers/avro/Avro
 public final class com/amazonaws/services/schemaregistry/deserializers/avro/DatumReaderInstance {
 	public static final field INSTANCE Lcom/amazonaws/services/schemaregistry/deserializers/avro/DatumReaderInstance;
 	public static final fun from (Ljava/lang/String;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)Lorg/apache/avro/io/DatumReader;
+	public static final fun from (Ljava/lang/String;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;Ljava/lang/String;)Lorg/apache/avro/io/DatumReader;
+	public static synthetic fun from$default (Ljava/lang/String;Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;Ljava/lang/String;ILjava/lang/Object;)Lorg/apache/avro/io/DatumReader;
 }
 
 public class com/amazonaws/services/schemaregistry/deserializers/json/JsonDeserializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatDeserializer {

@@ -1,0 +1,8 @@
+{
+  "namespace": "com.amazonaws.services.schemaregistry.serializers.avro",
+  "type": "record",
+  "name": "User",
+  "fields": [
+      {"name": "name", "type": "string" }
+  ]
+}

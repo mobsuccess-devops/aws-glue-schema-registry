@@ -43,6 +43,8 @@ open class AvroDeserializer(
 
     var avroRecordType: AvroRecordType? = configs.avroRecordType
 
+    private val avroReaderSchema: String? = configs.avroReaderSchema
+
     @JvmField
     @VisibleForTesting
     protected val datumReaderCache: LoadingCache<String, DatumReader<Any>> =
@@ -89,7 +91,7 @@ open class AvroDeserializer(
 
     private inner class DatumReaderCache : CacheLoader<String, DatumReader<Any>>() {
         @Throws(Exception::class)
-        override fun load(schema: String): DatumReader<Any> = DatumReaderInstance.from(schema, avroRecordType!!)
+        override fun load(schema: String): DatumReader<Any> = DatumReaderInstance.from(schema, avroRecordType!!, avroReaderSchema)
     }
 
     /** Mirrors the fluent API Lombok generated: called from Java code. */
