@@ -795,3 +795,21 @@ The only Java left in the repository is the Avro classes generated into the test
   by [@shakhihali](https://github.com/shakhihali), with its tests; it also closes the `const`
   part of
   [awslabs/aws-glue-schema-registry#368](https://github.com/awslabs/aws-glue-schema-registry/issues/368).
+- **A key/value naming strategy ships with the library.** `AWSSchemaNamingStrategy` has carried
+  an `isKey` overload since upstream, the serializers pass it, and the three Connect converters
+  hand it down from `Converter.configure` — but the only implementation shipped,
+  `AWSSchemaNamingStrategyDefaultImpl`, returns the transport name and ignores the argument, so a
+  topic's key schema and value schema land on one registry entry and register versions over each
+  other. Every reporter of the problem wrote the same ten-line class.
+  `AWSSchemaNamingStrategyTopicNameImpl` is that class, selected through the **existing**
+  `schemaNameGenerationClass` key: `<topic>-key` and `<topic>-value`, the Confluent
+  `TopicNameStrategy` names. It is fork-authored, so it carries the Mobsuccess header rather than
+  Amazon's. **The default is untouched** — nothing selects the new strategy unless the property
+  names it, which matters because live registries are keyed on the names the default produces.
+  The class is an addition to the `.api` dump of `common` and nothing else. This is
+  [awslabs/aws-glue-schema-registry#93](https://github.com/awslabs/aws-glue-schema-registry/issues/93)
+  and its duplicate
+  [#471](https://github.com/awslabs/aws-glue-schema-registry/issues/471); it is also the part of
+  [#199](https://github.com/awslabs/aws-glue-schema-registry/issues/199) worth shipping — the
+  record-name and topic-record-name strategies need per-format record-name extraction and wait for
+  demand.

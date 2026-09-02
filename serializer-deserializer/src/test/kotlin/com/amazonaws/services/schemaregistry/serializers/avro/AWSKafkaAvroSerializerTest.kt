@@ -15,6 +15,7 @@
 
 package com.amazonaws.services.schemaregistry.serializers.avro
 
+import com.amazonaws.services.schemaregistry.common.AWSSchemaNamingStrategyTopicNameImpl
 import com.amazonaws.services.schemaregistry.common.AWSSerializerInput
 import com.amazonaws.services.schemaregistry.common.SchemaByDefinitionFetcher
 import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
@@ -393,6 +394,59 @@ class AWSKafkaAvroSerializerTest : GlueSchemaRegistryValidationUtil() {
             awsKafkaAvroSerializer.serialize("test-topic", array2)
         }
         assertNull(awsKafkaAvroSerializer.schemaVersionId)
+    }
+
+    @Test
+    fun testPrepareInput_topicNameStrategy_suffixesTheSchemaNameWithTheSide() {
+        val record = RecordGenerator.createGenericAvroRecord()
+
+        val keyName = prepareInputSchemaName(topicNameStrategyConfigs(), record, isKey = true)
+        val valueName = prepareInputSchemaName(topicNameStrategyConfigs(), record, isKey = false)
+
+        assertEquals("test-topic-key", keyName)
+        assertEquals("test-topic-value", valueName)
+    }
+
+    @Test
+    fun testPrepareInput_defaultStrategy_namesKeyAndValueAlike() {
+        val record = RecordGenerator.createGenericAvroRecord()
+        val defaultConfigs =
+            hashMapOf<String, Any?>(
+                AWSSchemaRegistryConstants.AWS_ENDPOINT to "https://test",
+                AWSSchemaRegistryConstants.AWS_REGION to "us-west-2",
+            )
+
+        val keyName = prepareInputSchemaName(HashMap(defaultConfigs), record, isKey = true)
+        val valueName = prepareInputSchemaName(HashMap(defaultConfigs), record, isKey = false)
+
+        assertEquals("test-topic", keyName)
+        assertEquals("test-topic", valueName)
+    }
+
+    private fun topicNameStrategyConfigs(): HashMap<String, Any?> = hashMapOf(
+        AWSSchemaRegistryConstants.AWS_ENDPOINT to "https://test",
+        AWSSchemaRegistryConstants.AWS_REGION to "us-west-2",
+        AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS to
+            AWSSchemaNamingStrategyTopicNameImpl::class.java.name,
+    )
+
+    private fun prepareInputSchemaName(
+        serializerConfigs: Map<String, Any?>,
+        record: Any,
+        isKey: Boolean,
+    ): String? {
+        val serializer = AWSKafkaAvroSerializer(mock<AwsCredentialsProvider>(), null)
+        serializer.configure(serializerConfigs, isKey)
+
+        val method =
+            AWSKafkaAvroSerializer::class.java.getDeclaredMethod(
+                "prepareInput",
+                Any::class.java,
+                String::class.java,
+                java.lang.Boolean::class.java,
+            )
+        method.isAccessible = true
+        return (method.invoke(serializer, record, "test-topic", isKey) as AWSSerializerInput).schemaName
     }
 
     @Test

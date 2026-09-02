@@ -54,6 +54,19 @@ key.converter.schemaName=KeySchema
 value.converter.schemaName=ValueSchema
 ```
 
+`schemaName` pins one name per converter, which is one way to keep a topic's key schema and value
+schema from colliding on a single registry entry. The other is to let the naming strategy do it,
+which keeps the topic in the name:
+
+```properties
+key.converter.schemaNameGenerationClass=com.amazonaws.services.schemaregistry.common.AWSSchemaNamingStrategyTopicNameImpl
+value.converter.schemaNameGenerationClass=com.amazonaws.services.schemaregistry.common.AWSSchemaNamingStrategyTopicNameImpl
+```
+
+A converter reading `orders` then registers `orders-key` and `orders-value`, the Confluent
+`TopicNameStrategy` names. Details and the migration caveat are in
+[configuration.md](configuration.md#naming-a-key-apart-from-a-value).
+
 As Glue Schema Registry is a fully managed service by AWS, there is no notion of schema registry URLs. Name of the registry (within the same AWS account) can be optionally configured using following options. If not specified, default-registry is used.
 
 ```properties
