@@ -245,8 +245,11 @@ com/google/protobuf/GeneratedFile`. Otherwise the floor moves up only when no co
   that is what the `Tests on the protobuf floor` job runs. It catches a dependency bump that
   drags in gencode newer than the floor — which is how the 4.33.2 above was found — but not
   the floor itself being raised, since raising it makes the job agree with itself. That is
-  what the `com.google.protobuf:protoc` entry of `dependabot.yml` is for: the floor is a
-  promise made to consumers, so it moves by decision, never by a dependency bump.
+  what the `com.google.protobuf:protoc` and
+  `com.google.api.grpc:proto-google-common-protos` entries of `dependabot.yml` are for: the
+  floor is a promise made to consumers, so it moves by decision, never by a dependency bump.
+  Both carry gencode, so both are held by hand — `proto-google-common-protos` 2.74.0 is
+  generated with 4.33.6 and takes the whole protobuf converter down under `-PprotobufFloor`.
 - **`serializer-deserializer` builds a `tests` jar, and does not publish it.**
   `integration-tests` consumes it through the `testArtifacts` configuration, which is a
   project dependency and needs no publication. See [portage.md](portage.md).
