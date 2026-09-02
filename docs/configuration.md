@@ -17,7 +17,7 @@ ignored.
 | `proxyUrl`                            | string (URI)                   | none                                      | both                   | Rejected with a named error when it is not a valid URI.                                                                                                                                                                                            |
 | `registry.name`                       | string                         | `default-registry`                        | serializer             | The consumer resolves a schema by version id, so it needs no registry name.                                                                                                                                                                        |
 | `schemaName`                          | string                         | from the naming strategy                  | serializer             | The default strategy derives the name from the topic.                                                                                                                                                                                              |
-| `schemaNameGenerationClass`           | string (class name)            | topic-name strategy                       | serializer             | Must implement `AWSSchemaNamingStrategy`. An unloadable name falls back to the default strategy.                                                                                                                                                   |
+| `schemaNameGenerationClass`           | string (class name)            | topic-name strategy                       | serializer             | Must name a loadable class implementing `AWSSchemaNamingStrategy`; there is no fallback — see [when the class does not load](#naming-a-key-apart-from-a-value). `AWSSchemaNamingStrategyTopicNameImpl` ships with the library.                     |
 | `schemaAutoRegistrationEnabled`       | boolean                        | `false`                                   | serializer             | When `false`, an unknown schema fails serialization instead of being registered.                                                                                                                                                                   |
 | `compatibility`                       | string (enum)                  | `BACKWARD`                                | serializer             | Only read when auto-registration creates the schema. Accepted values: `Compatibility.knownValues()`.                                                                                                                                               |
 | `description`                         | string                         | `DEFAULT-DESCRIPTION-<region>-<registry>` | serializer             | Attached to a schema this library registers.                                                                                                                                                                                                       |
@@ -57,6 +57,48 @@ works from a worker properties file.
 `tags` and `metadata` are deliberately left out of that `ConfigDef`: their values are maps, a
 shape Kafka's `ConfigDef` has no type for. They keep working when a converter is configured
 programmatically, and a Connect worker could not have passed them anyway.
+
+## Naming a key apart from a value
+
+`AWSSchemaNamingStrategyDefaultImpl`, the default, returns the transport name unchanged, so the
+key schema and the value schema of one topic land on the **same** registry entry and register
+versions over each other. `AWSSchemaNamingStrategyTopicNameImpl` names them apart, with the
+suffixes Confluent's `TopicNameStrategy` uses:
+
+| Side  | Schema name     |
+| ----- | --------------- |
+| key   | `<topic>-key`   |
+| value | `<topic>-value` |
+
+It is selected through the existing `schemaNameGenerationClass` key, on both serializers:
+
+```properties
+key.converter.schemaNameGenerationClass=com.amazonaws.services.schemaregistry.common.AWSSchemaNamingStrategyTopicNameImpl
+value.converter.schemaNameGenerationClass=com.amazonaws.services.schemaregistry.common.AWSSchemaNamingStrategyTopicNameImpl
+```
+
+Each serializer already knows which side it handles: Kafka passes `isKey` to `Serializer.configure`,
+and the three Connect converters pass it on to the serializer and deserializer they wrap.
+
+**The default does not change.** A registry populated under the default strategy keeps working
+untouched; switching a live topic to this strategy registers its schemas under new names, which is
+a migration to plan rather than a setting to flip.
+
+Setting `schemaName` explicitly still wins over any strategy, which is the workaround this
+strategy replaces — see [kafka-connect.md](kafka-connect.md#configure-the-connector).
+
+### When the class does not load
+
+`schemaNameGenerationClass` has **no fallback to the default strategy**, and the two ways it
+can go wrong fail at different moments:
+
+| What is wrong                                                    | What happens                                                                                                                                                                                                                          |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The class cannot be loaded or has no public no-arg constructor   | `configure()` throws `AWSSchemaRegistryException: Unable to locate the naming strategy class, check in the classpath for classname = <name>`                                                                                          |
+| The class loads but does not implement `AWSSchemaNamingStrategy` | `configure()` succeeds with no strategy; the **first record** then fails with `No schema name and no usable schema naming strategy: set schemaName, or set schemaNameGenerationClass to a class implementing AWSSchemaNamingStrategy` |
+
+The second case is only reached when `schemaName` is unset, since an explicit `schemaName`
+wins over any strategy.
 
 ## Limits of the JSON compatibility check
 

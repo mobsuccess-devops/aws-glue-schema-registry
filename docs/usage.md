@@ -404,6 +404,23 @@ properties[AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS] =
 
 An example test implementation class is [here](https://github.com/mobsuccess-devops/aws-glue-schema-registry/blob/master/serializer-deserializer/src/test/kotlin/com/amazonaws/services/schemaregistry/serializers/avro/CustomerProvidedSchemaNamingStrategy.kt).
 
+### Naming a topic's key and value apart
+
+The default strategy names a schema after the transport alone, so the key and the value of one
+topic register under the same schema name and overwrite each other's versions.
+`AWSSchemaNamingStrategyTopicNameImpl` ships with the library and gives them the Confluent
+`TopicNameStrategy` names — `<topic>-key` and `<topic>-value`:
+
+```kotlin
+properties[AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS] =
+    "com.amazonaws.services.schemaregistry.common.AWSSchemaNamingStrategyTopicNameImpl"
+```
+
+The same property is set on both serializers; each one already knows which side it serializes,
+from the `isKey` argument Kafka passes to `configure`. **The default is unchanged**: without this
+property a schema is still named after the topic alone, which is what an existing registry
+contains.
+
 ## Providing Registry Description
 
 Registry Description can be provided by setting this property -

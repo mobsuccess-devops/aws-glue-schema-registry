@@ -46,6 +46,13 @@ public final class com/amazonaws/services/schemaregistry/common/AWSSchemaNamingS
 	public fun getSchemaName (Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/String;
 }
 
+public final class com/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategyTopicNameImpl : com/amazonaws/services/schemaregistry/common/AWSSchemaNamingStrategy {
+	public fun <init> ()V
+	public fun getSchemaName (Ljava/lang/String;)Ljava/lang/String;
+	public fun getSchemaName (Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;
+	public fun getSchemaName (Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/String;
+}
+
 public class com/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient {
 	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/AWSSchemaRegistryClient$Companion;
 	public fun <init> (Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V
