@@ -35,12 +35,29 @@ class ConnectDataToProtobufDataConverter {
         schema: Schema,
         value: Any,
     ): Message {
-        val data = value as Struct
-
         // TODO: add caching of fileDescriptor to messages by name map
         val allMessagesByName = DescriptorTree.parseAllDescriptors(fileDescriptor)
-        val pathName = getPathName(fileDescriptor.getPackage(), schema.name())
-        val dynamicMessageBuilder = DynamicMessage.newBuilder(allMessagesByName[pathName])
+        val pathName = schema.name()?.let { getPathName(fileDescriptor.getPackage(), it) }
+
+        return convert(fileDescriptor, schema, value, pathName?.let { allMessagesByName[it] })
+    }
+
+    internal fun convert(
+        fileDescriptor: Descriptors.FileDescriptor,
+        schema: Schema,
+        value: Any,
+        descriptor: Descriptors.Descriptor?,
+    ): Message {
+        if (descriptor == null) {
+            throw DataException(
+                "No protobuf message type for STRUCT schema ${schema.name() ?: "<unnamed>"}. A nested STRUCT is " +
+                    "resolved from the field descriptor of its parent; a top-level one is resolved by schema name, " +
+                    "which requires the schema to carry one.",
+            )
+        }
+
+        val data = value as Struct
+        val dynamicMessageBuilder = DynamicMessage.newBuilder(descriptor)
 
         for (field in schema.fields()) {
             val fieldValue = data.get(field)
@@ -48,16 +65,17 @@ class ConnectDataToProtobufDataConverter {
             if (field.schema().type() == Schema.Type.MAP) {
                 addMapField(fileDescriptor, dynamicMessageBuilder, field, fieldValue)
             } else if (field.schema().type() == Schema.Type.STRUCT) {
-                if (field.schema().parameters().containsKey(PROTOBUF_TYPE) &&
-                    field.schema().parameters()[PROTOBUF_TYPE] == PROTOBUF_ONEOF_TYPE
-                ) {
+                if (field.schema().parameters()?.get(PROTOBUF_TYPE) == PROTOBUF_ONEOF_TYPE) {
                     for (oneofField in field.schema().fields()) {
                         addField(fileDescriptor, dynamicMessageBuilder, oneofField, (fieldValue as Struct).get(oneofField))
                     }
                     continue
                 }
                 val fieldDescriptor = dynamicMessageBuilder.descriptorForType.findFieldByName(field.name())
-                dynamicMessageBuilder.setField(fieldDescriptor, convert(fileDescriptor, field.schema(), fieldValue))
+                dynamicMessageBuilder.setField(
+                    fieldDescriptor,
+                    convert(fileDescriptor, field.schema(), fieldValue, fieldDescriptor.messageType),
+                )
             } else {
                 addField(fileDescriptor, dynamicMessageBuilder, field, fieldValue)
             }
