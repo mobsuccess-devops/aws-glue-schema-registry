@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.common.errors.SerializationException
@@ -81,19 +80,39 @@ class JsonSchemaConverter(
         deserializer.configure(resolvedConfigs, this.isKey)
 
         if (!MapUtils.isEmpty(resolvedConfigs)) {
-            @Suppress("UNCHECKED_CAST")
-            val serializationFeatures =
-                resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] as List<String>?
+            when (val serializationFeatures = resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES]) {
+                is Map<*, *> ->
+                    serializationFeatures.forEach { (feature, enabled) ->
+                        objectMapper.configure(
+                            SerializationFeature.valueOf(feature.toString()),
+                            enabled.toString().toBoolean(),
+                        )
+                    }
 
-            @Suppress("UNCHECKED_CAST")
-            val deserializationFeatures =
-                resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] as List<String>?
+                is List<*> ->
+                    serializationFeatures.forEach { objectMapper.enable(SerializationFeature.valueOf(it.toString())) }
 
-            if (!CollectionUtils.isEmpty(serializationFeatures)) {
-                serializationFeatures!!.forEach { objectMapper.enable(SerializationFeature.valueOf(it)) }
+                else -> Unit
             }
-            if (!CollectionUtils.isEmpty(deserializationFeatures)) {
-                deserializationFeatures!!.forEach { objectMapper.enable(DeserializationFeature.valueOf(it)) }
+
+            when (
+                val deserializationFeatures =
+                    resolvedConfigs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES]
+            ) {
+                is Map<*, *> ->
+                    deserializationFeatures.forEach { (feature, enabled) ->
+                        objectMapper.configure(
+                            DeserializationFeature.valueOf(feature.toString()),
+                            enabled.toString().toBoolean(),
+                        )
+                    }
+
+                is List<*> ->
+                    deserializationFeatures.forEach {
+                        objectMapper.enable(DeserializationFeature.valueOf(it.toString()))
+                    }
+
+                else -> Unit
             }
         }
 

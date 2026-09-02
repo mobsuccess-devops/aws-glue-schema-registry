@@ -31,8 +31,8 @@ ignored.
 | `jsonSchemaCompatibilityCheckEnabled` | boolean                        | `false`                                   | serializer             | Compares a new JSON schema version against the latest one before registering it, since Glue does not enforce the mode for JSON. Compares the `required` contract only, under the local mode — [limits](#limits-of-the-json-compatibility-check).   |
 | `jsonClassNameResolutionEnabled`      | boolean                        | `false`                                   | deserializer           | Opt-in: it turns a registry field into a class name to load. See [className resolution](usage.md#deserializing-json-into-a-java-pojo-classname-resolution).                                                                                        |
 | `jsonClassNameAllowlist`              | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected.                                                                                                                                        |
-| `jacksonSerializationFeatures`        | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries to enable.                                                                                                                                                                           |
-| `jacksonDeserializationFeatures`      | list or comma-separated        | none                                      | both                   | `com.fasterxml.jackson.databind.DeserializationFeature` entries to enable.                                                                                                                                                                         |
+| `jacksonSerializationFeatures`        | list, comma-separated, or map  | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries. A list enables them; a `Map<String, Boolean>` enables or **disables** each one — see [enabling and disabling Jackson features](#enabling-and-disabling-jackson-features).           |
+| `jacksonDeserializationFeatures`      | list, comma-separated, or map  | none                                      | both                   | `com.fasterxml.jackson.databind.DeserializationFeature` entries. A list enables them; a `Map<String, Boolean>` enables or **disables** each one — see [enabling and disabling Jackson features](#enabling-and-disabling-jackson-features).         |
 | `secondaryDeserializer`               | string (class name) or `Class` | none                                      | deserializer           | Fallback for records that carry no Glue Schema Registry header.                                                                                                                                                                                    |
 | `timeToLiveMillis`                    | long                           | `86400000` (24 h)                         | both                   | Time to live of a cache entry.                                                                                                                                                                                                                     |
 | `cacheSize`                           | int                            | `200`                                     | both                   | Maximum number of cached schemas.                                                                                                                                                                                                                  |
@@ -99,6 +99,49 @@ can go wrong fail at different moments:
 
 The second case is only reached when `schemaName` is unset, since an explicit `schemaName`
 wins over any strategy.
+
+## Enabling and disabling Jackson features
+
+`jacksonSerializationFeatures` and `jacksonDeserializationFeatures` take two shapes.
+
+A **list of names** enables each feature, and nothing else:
+
+```java
+configs.put(AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES,
+        List.of("FAIL_ON_TRAILING_TOKENS"));
+```
+
+A **map of name to boolean** sets each feature to the value given, so a feature Jackson turns on
+by default can be turned off:
+
+```java
+configs.put(AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES,
+        Map.of("FAIL_ON_UNKNOWN_PROPERTIES", false));
+```
+
+From Kotlin, through the `serde-kotlin` DSL:
+
+```kotlin
+glueSchemaRegistryConfiguration {
+    region = "eu-west-1"
+    jacksonDeserializationFeatures(mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES to false))
+}
+```
+
+The two shapes are mutually exclusive per key: the value is one or the other. A value that is
+neither is rejected at configuration time, and so is a map entry whose value is not a boolean.
+`"true"` and `"false"` are accepted as strings, nothing else is; the error names both accepted
+shapes and quotes the value it was given.
+
+Both keys are applied to the JSON serializer **and** to the JSON deserializer, whichever shape is
+used. A feature only takes effect on its own side of Jackson, so the cross-application is inert;
+it is the behaviour the list shape has always had, and the map shape follows it rather than
+introducing a second rule.
+
+The map shape is not reachable from a Kafka Connect worker properties file: the converters declare
+these keys as `ConfigDef.Type.LIST`, and a properties file has no map syntax — the same reason
+`tags` and `metadata` are absent from the `ConfigDef`. A converter configured programmatically
+accepts either shape.
 
 ## Limits of the JSON compatibility check
 

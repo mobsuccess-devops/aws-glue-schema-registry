@@ -48,6 +48,12 @@ open class JsonSerializer(
             if (!CollectionUtils.isEmpty(configs.jacksonDeserializationFeatures)) {
                 configs.jacksonDeserializationFeatures!!.forEach { objectMapper.enable(it) }
             }
+            configs.jacksonSerializationFeatureToggles?.forEach { (feature, enabled) ->
+                objectMapper.configure(feature, enabled)
+            }
+            configs.jacksonDeserializationFeatureToggles?.forEach { (feature, enabled) ->
+                objectMapper.configure(feature, enabled)
+            }
         }
         jsonSchemaGenerator =
             if (configs != null && configs.isJsonSchemaNullableEnabled) {

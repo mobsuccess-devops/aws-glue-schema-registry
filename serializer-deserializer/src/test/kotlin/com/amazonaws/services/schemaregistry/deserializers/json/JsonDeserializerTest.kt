@@ -18,10 +18,13 @@ package com.amazonaws.services.schemaregistry.deserializers.json
 import com.amazonaws.services.schemaregistry.common.Schema
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.deserializers.json.JsonDeserializer.Companion.MAX_WARNED_CLASS_NAMES
+import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
 import com.amazonaws.services.schemaregistry.serializers.json.Car
 import com.amazonaws.services.schemaregistry.serializers.json.JsonDataWithSchema
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.nullOf
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -244,6 +247,57 @@ class JsonDeserializerTest {
         assertEquals(CAR_PAYLOAD, (result as JsonDataWithSchema).payload)
     }
 
+    @Test
+    fun testDeserialize_unknownProperty_failsByDefault() {
+        val deserializer =
+            deserializerWithAllowlist("com.amazonaws.services.schemaregistry.serializers.json.Car")
+        val schema = Schema(CAR_SCHEMA, DataFormat.JSON.name, "testJson")
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) {
+                deserializer.deserialize(toSerializedBuffer(CAR_PAYLOAD_WITH_UNKNOWN_PROPERTY), schema)
+            }
+
+        assertTrue(exception.cause is UnrecognizedPropertyException)
+    }
+
+    @Test
+    fun testDeserialize_unknownProperty_toleratedWhenTheFeatureIsToggledOff() {
+        val configs = HashMap<String, Any>()
+        configs[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+        configs[AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED] = "true"
+        configs[AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST] =
+            "com.amazonaws.services.schemaregistry.serializers.json.Car"
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.name to false)
+        val deserializer = JsonDeserializer(GlueSchemaRegistryConfiguration(configs))
+        val schema = Schema(CAR_SCHEMA, DataFormat.JSON.name, "testJson")
+
+        val result = deserializer.deserialize(toSerializedBuffer(CAR_PAYLOAD_WITH_UNKNOWN_PROPERTY), schema)
+
+        assertTrue(result is Car)
+    }
+
+    @Test
+    fun testDeserialize_featureListShapeStillOnlyEnables() {
+        val configs = HashMap<String, Any>()
+        configs[AWSSchemaRegistryConstants.AWS_REGION] = "us-east-1"
+        configs[AWSSchemaRegistryConstants.JSON_CLASS_NAME_RESOLUTION_ENABLED] = "true"
+        configs[AWSSchemaRegistryConstants.JSON_CLASS_NAME_ALLOWLIST] =
+            "com.amazonaws.services.schemaregistry.serializers.json.Car"
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            listOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.name)
+        val deserializer = JsonDeserializer(GlueSchemaRegistryConfiguration(configs))
+        val schema = Schema(CAR_SCHEMA, DataFormat.JSON.name, "testJson")
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) {
+                deserializer.deserialize(toSerializedBuffer(CAR_PAYLOAD_WITH_UNKNOWN_PROPERTY), schema)
+            }
+
+        assertTrue(exception.cause is UnrecognizedPropertyException)
+    }
+
     companion object {
         private const val GEOLOCATION_SCHEMA =
             """{"${'$'}id":"https://example.com/geographical-location.schema.json",""" +
@@ -262,6 +316,8 @@ class JsonDeserializerTest {
                 """.schemaregistry.serializers.json.Car",""" +
                 """"properties":{"make":{"type":"string"},"model":{"type":"string"}}}"""
         private const val CAR_PAYLOAD = """{"make":"Honda","model":"Civic"}"""
+        private const val CAR_PAYLOAD_WITH_UNKNOWN_PROPERTY =
+            """{"make":"Honda","model":"Civic","colour":"red"}"""
 
         /**
          * Wraps the raw payload bytes in the Glue Schema Registry header so they can be

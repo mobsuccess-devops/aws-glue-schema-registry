@@ -164,6 +164,22 @@ public class GlueSchemaRegistryConfigBuilder internal constructor() {
         put(AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES, features.map { it.name })
     }
 
+    /** Jackson serialization features to enable or disable, one entry per feature. */
+    public fun jacksonSerializationFeatures(features: Map<SerializationFeature, Boolean>) {
+        put(
+            AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES,
+            features.entries.associate { (feature, enabled) -> feature.name to enabled },
+        )
+    }
+
+    /** Jackson deserialization features to enable or disable, one entry per feature. */
+    public fun jacksonDeserializationFeatures(features: Map<DeserializationFeature, Boolean>) {
+        put(
+            AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES,
+            features.entries.associate { (feature, enabled) -> feature.name to enabled },
+        )
+    }
+
     /**
      * Tags applied to the registry entry when this producer creates it.
      *

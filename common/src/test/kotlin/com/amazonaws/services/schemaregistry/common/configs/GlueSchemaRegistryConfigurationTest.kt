@@ -18,11 +18,14 @@ package com.amazonaws.services.schemaregistry.common.configs
 import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -306,6 +309,115 @@ class GlueSchemaRegistryConfigurationTest {
         assertEquals(
             "Configuration property ${AWSSchemaRegistryConstants.CACHE_SIZE} must be a String, " +
                 "not a java.lang.Integer",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeaturesAsLists_areEnabled() {
+        configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] =
+            listOf(SerializationFeature.INDENT_OUTPUT.name)
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            listOf(DeserializationFeature.FAIL_ON_TRAILING_TOKENS.name)
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(listOf(SerializationFeature.INDENT_OUTPUT), configuration.jacksonSerializationFeatures)
+        assertEquals(
+            listOf(DeserializationFeature.FAIL_ON_TRAILING_TOKENS),
+            configuration.jacksonDeserializationFeatures,
+        )
+        assertNull(configuration.jacksonSerializationFeatureToggles)
+        assertNull(configuration.jacksonDeserializationFeatureToggles)
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeaturesAsMaps_areToggles() {
+        configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] =
+            mapOf(SerializationFeature.INDENT_OUTPUT.name to true)
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.name to false)
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(
+            mapOf(SerializationFeature.INDENT_OUTPUT to true),
+            configuration.jacksonSerializationFeatureToggles,
+        )
+        assertEquals(
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES to false),
+            configuration.jacksonDeserializationFeatureToggles,
+        )
+        assertNull(configuration.jacksonSerializationFeatures)
+        assertNull(configuration.jacksonDeserializationFeatures)
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeatureToggleAsString_isAccepted() {
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.name to "false")
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES to false),
+            configuration.jacksonDeserializationFeatureToggles,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeaturesAsNeitherListNorMap_throwsNamedException() {
+        configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] = SerializationFeature.INDENT_OUTPUT.name
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Jackson Serialization features should be a list of names, or a map of name to boolean",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeatureToggleWithNonBooleanValue_throwsNamedException() {
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.name to 0)
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES} " +
+                "must only map to a Boolean, or to \"true\" or \"false\"; got a java.lang.Integer",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeatureToggleWithUnrecognisedString_namesTheValue() {
+        configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES] =
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES.name to "yes")
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES} " +
+                "must only map to a Boolean, or to \"true\" or \"false\"; got the String \"yes\"",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jacksonFeatureToggleWithNonStringKey_throwsNamedException() {
+        configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] = mapOf(1 to true)
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES} " +
+                "must only contain String entries, not a java.lang.Integer",
             exception.message,
         )
     }

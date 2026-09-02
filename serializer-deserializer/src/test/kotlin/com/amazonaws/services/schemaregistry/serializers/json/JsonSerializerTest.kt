@@ -21,6 +21,7 @@ import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.RecordGenerator
 import com.amazonaws.services.schemaregistry.utils.nullOf
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,6 +31,15 @@ import org.junit.jupiter.api.Test
 import java.nio.charset.StandardCharsets
 
 class JsonSerializerTest {
+    private fun serializerWithJacksonSerializationFeatures(features: Any): JsonSerializer = JsonSerializer(
+        GlueSchemaRegistryConfiguration(
+            hashMapOf(
+                AWSSchemaRegistryConstants.AWS_REGION to "us-west-2",
+                AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES to features,
+            ),
+        ),
+    )
+
     private val jsonSerializer =
         JsonSerializer(
             GlueSchemaRegistryConfiguration(hashMapOf(AWSSchemaRegistryConstants.AWS_REGION to "us-west-2")),
@@ -59,6 +69,35 @@ class JsonSerializerTest {
         val expectedBytes = objectMapper.writeValueAsBytes(SPECIFIC_TEST_RECORD)
         val serializedBytes = jsonSerializer.serialize(SPECIFIC_TEST_RECORD)
         assertArrayEquals(expectedBytes, serializedBytes)
+    }
+
+    @Test
+    fun testSerialize_indentFeatureEnabledByTheListShape_indentsTheOutput() {
+        val serializer = serializerWithJacksonSerializationFeatures(listOf(SerializationFeature.INDENT_OUTPUT.name))
+
+        val serializedBytes = serializer.serialize(GENERIC_TEST_RECORD)
+
+        assertTrue(String(serializedBytes, StandardCharsets.UTF_8).contains("\n"))
+    }
+
+    @Test
+    fun testSerialize_indentFeatureEnabledByTheMapShape_indentsTheOutput() {
+        val serializer =
+            serializerWithJacksonSerializationFeatures(mapOf(SerializationFeature.INDENT_OUTPUT.name to true))
+
+        val serializedBytes = serializer.serialize(GENERIC_TEST_RECORD)
+
+        assertTrue(String(serializedBytes, StandardCharsets.UTF_8).contains("\n"))
+    }
+
+    @Test
+    fun testSerialize_indentFeatureDisabledByTheMapShape_leavesTheOutputCompact() {
+        val serializer =
+            serializerWithJacksonSerializationFeatures(mapOf(SerializationFeature.INDENT_OUTPUT.name to false))
+
+        val serializedBytes = serializer.serialize(GENERIC_TEST_RECORD)
+
+        assertEquals("""{"latitude":48.858093,"longitude":2.294694}""", String(serializedBytes, StandardCharsets.UTF_8))
     }
 
     @Test
