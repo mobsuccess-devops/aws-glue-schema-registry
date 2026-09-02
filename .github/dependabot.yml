@@ -22,6 +22,7 @@ updates:
         versions:
           - ">= 1.12.2"
       - dependency-name: "com.google.protobuf:protoc"
+      - dependency-name: "com.google.api.grpc:proto-google-common-protos"
     groups:
       kotlin:
         patterns:
