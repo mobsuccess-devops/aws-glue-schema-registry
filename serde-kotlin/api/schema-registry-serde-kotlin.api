@@ -32,7 +32,9 @@ public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfig
 	public final fun getSchemaNamingStrategyClass ()Ljava/lang/String;
 	public final fun getSecondaryDeserializer ()Ljava/lang/String;
 	public final fun getUserAgentApp ()Ljava/lang/String;
+	public final fun jacksonDeserializationFeatures (Ljava/util/Map;)V
 	public final fun jacksonDeserializationFeatures ([Lcom/fasterxml/jackson/databind/DeserializationFeature;)V
+	public final fun jacksonSerializationFeatures (Ljava/util/Map;)V
 	public final fun jacksonSerializationFeatures ([Lcom/fasterxml/jackson/databind/SerializationFeature;)V
 	public final fun jsonClassNameAllowlist ([Ljava/lang/Class;)V
 	public final fun jsonClassNameAllowlist ([Ljava/lang/String;)V

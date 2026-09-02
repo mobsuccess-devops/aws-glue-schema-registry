@@ -66,6 +66,8 @@ class GlueSchemaRegistryConfiguration {
 
     var jacksonSerializationFeatures: List<SerializationFeature>? = null
     var jacksonDeserializationFeatures: List<DeserializationFeature>? = null
+    var jacksonSerializationFeatureToggles: Map<SerializationFeature, Boolean>? = null
+    var jacksonDeserializationFeatureToggles: Map<DeserializationFeature, Boolean>? = null
 
     constructor(region: String?) {
         val config = HashMap<String, Any?>()
@@ -387,34 +389,63 @@ class GlueSchemaRegistryConfiguration {
 
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES)) {
-            val value = configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES]
-            if (value is List<*>) {
-                jacksonSerializationFeatures =
-                    value.map {
-                        SerializationFeature.valueOf(
-                            stringEntry(AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES, it),
-                        )
-                    }
-            } else {
-                throw AWSSchemaRegistryException("Jackson Serialization features should be a list")
+            val key = AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES
+            when (val value = configs[key]) {
+                is List<*> ->
+                    jacksonSerializationFeatures =
+                        value.map { SerializationFeature.valueOf(stringEntry(key, it)) }
+
+                is Map<*, *> ->
+                    jacksonSerializationFeatureToggles =
+                        featureToggles(key, value) { SerializationFeature.valueOf(it) }
+
+                else -> throw AWSSchemaRegistryException(
+                    "Jackson Serialization features should be a list of names, or a map of name to boolean",
+                )
             }
         }
     }
 
     private fun validateAndSetJacksonDeserializationFeatures(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES)) {
-            val value = configs[AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES]
-            if (value is List<*>) {
-                jacksonDeserializationFeatures =
-                    value.map {
-                        DeserializationFeature.valueOf(
-                            stringEntry(AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES, it),
-                        )
-                    }
-            } else {
-                throw AWSSchemaRegistryException("Jackson Deserialization features should be a list")
+            val key = AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES
+            when (val value = configs[key]) {
+                is List<*> ->
+                    jacksonDeserializationFeatures =
+                        value.map { DeserializationFeature.valueOf(stringEntry(key, it)) }
+
+                is Map<*, *> ->
+                    jacksonDeserializationFeatureToggles =
+                        featureToggles(key, value) { DeserializationFeature.valueOf(it) }
+
+                else -> throw AWSSchemaRegistryException(
+                    "Jackson Deserialization features should be a list of names, or a map of name to boolean",
+                )
             }
         }
+    }
+
+    private fun <T> featureToggles(
+        key: String,
+        toggles: Map<*, *>,
+        parse: (String) -> T,
+    ): Map<T, Boolean> = toggles.entries.associate { (name, enabled) ->
+        parse(stringEntry(key, name)) to booleanEntry(key, enabled)
+    }
+
+    private fun booleanEntry(
+        key: String,
+        entry: Any?,
+    ): Boolean {
+        if (entry is Boolean) {
+            return entry
+        }
+        if (entry is String && (entry.equals("true", ignoreCase = true) || entry.equals("false", ignoreCase = true))) {
+            return entry.toBoolean()
+        }
+        throw AWSSchemaRegistryException(
+            "Configuration property $key must only map to Boolean values, not ${describeType(entry)}",
+        )
     }
 
     private fun stringConfig(
@@ -485,7 +516,9 @@ class GlueSchemaRegistryConfiguration {
             proxyUrl == other.proxyUrl &&
             userAgentApp == other.userAgentApp &&
             jacksonSerializationFeatures == other.jacksonSerializationFeatures &&
-            jacksonDeserializationFeatures == other.jacksonDeserializationFeatures
+            jacksonDeserializationFeatures == other.jacksonDeserializationFeatures &&
+            jacksonSerializationFeatureToggles == other.jacksonSerializationFeatureToggles &&
+            jacksonDeserializationFeatureToggles == other.jacksonDeserializationFeatureToggles
     }
 
     override fun hashCode(): Int = listOf(
@@ -495,6 +528,7 @@ class GlueSchemaRegistryConfiguration {
         isJsonSchemaCompatibilityCheckEnabled, jsonClassNameAllowlist,
         tags, metadata, secondaryDeserializer, proxyUrl, userAgentApp,
         jacksonSerializationFeatures, jacksonDeserializationFeatures,
+        jacksonSerializationFeatureToggles, jacksonDeserializationFeatureToggles,
     ).fold(1) { acc, value -> 31 * acc + (value?.hashCode() ?: 0) }
 
     override fun toString(): String = "GlueSchemaRegistryConfiguration(compressionType=$compressionType, endPoint=$endPoint, " +
@@ -508,7 +542,9 @@ class GlueSchemaRegistryConfiguration {
         "jsonClassNameAllowlist=$jsonClassNameAllowlist, tags=$tags, metadata=$metadata, " +
         "secondaryDeserializer=$secondaryDeserializer, proxyUrl=$proxyUrl, userAgentApp=$userAgentApp, " +
         "jacksonSerializationFeatures=$jacksonSerializationFeatures, " +
-        "jacksonDeserializationFeatures=$jacksonDeserializationFeatures)"
+        "jacksonDeserializationFeatures=$jacksonDeserializationFeatures, " +
+        "jacksonSerializationFeatureToggles=$jacksonSerializationFeatureToggles, " +
+        "jacksonDeserializationFeatureToggles=$jacksonDeserializationFeatureToggles)"
 
     protected fun getMapFromPropertiesFile(properties: Properties): Map<String, *> = HashMap(properties.entries.associate { it.key.toString() to it.value })
 

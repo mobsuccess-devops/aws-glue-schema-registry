@@ -813,3 +813,23 @@ The only Java left in the repository is the Avro classes generated into the test
   [#199](https://github.com/awslabs/aws-glue-schema-registry/issues/199) worth shipping — the
   record-name and topic-record-name strategies need per-format record-name extraction and wait for
   demand.
+- **The Jackson feature keys also accept a map, so a feature can be turned off.**
+  `jacksonSerializationFeatures` and `jacksonDeserializationFeatures` took a `List<String>` and
+  called `ObjectMapper.enable` on each entry. A Jackson feature that is on by default —
+  `FAIL_ON_UNKNOWN_PROPERTIES` being the one users hit — could therefore not be turned off
+  through configuration at all. Both keys now also accept a `Map<String, Boolean>`, applied with
+  `ObjectMapper.configure`, so each named feature is set to the value given. **The list shape is
+  untouched**, down to being applied to the serializer and the deserializer alike; the map shape
+  follows the same placement rather than introducing a second rule, which is inert either way
+  since a feature only takes effect on its own side of Jackson. The two shapes are mutually
+  exclusive per key, and the map is the only new thing a caller can pass: nothing that was
+  accepted before is rejected. Two error messages change — "Jackson Serialization features should
+  be a list" now reads "…should be a list of names, or a map of name to boolean" (likewise for
+  deserialization), since a list is no longer the only right answer — and a map entry whose value
+  is neither a boolean nor `"true"`/`"false"` is rejected by name, in the style of the other
+  configuration errors. The Connect `ConfigDef` still declares both keys as `Type.LIST`: a
+  properties file has no map syntax, so the map shape is reachable only from a programmatic
+  configuration, which is also where `tags` and `metadata` stand. `JsonSchemaConverter` reads the
+  two keys directly for its own `ObjectMapper` and accepts both shapes there too, rather than
+  failing on a cast. This is
+  [awslabs/aws-glue-schema-registry#325](https://github.com/awslabs/aws-glue-schema-registry/issues/325).

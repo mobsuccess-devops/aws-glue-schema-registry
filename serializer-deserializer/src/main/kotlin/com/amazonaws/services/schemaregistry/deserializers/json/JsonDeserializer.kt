@@ -62,6 +62,12 @@ open class JsonDeserializer(
             if (!CollectionUtils.isEmpty(configs.jacksonDeserializationFeatures)) {
                 configs.jacksonDeserializationFeatures!!.forEach { objectMapper.enable(it) }
             }
+            configs.jacksonSerializationFeatureToggles?.forEach { (feature, enabled) ->
+                objectMapper.configure(feature, enabled)
+            }
+            configs.jacksonDeserializationFeatureToggles?.forEach { (feature, enabled) ->
+                objectMapper.configure(feature, enabled)
+            }
         }
     }
 

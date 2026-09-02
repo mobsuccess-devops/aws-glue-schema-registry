@@ -171,6 +171,27 @@ class GlueSchemaRegistryConfigBuilderTest {
     }
 
     @Test
+    fun testJacksonFeatureToggles_areHandedOverAsEnumNamesToBooleans() {
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                jacksonSerializationFeatures(mapOf(SerializationFeature.INDENT_OUTPUT to false))
+                jacksonDeserializationFeatures(
+                    mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES to false),
+                )
+            }
+
+        assertEquals(
+            mapOf(SerializationFeature.INDENT_OUTPUT to false),
+            configuration.jacksonSerializationFeatureToggles,
+        )
+        assertEquals(
+            mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES to false),
+            configuration.jacksonDeserializationFeatureToggles,
+        )
+    }
+
+    @Test
     fun testAllowlist_acceptsNamesAndClasses() {
         val fromNames =
             glueSchemaRegistryConfiguration {
