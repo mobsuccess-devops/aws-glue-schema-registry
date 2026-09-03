@@ -863,7 +863,9 @@ The only Java left in the repository is the Avro classes generated into the test
   a `MapperFeature`, a custom module, a `SerializerProvider`. Both are resolved at configuration
   time, through the thread context class loader first, and a class that cannot be instantiated or
   does not implement the expected interface is rejected with a message naming it, in the style of
-  `schemaNameGenerationClass`. `GlueSchemaRegistryConfiguration.buildObjectMapper()` applies them
+  `schemaNameGenerationClass`. A failure to link — a module on the classpath but missing a
+  transitive class of its own — raises a `LinkageError` rather than an exception, and is caught
+  and reported the same way rather than escaping unwrapped. `GlueSchemaRegistryConfiguration.buildObjectMapper()` applies them
   in one place, in a fixed order — factory, then module, then the existing feature keys, so a
   feature named in both wins in the properties — and both serdes call it. Unset, the two keys
   leave `DefaultObjectMapperFactory` building exactly the mapper the two classes built for

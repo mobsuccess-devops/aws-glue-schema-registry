@@ -558,12 +558,9 @@ class GlueSchemaRegistryConfiguration {
             try {
                 loadClass(className).getDeclaredConstructor().newInstance()
             } catch (e: Exception) {
-                throw AWSSchemaRegistryException(
-                    "Configuration property $key names a class that could not be instantiated: $className. " +
-                        "It has to be a public class with a public no-argument constructor, implementing " +
-                        "${type.name}, and on the classpath.",
-                    e,
-                )
+                throw notInstantiable(key, className, type, e)
+            } catch (e: LinkageError) {
+                throw notInstantiable(key, className, type, e)
             }
         if (!type.isInstance(instance)) {
             throw AWSSchemaRegistryException(
@@ -573,6 +570,18 @@ class GlueSchemaRegistryConfiguration {
         }
         return type.cast(instance)
     }
+
+    private fun notInstantiable(
+        key: String,
+        className: String,
+        type: Class<*>,
+        cause: Throwable,
+    ): AWSSchemaRegistryException = AWSSchemaRegistryException(
+        "Configuration property $key names a class that could not be instantiated: $className. " +
+            "It has to be a public class with a public no-argument constructor, implementing " +
+            "${type.name}, and on the classpath.",
+        cause,
+    )
 
     private fun stringConfig(
         configs: Map<String, *>,

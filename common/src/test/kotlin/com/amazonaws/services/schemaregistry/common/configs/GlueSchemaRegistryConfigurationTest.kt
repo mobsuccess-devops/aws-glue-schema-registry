@@ -1079,6 +1079,28 @@ class GlueSchemaRegistryConfigurationTest {
         )
     }
 
+    /**
+     * A class whose initialisation fails — a module present but missing a transitive class of its
+     * own is the realistic case — throws a `LinkageError`, not an `Exception`. It has to be
+     * reported the same way as every other unusable class name rather than escaping unwrapped.
+     */
+    @Test
+    fun testBuildConfig_objectMapperFactoryThatFailsToInitialise_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = UninitialisableObjectMapperFactory::class.java.name
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertTrue(
+            exception.message!!.startsWith(
+                "Configuration property ${AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY} names a class " +
+                    "that could not be instantiated: ${UninitialisableObjectMapperFactory::class.java.name}.",
+            ),
+            exception.message,
+        )
+        assertTrue(exception.cause is LinkageError, exception.cause.toString())
+    }
+
     @Test
     fun testBuildConfig_objectMapperFactoryNamingSomethingElse_namesTheClass() {
         configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = ObjectMapper::class.java.name
@@ -1148,6 +1170,14 @@ class GlueSchemaRegistryConfigurationTest {
         override fun newObjectMapper(): ObjectMapper = DefaultObjectMapperFactory()
             .newObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)
+    }
+
+    class UninitialisableObjectMapperFactory : ObjectMapperFactory {
+        override fun newObjectMapper(): ObjectMapper = DefaultObjectMapperFactory().newObjectMapper()
+
+        companion object {
+            private val UNRESOLVABLE: String = throw NoClassDefFoundError("com/example/Missing")
+        }
     }
 
     class ConstructorTakingObjectMapperFactory(
