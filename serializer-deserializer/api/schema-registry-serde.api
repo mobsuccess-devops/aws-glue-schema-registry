@@ -503,6 +503,7 @@ public final class com/amazonaws/services/schemaregistry/serializers/json/JsonSe
 
 public final class com/amazonaws/services/schemaregistry/serializers/json/JsonValidator {
 	public fun <init> ()V
+	public fun <init> (Lcom/fasterxml/jackson/databind/ObjectMapper;)V
 	public final fun validateDataWithSchema (Lcom/fasterxml/jackson/databind/JsonNode;Lcom/fasterxml/jackson/databind/JsonNode;)V
 }
 

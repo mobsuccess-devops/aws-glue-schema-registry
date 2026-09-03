@@ -60,6 +60,8 @@ object AWSSchemaRegistryConstants {
     const val TRANSPORT_METADATA_KEY = "x-amz-meta-transport"
     const val JACKSON_SERIALIZATION_FEATURES = "jacksonSerializationFeatures"
     const val JACKSON_DESERIALIZATION_FEATURES = "jacksonDeserializationFeatures"
+    const val REGISTER_JAVA_TIME_MODULE = "registerJavaTimeModule"
+    const val OBJECT_MAPPER_FACTORY = "objectMapperFactory"
     const val USER_AGENT_APP = "userAgentApp"
     const val JSON_SCHEMA_NULLABLE_ENABLED = "jsonSchemaNullableEnabled"
     const val JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED = "jsonSchemaCompatibilityCheckEnabled"

@@ -21,6 +21,8 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.commons.lang3)
     runtimeOnly(libs.aws.jsonProtocol)
+
+    testImplementation(libs.jackson.jsr310)
 }
 
 val generateVersionSource by tasks.registering(Copy::class) {

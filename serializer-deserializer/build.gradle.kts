@@ -57,6 +57,7 @@ dependencies {
     }
 
     testImplementation(libs.jackson.annotations)
+    testImplementation(libs.jackson.jsr310)
     testImplementation(libs.truth.protoExtension)
 }
 

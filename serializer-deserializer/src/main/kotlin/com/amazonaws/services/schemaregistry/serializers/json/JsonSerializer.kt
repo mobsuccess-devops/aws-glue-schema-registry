@@ -16,15 +16,14 @@
 package com.amazonaws.services.schemaregistry.serializers.json
 
 import com.amazonaws.services.schemaregistry.common.GlueSchemaRegistryDataFormatSerializer
+import com.amazonaws.services.schemaregistry.common.configs.DefaultObjectMapperFactory
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator
-import org.apache.commons.collections4.CollectionUtils
 import java.nio.charset.StandardCharsets
 
 /**
@@ -34,27 +33,14 @@ import java.nio.charset.StandardCharsets
 open class JsonSerializer(
     configs: GlueSchemaRegistryConfiguration?,
 ) : GlueSchemaRegistryDataFormatSerializer {
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: ObjectMapper =
+        configs?.buildObjectMapper() ?: DefaultObjectMapperFactory().newObjectMapper()
+    private val jsonValidator = JsonValidator(objectMapper)
     private val jsonSchemaGenerator: JsonSchemaGenerator
 
     var schemaRegistrySerDeConfigs: GlueSchemaRegistryConfiguration? = configs
 
     init {
-        objectMapper.nodeFactory = JsonNodeFactory.withExactBigDecimals(true)
-        if (configs != null) {
-            if (!CollectionUtils.isEmpty(configs.jacksonSerializationFeatures)) {
-                configs.jacksonSerializationFeatures!!.forEach { objectMapper.enable(it) }
-            }
-            if (!CollectionUtils.isEmpty(configs.jacksonDeserializationFeatures)) {
-                configs.jacksonDeserializationFeatures!!.forEach { objectMapper.enable(it) }
-            }
-            configs.jacksonSerializationFeatureToggles?.forEach { (feature, enabled) ->
-                objectMapper.configure(feature, enabled)
-            }
-            configs.jacksonDeserializationFeatureToggles?.forEach { (feature, enabled) ->
-                objectMapper.configure(feature, enabled)
-            }
-        }
         jsonSchemaGenerator =
             if (configs != null && configs.isJsonSchemaNullableEnabled) {
                 JsonSchemaGenerator(objectMapper, JsonSchemaConfig.nullableJsonSchemaDraft4())
@@ -71,7 +57,7 @@ open class JsonSerializer(
     override fun serialize(data: Any): ByteArray {
         val dataNode = getDataNode(data)
         val schemaNode = getSchemaNode(data)
-        JSON_VALIDATOR.validateDataWithSchema(schemaNode, dataNode)
+        jsonValidator.validateDataWithSchema(schemaNode, dataNode)
         return writeBytes(dataNode)
     }
 
@@ -146,7 +132,7 @@ open class JsonSerializer(
     }
 
     override fun validate(data: Any) {
-        JSON_VALIDATOR.validateDataWithSchema(getSchemaNode(data), getDataNode(data))
+        jsonValidator.validateDataWithSchema(getSchemaNode(data), getDataNode(data))
     }
 
     /** Mirrors the fluent API Lombok generated: called from Java code. */
@@ -159,8 +145,6 @@ open class JsonSerializer(
     }
 
     companion object {
-        private val JSON_VALIDATOR = JsonValidator()
-
         @JvmStatic
         fun builder(): JsonSerializerBuilder = JsonSerializerBuilder()
     }

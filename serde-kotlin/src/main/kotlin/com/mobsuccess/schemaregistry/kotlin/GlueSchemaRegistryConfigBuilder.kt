@@ -15,10 +15,12 @@
 
 package com.mobsuccess.schemaregistry.kotlin
 
+import com.amazonaws.services.schemaregistry.common.configs.ObjectMapperFactory
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType
 import com.amazonaws.services.schemaregistry.utils.ProtobufMessageType
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.SerializationFeature
 import software.amazon.awssdk.services.glue.model.Compatibility
 import software.amazon.awssdk.services.glue.model.DataFormat
@@ -186,6 +188,33 @@ public class GlueSchemaRegistryConfigBuilder internal constructor() {
             AWSSchemaRegistryConstants.JACKSON_DESERIALIZATION_FEATURES,
             features.entries.associate { (feature, enabled) -> feature.name to enabled },
         )
+    }
+
+    /**
+     * Fully qualified name of a Jackson `Module` registered on the JSON mappers, most often
+     * `com.fasterxml.jackson.datatype.jsr310.JavaTimeModule`, which is what makes a POJO holding
+     * `java.time` values serializable and its schema generatable.
+     */
+    public var registerJavaTimeModule: String?
+        get() = properties[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] as String?
+        set(value) = put(AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE, value)
+
+    /** The Jackson `Module` registered on the JSON mappers, given by type. */
+    public fun registerJavaTimeModule(module: Class<out Module>) {
+        put(AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE, module.name)
+    }
+
+    /**
+     * Fully qualified name of an `ObjectMapperFactory` implementation building the JSON mappers.
+     * Unset, the mappers are the ones the library has always built for itself.
+     */
+    public var objectMapperFactory: String?
+        get() = properties[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] as String?
+        set(value) = put(AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY, value)
+
+    /** The `ObjectMapperFactory` building the JSON mappers, given by type. */
+    public fun objectMapperFactory(factory: Class<out ObjectMapperFactory>) {
+        put(AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY, factory.name)
     }
 
     /**

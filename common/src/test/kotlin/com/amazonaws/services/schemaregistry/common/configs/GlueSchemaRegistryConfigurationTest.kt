@@ -19,12 +19,18 @@ import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryExceptio
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNotSame
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,6 +39,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import software.amazon.awssdk.services.glue.model.Compatibility
+import java.math.BigDecimal
 import java.net.URI
 import java.util.Properties
 
@@ -916,5 +923,240 @@ class GlueSchemaRegistryConfigurationTest {
         // A scoped package entry set the same way still works, so the guard is not over-broad.
         config.jsonClassNameAllowlist = HashSet(listOf("com.example.*"))
         assertTrue(config.isClassNameAllowed("com.example.Car"))
+    }
+
+    @Test
+    fun testBuildConfig_objectMapperFactoryAndModuleUnset_leaveThemNull() {
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertNull(configuration.objectMapperFactory)
+        assertNull(configuration.registerJavaTimeModule)
+    }
+
+    /**
+     * The mapper the two JSON serdes built for themselves registered no module and read numbers
+     * into exact `BigDecimal` nodes, which is what keeps the scale of a decimal rather than
+     * normalising it. Nothing about that changes while the two new keys are unset.
+     */
+    @Test
+    fun testBuildObjectMapper_noCustomisation_matchesTheMapperTheSerdesUsedToBuild() {
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        val objectMapper = configuration.buildObjectMapper()
+
+        assertEquals(
+            EXACT_DECIMAL,
+            objectMapper.nodeFactory
+                .numberNode(BigDecimal(EXACT_DECIMAL))
+                .decimalValue()
+                .toString(),
+        )
+        assertTrue(objectMapper.registeredModuleIds.isEmpty())
+    }
+
+    @Test
+    fun testBuildObjectMapper_calledTwice_returnsDistinctMappers() {
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertNotSame(configuration.buildObjectMapper(), configuration.buildObjectMapper())
+    }
+
+    @Test
+    fun testBuildConfig_registerJavaTimeModuleAsString_isKept() {
+        configs[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] = JavaTimeModule::class.java.name
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(JavaTimeModule::class.java.name, configuration.registerJavaTimeModule)
+        assertTrue(
+            configuration.buildObjectMapper().registeredModuleIds.contains(JavaTimeModule().typeId),
+        )
+    }
+
+    @Test
+    fun testBuildConfig_registerJavaTimeModuleAsClass_isKeptByName() {
+        configs[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] = JavaTimeModule::class.java
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(JavaTimeModule::class.java.name, configuration.registerJavaTimeModule)
+    }
+
+    @Test
+    fun testBuildConfig_registerJavaTimeModuleNotOnTheClasspath_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] = "com.example.NoSuchModule"
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE} names a class " +
+                "that could not be instantiated: com.example.NoSuchModule. It has to be a public class with " +
+                "a public no-argument constructor, implementing com.fasterxml.jackson.databind.Module, and " +
+                "on the classpath.",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_registerJavaTimeModuleNamingSomethingElse_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] = ObjectMapper::class.java.name
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE} has to name a " +
+                "class implementing com.fasterxml.jackson.databind.Module; " +
+                "com.fasterxml.jackson.databind.ObjectMapper does not.",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_registerJavaTimeModuleAsNeitherStringNorClass_namesTheType() {
+        configs[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] = 1
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE} must be a class " +
+                "name, or a Class, not a java.lang.Integer",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_objectMapperFactory_buildsTheMapperItReturns() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = SortingObjectMapperFactory::class.java.name
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(SortingObjectMapperFactory::class.java.name, configuration.objectMapperFactory)
+        assertTrue(
+            configuration.buildObjectMapper().isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY),
+        )
+    }
+
+    @Test
+    fun testBuildConfig_objectMapperFactoryAsClass_isKeptByName() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = SortingObjectMapperFactory::class.java
+
+        val configuration = GlueSchemaRegistryConfiguration(configs)
+
+        assertEquals(SortingObjectMapperFactory::class.java.name, configuration.objectMapperFactory)
+    }
+
+    @Test
+    fun testBuildConfig_objectMapperFactoryNotOnTheClasspath_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = "com.example.NoSuchFactory"
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY} names a class that " +
+                "could not be instantiated: com.example.NoSuchFactory. It has to be a public class with a " +
+                "public no-argument constructor, implementing " +
+                "com.amazonaws.services.schemaregistry.common.configs.ObjectMapperFactory, and on the classpath.",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_objectMapperFactoryWithoutANoArgConstructor_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = ConstructorTakingObjectMapperFactory::class.java.name
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertTrue(
+            exception.message!!.startsWith(
+                "Configuration property ${AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY} names a class " +
+                    "that could not be instantiated: ${ConstructorTakingObjectMapperFactory::class.java.name}.",
+            ),
+        )
+    }
+
+    @Test
+    fun testBuildConfig_objectMapperFactoryNamingSomethingElse_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = ObjectMapper::class.java.name
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY} has to name a class " +
+                "implementing com.amazonaws.services.schemaregistry.common.configs.ObjectMapperFactory; " +
+                "com.fasterxml.jackson.databind.ObjectMapper does not.",
+            exception.message,
+        )
+    }
+
+    /**
+     * Tests the documented order: the factory builds the mapper, the module is registered on it,
+     * and the feature properties are applied last, so a feature named in both wins there.
+     */
+    @Test
+    fun testBuildObjectMapper_featurePropertyAndFactoryDisagree_theFeaturePropertyWins() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = IndentingObjectMapperFactory::class.java.name
+        configs[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] = JavaTimeModule::class.java.name
+        configs[AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES] =
+            mapOf(SerializationFeature.INDENT_OUTPUT.name to false)
+
+        val objectMapper = GlueSchemaRegistryConfiguration(configs).buildObjectMapper()
+
+        assertFalse(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT))
+        assertTrue(objectMapper.registeredModuleIds.contains(JavaTimeModule().typeId))
+    }
+
+    @Test
+    fun testBuildObjectMapper_factoryOnly_keepsWhatTheFactorySet() {
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = IndentingObjectMapperFactory::class.java.name
+
+        val objectMapper = GlueSchemaRegistryConfiguration(configs).buildObjectMapper()
+
+        assertTrue(objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT))
+    }
+
+    @Test
+    fun testEquals_configurationsDifferingByTheNewKeys_areNotEqual() {
+        val plain = GlueSchemaRegistryConfiguration(HashMap(configs))
+
+        configs[AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE] = JavaTimeModule::class.java.name
+        val withModule = GlueSchemaRegistryConfiguration(HashMap(configs))
+
+        configs[AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY] = SortingObjectMapperFactory::class.java.name
+        val withFactory = GlueSchemaRegistryConfiguration(HashMap(configs))
+
+        assertNotEquals(plain, withModule)
+        assertNotEquals(withModule, withFactory)
+        assertEquals(withFactory, GlueSchemaRegistryConfiguration(HashMap(configs)))
+        assertTrue(withFactory.toString().contains(SortingObjectMapperFactory::class.java.name))
+        assertTrue(withFactory.toString().contains(JavaTimeModule::class.java.name))
+    }
+
+    class SortingObjectMapperFactory : ObjectMapperFactory {
+        override fun newObjectMapper(): ObjectMapper = JsonMapper
+            .builder()
+            .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+            .build()
+    }
+
+    class IndentingObjectMapperFactory : ObjectMapperFactory {
+        override fun newObjectMapper(): ObjectMapper = DefaultObjectMapperFactory()
+            .newObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+    }
+
+    class ConstructorTakingObjectMapperFactory(
+        private val objectMapper: ObjectMapper,
+    ) : ObjectMapperFactory {
+        override fun newObjectMapper(): ObjectMapper = objectMapper
+    }
+
+    private companion object {
+        const val EXACT_DECIMAL = "1.2000"
     }
 }
