@@ -28,9 +28,25 @@ import java.util.TimeZone
 
 object ProtobufSchemaConverterUtils {
     private const val MAP_ENTRY_SUFFIX = "Entry"
+    private val INVALID_IDENTIFIER_CHARACTERS = Regex("[^A-Za-z0-9_]")
+
+    internal fun toValidIdentifier(name: String): String {
+        if (name.isEmpty()) {
+            return name
+        }
+        val identifier = INVALID_IDENTIFIER_CHARACTERS.replace(name, "_")
+        return if (identifier[0].isDigit()) "_$identifier" else identifier
+    }
+
+    internal fun toValidFullName(name: String): String = name
+        .split(".")
+        .joinToString(".") { toValidIdentifier(it) }
 
     @JvmStatic
-    fun getTypeName(typeName: String): String = if (typeName.startsWith(".")) typeName else ".$typeName"
+    fun getTypeName(typeName: String): String {
+        val fullName = toValidFullName(typeName)
+        return if (fullName.startsWith(".")) fullName else ".$fullName"
+    }
 
     @JvmStatic
     fun toMapEntryName(name: String): String {
@@ -39,11 +55,11 @@ object ProtobufSchemaConverterUtils {
             s = LOWER_UNDERSCORE.to(UPPER_CAMEL, s)
         }
         s += MAP_ENTRY_SUFFIX
-        return s.substring(0, 1).uppercase() + s.substring(1)
+        return toValidIdentifier(s.substring(0, 1).uppercase() + s.substring(1))
     }
 
     @JvmStatic
-    fun getSchemaSimpleName(schemaName: String): String = schemaName.split(".").last()
+    fun getSchemaSimpleName(schemaName: String): String = toValidIdentifier(schemaName.split(".").last())
 
     @JvmStatic
     fun isEnumType(schema: Schema): Boolean = schema.type() == Schema.Type.STRING &&

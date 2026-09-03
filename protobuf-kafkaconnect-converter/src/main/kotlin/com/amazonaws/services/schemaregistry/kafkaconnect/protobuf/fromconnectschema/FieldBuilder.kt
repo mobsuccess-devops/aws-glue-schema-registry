@@ -23,6 +23,8 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectsc
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.getSchemaSimpleName
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.getTypeName
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.isEnumType
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.toValidFullName
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.toValidIdentifier
 import com.google.protobuf.DescriptorProtos
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.errors.DataException
@@ -59,7 +61,7 @@ object FieldBuilder {
                         enumDescriptorProtoBuilder.addValue(
                             DescriptorProtos.EnumValueDescriptorProto
                                 .newBuilder()
-                                .setName(parameter.key.replace(PROTOBUF_ENUM_VALUE, ""))
+                                .setName(toValidIdentifier(parameter.key.replace(PROTOBUF_ENUM_VALUE, "")))
                                 .setNumber(parameter.value.toInt())
                                 .build(),
                         )
@@ -67,7 +69,7 @@ object FieldBuilder {
                 }
 
                 // Adding the Enum to the protobuf schema file, and defining a field as Enum
-                if (isParentLevel(fileDescriptorProtoBuilder.getPackage(), enumFullName)) {
+                if (isParentLevel(fileDescriptorProtoBuilder.getPackage(), toValidFullName(enumFullName))) {
                     fileDescriptorProtoBuilder.addEnumType(enumDescriptorProtoBuilder)
                 } else {
                     messageDescriptorProtoBuilder.addEnumType(enumDescriptorProtoBuilder)
@@ -99,7 +101,9 @@ object FieldBuilder {
                 )
                 build(fieldSchema, fileDescriptorProtoBuilder, nestedMessageDescriptorProtoBuilder)
                 // A parent level schema is added as a message type, a nested one as a nested type.
-                if (structName != null && isParentLevel(fileDescriptorProtoBuilder.getPackage(), structName)) {
+                if (structName != null &&
+                    isParentLevel(fileDescriptorProtoBuilder.getPackage(), toValidFullName(structName))
+                ) {
                     fileDescriptorProtoBuilder.addMessageType(nestedMessageDescriptorProtoBuilder)
                 } else {
                     messageDescriptorProtoBuilder.addNestedType(nestedMessageDescriptorProtoBuilder)
@@ -182,7 +186,7 @@ object FieldBuilder {
         fieldBuilderMap: MutableMap<String, DescriptorProtos.FieldDescriptorProto.Builder>,
     ) {
         messageDescriptorProtoBuilder.addOneofDecl(
-            DescriptorProtos.OneofDescriptorProto.newBuilder().setName(name).build(),
+            DescriptorProtos.OneofDescriptorProto.newBuilder().setName(toValidIdentifier(name)).build(),
         )
         for (oneofField in schema.fields()) {
             val oneofFieldDescriptorProtoBuilder =
@@ -224,11 +228,11 @@ object FieldBuilder {
         } else if (Schema.Type.STRUCT == fieldSchema.type()) {
             val structName = fieldSchema.name()
             fieldDescriptorProtoBuilder.setTypeName(
-                if (structName != null) getTypeName(structName) else capitalize(fieldName),
+                if (structName != null) getTypeName(structName) else toValidIdentifier(capitalize(fieldName)),
             )
         }
 
-        fieldDescriptorProtoBuilder.setName(fieldName)
+        fieldDescriptorProtoBuilder.setName(toValidIdentifier(fieldName))
         return fieldDescriptorProtoBuilder
     }
 

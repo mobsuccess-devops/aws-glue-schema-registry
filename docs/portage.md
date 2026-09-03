@@ -886,3 +886,28 @@ The only Java left in the repository is the Avro classes generated into the test
   of the unreviewed pull request
   [awslabs/aws-glue-schema-registry#320](https://github.com/awslabs/aws-glue-schema-registry/pull/320)
   by [amcquistan](https://github.com/amcquistan).
+- **Connect names are sanitized into Protobuf identifiers.** `ConnectSchemaToProtobufSchemaConverter`
+  set the message name from `schema.name()` verbatim — under a `// TODO: Revisit for compilation`
+  it inherited — and derived the file package from the same string. A Connect schema named the way
+  Debezium names one, `server.database.table.Value`, therefore became a message called
+  `server.database.table.Value`, and `FileDescriptor.buildFrom` rejected it with
+  `DescriptorValidationException: "server.database.table.Value" is not a valid identifier` before a
+  record was written. A server name carrying a hyphen failed the same way through the package, and
+  so did any field, enum or enum-value name that is not `[A-Za-z_][A-Za-z0-9_]*`. Every name the
+  converter emits now passes through `ProtobufSchemaConverterUtils.toValidIdentifier` — each
+  character outside that set becomes `_`, and a leading digit gains a `_` prefix, the rule
+  Confluent's converter uses — with the top-level message taking the simple name of the schema
+  rather than its dotted whole. The **references** are sanitized with it, in the same pass and by
+  the same function: the file package, the parent-level test in `FieldBuilder.isParentLevel`, the
+  `type_name` of a struct, an array of structs and an enum field, the map-entry type, and the two
+  places on the data path that resolve a descriptor by Connect name —
+  `ConnectDataToProtobufDataConverter.getPathName` for the top-level message and `findFieldByName`
+  for each field — so a reference still resolves to the message the schema pass generated. The
+  sanitization is the identity on every name that is already a valid identifier, so a schema that
+  converts today converts to the same descriptor, byte for byte: the nine expected
+  `.filedescproto` oracles are unchanged, and the five new tests fail on the unfixed converter
+  with the exception above. Only schemas that could not be converted at all behave differently.
+  What this does not change is the convention that a nested struct's Connect name is
+  package-qualified — the reference is still built from that name, not from where the message
+  ends up. This is
+  [awslabs/aws-glue-schema-registry#290](https://github.com/awslabs/aws-glue-schema-registry/issues/290).

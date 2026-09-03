@@ -15,6 +15,7 @@
 
 package com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectdata
 
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.toValidIdentifier
 import com.google.protobuf.Descriptors
 import com.google.protobuf.Message
 import org.apache.kafka.connect.data.Schema
@@ -35,5 +36,5 @@ class EnumDataConverter : DataConverter {
         schema: Schema,
         value: Any?,
         fieldDescriptor: Descriptors.FieldDescriptor?,
-    ): Any = fieldDescriptor!!.enumType.findValueByName(value.toString())
+    ): Any = fieldDescriptor!!.enumType.findValueByName(toValidIdentifier(value.toString()))
 }
