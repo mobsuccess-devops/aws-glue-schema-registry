@@ -25,6 +25,8 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTest
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getEnumSchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getMapProtobufMessages
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getMapSchema
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getNestedOneofProtobufMessages
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getNestedOneofSchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getOneofProtobufMessages
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getOneofSchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getPrimitiveProtobufMessages
@@ -115,6 +117,15 @@ class ProtobufSchemaToConnectSchemaConverterTest {
     }
 
     @ParameterizedTest
+    @MethodSource("getNestedOneofTestCases")
+    fun toConnectSchema_convertsNestedOneofTypeSchema(message: Message) {
+        val packageName = message.descriptorForType.file.`package`
+        val actualConnectSchema = PROTOBUF_SCHEMA_TO_CONNECT_SCHEMA_CONVERTER.toConnectSchema(message)
+        val expectedConnectSchema = getNestedOneofSchema(packageName)
+        assertEquals(expectedConnectSchema, actualConnectSchema)
+    }
+
+    @ParameterizedTest
     @MethodSource("getOneofTestCases")
     fun toConnectSchema_convertsOneofTypeSchema(message: Message) {
         val packageName = message.descriptorForType.file.`package`
@@ -187,6 +198,9 @@ class ProtobufSchemaToConnectSchemaConverterTest {
 
         @JvmStatic
         fun getOneofTestCases(): Stream<Arguments> = getOneofProtobufMessages().stream().map { Arguments.of(it) }
+
+        @JvmStatic
+        fun getNestedOneofTestCases(): Stream<Arguments> = getNestedOneofProtobufMessages().stream().map { Arguments.of(it) }
 
         @JvmStatic
         fun getAllTypesTestCases(): Stream<Arguments> = getAllTypesProtobufMessages().stream().map { Arguments.of(it) }

@@ -1,0 +1,13 @@
+package com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2;
+
+message NestedOneofType {
+  required Payment payment = 1;
+
+  message Payment {
+    required string reference = 1;
+    oneof method {
+      string card = 2;
+      int32 voucher = 3;
+    }
+  }
+}

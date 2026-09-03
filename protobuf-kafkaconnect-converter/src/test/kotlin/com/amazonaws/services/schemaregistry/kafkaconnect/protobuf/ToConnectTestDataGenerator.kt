@@ -26,6 +26,7 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.ArrayTyp
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.DecimalTypeSyntax2
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.EnumTypeSyntax2
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.MapTypeSyntax2
+import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.NestedOneofTypeSyntax2
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.NestedTypeSyntax2
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.OneofTypeSyntax2
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax2.PrimitiveTypesSyntax2
@@ -36,6 +37,7 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.ArrayTyp
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.DecimalTypeSyntax3
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.EnumTypeSyntax3
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.MapTypeSyntax3
+import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.NestedOneofTypeSyntax3
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.NestedTypeSyntax3
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.OneofTypeSyntax3
 import com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3.PrimitiveTypesSyntax3
@@ -698,6 +700,61 @@ object ToConnectTestDataGenerator {
                 .field("shipped", SchemaBuilder.bool().parameter(PROTOBUF_TAG, "2").optional().build())
                 .parameter("protobuf.type", "oneof")
                 .optional()
+                .build(),
+    )
+
+    @JvmStatic
+    fun getNestedOneofProtobufMessages(): List<Message> = listOf(
+        NestedOneofTypeSyntax3.NestedOneofType
+            .newBuilder()
+            .setPayment(
+                NestedOneofTypeSyntax3.NestedOneofType.Payment
+                    .newBuilder()
+                    .setReference("INV-1")
+                    .setCard("4111"),
+            ).build(),
+        NestedOneofTypeSyntax2.NestedOneofType
+            .newBuilder()
+            .setPayment(
+                NestedOneofTypeSyntax2.NestedOneofType.Payment
+                    .newBuilder()
+                    .setReference("INV-1")
+                    .setCard("4111"),
+            ).build(),
+    )
+
+    @JvmStatic
+    fun getNestedOneofSchema(packageName: String): Schema = createConnectSchema("NestedOneofType", getNestedOneofType(packageName), mapOf(PROTOBUF_PACKAGE to packageName))
+
+    @JvmStatic
+    fun getNestedOneofTypeData(packageName: String): Struct {
+        val connectSchema = getNestedOneofSchema(packageName)
+        val paymentSchema = connectSchema.field("payment").schema()
+        val payment =
+            Struct(paymentSchema)
+                .put("reference", "INV-1")
+                .put("method", Struct(paymentSchema.field("method").schema()).put("card", "4111"))
+
+        return Struct(connectSchema).put("payment", payment)
+    }
+
+    private fun getNestedOneofType(packageName: String): Map<String, Schema> = linkedMapOf(
+        "payment" to
+            SchemaBuilder
+                .struct()
+                .name("$packageName.NestedOneofType.Payment")
+                .field("reference", SchemaBuilder.string().parameter(PROTOBUF_TAG, "1").build())
+                .field(
+                    "method",
+                    SchemaBuilder
+                        .struct()
+                        .name("method")
+                        .field("card", SchemaBuilder.string().parameter(PROTOBUF_TAG, "2").optional().build())
+                        .field("voucher", SchemaBuilder.int32().parameter(PROTOBUF_TAG, "3").optional().build())
+                        .parameter("protobuf.type", "oneof")
+                        .optional()
+                        .build(),
+                ).parameter(PROTOBUF_TAG, "1")
                 .build(),
     )
 

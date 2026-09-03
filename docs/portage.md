@@ -915,3 +915,22 @@ The only Java left in the repository is the Avro classes generated into the test
   package-qualified — the reference is still built from that name, not from where the message
   ends up. This is
   [awslabs/aws-glue-schema-registry#290](https://github.com/awslabs/aws-glue-schema-registry/issues/290).
+- **A oneof inside a nested message is grouped like one at the top level.**
+  `ProtobufSchemaToConnectSchemaConverter` has no Connect equivalent for a `oneof`, so it maps one
+  to a struct named after the declaration, tagged `protobuf.type: oneof`, whose branches are
+  **optional** fields — an unset branch is then a null in an optional field. It did that only for
+  the message it was called on: a nested message went through `messageSchemaBuilder`, which walked
+  `messageType.fields` with `toConnectSchemaForField` directly, with no `realContainingOneof`
+  grouping and no `.optional()`. Every branch of a nested `oneof` therefore became a **required**
+  Connect field, while `ProtobufDataToConnectDataConverter` skips the branches that are not set —
+  as it must, since at most one ever is. The first record died on
+  `DataException: Invalid value: null used for required field: "voucher"`. A `oneof` always has an
+  unset branch, so this was every nested message carrying one, with no way round it short of
+  flattening the schema. The field loop is now one `addFields(builder, descriptor, visitedTypes)`
+  that both the top-level conversion and `messageSchemaBuilder` call, so the two levels group
+  identically at any depth. Nothing else moved: for a nested message with no `oneof` the loop is
+  the one that was there, field for field, and the whole inherited suite is green untouched. The
+  rest of the round trip already understood the grouped shape — `toConnectData` tests
+  `protobuf.type` at each struct it descends into, and `FieldBuilder.buildOneof` reads the grouping
+  back the other way — which the new round-trip test exercises. This is
+  [awslabs/aws-glue-schema-registry#347](https://github.com/awslabs/aws-glue-schema-registry/issues/347).

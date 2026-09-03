@@ -31,6 +31,9 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTest
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getMapProtobufMessages
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getMapSchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getMapTypeData
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getNestedOneofProtobufMessages
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getNestedOneofSchema
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getNestedOneofTypeData
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getOneofProtobufMessages
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getOneofSchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getOneofTypeData
@@ -44,10 +47,13 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTest
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getTimeSchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToConnectTestDataGenerator.getTimeTypeData
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.nullOf
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.toconnectschema.ProtobufSchemaToConnectSchemaConverter
 import com.google.protobuf.Message
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaBuilder
+import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.errors.DataException
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -199,6 +205,26 @@ class ProtobufDataToConnectDataConverterTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("getNestedOneofTestCases")
+    fun toConnectData_convertsProtobufMessageToConnect_forNestedOneofType(nestedOneofMessage: Message) {
+        val packageName = nestedOneofMessage.descriptorForType.file.`package`
+        val connectSchema = getNestedOneofSchema(packageName)
+        val actualData = PROTOBUF_DATA_TO_CONNECT_DATA_CONVERTER.toConnectData(nestedOneofMessage, connectSchema)
+        val expectedData = getNestedOneofTypeData(packageName)
+
+        assertEquals(expectedData, actualData)
+    }
+
+    @ParameterizedTest
+    @MethodSource("getNestedOneofTestCases")
+    fun toConnectData_underTheConvertedSchema_validatesForNestedOneofType(nestedOneofMessage: Message) {
+        val connectSchema = ProtobufSchemaToConnectSchemaConverter().toConnectSchema(nestedOneofMessage)
+        val actualData = PROTOBUF_DATA_TO_CONNECT_DATA_CONVERTER.toConnectData(nestedOneofMessage, connectSchema)
+
+        assertDoesNotThrow { (actualData as Struct).validate() }
+    }
+
     companion object {
         private val PROTOBUF_DATA_TO_CONNECT_DATA_CONVERTER = ProtobufDataToConnectDataConverter()
 
@@ -225,6 +251,9 @@ class ProtobufDataToConnectDataConverterTest {
 
         @JvmStatic
         fun getOneofTestCases(): Stream<Arguments> = getOneofProtobufMessages().stream().map { Arguments.of(it) }
+
+        @JvmStatic
+        fun getNestedOneofTestCases(): Stream<Arguments> = getNestedOneofProtobufMessages().stream().map { Arguments.of(it) }
 
         @JvmStatic
         fun getAllTypesTestCases(): Stream<Arguments> = getAllTypesProtobufMessages().stream().map { Arguments.of(it) }
