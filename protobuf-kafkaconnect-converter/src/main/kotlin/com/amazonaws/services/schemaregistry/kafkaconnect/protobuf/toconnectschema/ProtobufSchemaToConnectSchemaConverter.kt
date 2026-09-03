@@ -67,6 +67,16 @@ class ProtobufSchemaToConnectSchemaConverter {
         builder.version(CONVERTER_VERSION)
         builder.parameter(PROTOBUF_PACKAGE, descriptor.file.getPackage())
 
+        addFields(builder, descriptor, visitedTypes)
+
+        return builder.build()
+    }
+
+    private fun addFields(
+        builder: SchemaBuilder,
+        descriptor: Descriptors.Descriptor,
+        visitedTypes: MutableSet<String>,
+    ) {
         for (fieldDescriptor in descriptor.fields) {
             val oneofDescriptor = fieldDescriptor.realContainingOneof
             if (oneofDescriptor != null) {
@@ -77,8 +87,6 @@ class ProtobufSchemaToConnectSchemaConverter {
             }
             builder.field(fieldDescriptor.name, toConnectSchemaForField(fieldDescriptor, visitedTypes))
         }
-
-        return builder.build()
     }
 
     private fun toConnectSchemaForField(
@@ -202,9 +210,7 @@ class ProtobufSchemaToConnectSchemaConverter {
         }
         visitedTypes.add(fullName)
         val schemaBuilder = SchemaBuilder.struct().name(fullName)
-        for (field in fieldDescriptor.messageType.fields) {
-            schemaBuilder.field(field.name, toConnectSchemaForField(field, visitedTypes))
-        }
+        addFields(schemaBuilder, fieldDescriptor.messageType, visitedTypes)
         visitedTypes.remove(fullName)
         return schemaBuilder
     }

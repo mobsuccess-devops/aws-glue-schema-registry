@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package com.amazonaws.services.schemaregistry.kafkaconnect.tests.syntax3;
+
+message NestedOneofType {
+  Payment payment = 1;
+
+  message Payment {
+    string reference = 1;
+    oneof method {
+      string card = 2;
+      int32 voucher = 3;
+    }
+  }
+}
