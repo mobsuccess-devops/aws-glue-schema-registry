@@ -851,3 +851,38 @@ The only Java left in the repository is the Avro classes generated into the test
   one without the other would hand Connect a record and a schema that disagree, so the key is
   absent from that converter's `ConfigDef`. This is
   [awslabs/aws-glue-schema-registry#38](https://github.com/awslabs/aws-glue-schema-registry/issues/38).
+- **The JSON mappers are built by a factory, and a Jackson module can be registered on them.**
+  `JsonSerializer` and `JsonDeserializer` each built a bare `ObjectMapper()`, set its node factory
+  to exact `BigDecimal`s, and applied the two Jackson feature keys — nothing else. A POJO holding
+  `java.time` values therefore failed on both sides: the schema generator described a `LocalDate`
+  as an object of its accessors, and Jackson refused the `Instant`. Two opt-in keys close that.
+  `registerJavaTimeModule` names a Jackson `Module` loaded by reflection, so
+  `jackson-datatype-jsr310` stays a dependency the consumer chooses — it is `testImplementation`
+  here and is not imposed on anyone. `objectMapperFactory` names an
+  `ObjectMapperFactory` implementation, the hook for everything the feature lists cannot express:
+  a `MapperFeature`, a custom module, a `SerializerProvider`. Both are resolved at configuration
+  time, through the thread context class loader first, and a class that cannot be instantiated or
+  does not implement the expected interface is rejected with a message naming it, in the style of
+  `schemaNameGenerationClass`. A failure to link — a module on the classpath but missing a
+  transitive class of its own — raises a `LinkageError` rather than an exception, and is caught
+  and reported the same way rather than escaping unwrapped. `GlueSchemaRegistryConfiguration.buildObjectMapper()` applies them
+  in one place, in a fixed order — factory, then module, then the existing feature keys, so a
+  feature named in both wins in the properties — and both serdes call it. Unset, the two keys
+  leave `DefaultObjectMapperFactory` building exactly the mapper the two classes built for
+  themselves, which is what keeps the default byte-identical.
+
+  `JsonValidator` now validates through the mapper it is handed rather than constructing a bare
+  `ObjectMapper` per call, so the text everit is given is written the way the rest of the
+  serializer writes: the observable change is that a POJO node and the Jackson feature keys reach
+  validation, where before they did not. The no-argument constructor stays in the ABI for the
+  callers that have no mapper to share.
+
+  Neither key is declared in the JSON Schema Connect converter's `ConfigDef`, alongside
+  `jsonSchemaNullableEnabled` and for the same reason: `JsonSchemaConverter` never takes the POJO
+  path — it derives its schema from the Connect schema and holds an `ObjectMapper` of its own —
+  so a module registered on the serde's mapper and a factory building it would both be inert
+  there. This is [awslabs/aws-glue-schema-registry#202](https://github.com/awslabs/aws-glue-schema-registry/issues/202)
+  and [#321](https://github.com/awslabs/aws-glue-schema-registry/issues/321), taking the semantics
+  of the unreviewed pull request
+  [awslabs/aws-glue-schema-registry#320](https://github.com/awslabs/aws-glue-schema-registry/pull/320)
+  by [amcquistan](https://github.com/amcquistan).

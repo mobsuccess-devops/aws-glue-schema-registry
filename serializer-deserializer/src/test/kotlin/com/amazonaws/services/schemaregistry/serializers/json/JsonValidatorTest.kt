@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.node.MissingNode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
 
 class JsonValidatorTest {
     private val validator = JsonValidator()
@@ -32,6 +35,20 @@ class JsonValidatorTest {
         validator.validateDataWithSchema(schemaNode, dataNode)
     }
 
+    /**
+     * The serializer hands the validator the mapper it was configured with, so that the text the
+     * schema and the data are validated as is written the way the rest of the serializer writes.
+     */
+    @Test
+    fun testValidateDataWithSchema_writesThroughTheMapperItWasGiven() {
+        val configuredMapper = spy(ObjectMapper())
+        val schemaNode = mapper.readTree(stringSchema)
+
+        JsonValidator(configuredMapper).validateDataWithSchema(schemaNode, mapper.readTree(A_STRING_JSON))
+
+        verify(configuredMapper, atLeastOnce()).writeValueAsString(schemaNode)
+    }
+
     @Test
     fun testMissingNode() {
         val dataNode: JsonNode = MissingNode.getInstance()
@@ -41,5 +58,9 @@ class JsonValidatorTest {
         assertThrows(AWSSchemaRegistryException::class.java) {
             validator.validateDataWithSchema(schemaNode, dataNode)
         }
+    }
+
+    private companion object {
+        const val A_STRING_JSON = "\"a string\""
     }
 }

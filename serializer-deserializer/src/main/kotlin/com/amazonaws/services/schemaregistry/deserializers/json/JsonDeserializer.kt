@@ -17,6 +17,7 @@ package com.amazonaws.services.schemaregistry.deserializers.json
 
 import com.amazonaws.services.schemaregistry.common.GlueSchemaRegistryDataFormatDeserializer
 import com.amazonaws.services.schemaregistry.common.Schema
+import com.amazonaws.services.schemaregistry.common.configs.DefaultObjectMapperFactory
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializerDataParser
 import com.amazonaws.services.schemaregistry.deserializers.PojoClassResolver
@@ -24,8 +25,6 @@ import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryExceptio
 import com.amazonaws.services.schemaregistry.serializers.json.JsonDataWithSchema
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import org.apache.commons.collections4.CollectionUtils
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -41,7 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 open class JsonDeserializer(
     configs: GlueSchemaRegistryConfiguration?,
 ) : GlueSchemaRegistryDataFormatDeserializer {
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: ObjectMapper =
+        configs?.buildObjectMapper() ?: DefaultObjectMapperFactory().newObjectMapper()
 
     // Exposed because @Data generated getters for them, which the tests use; they were only
     // excluded from equals/hashCode/toString.
@@ -52,24 +52,6 @@ open class JsonDeserializer(
     val warnCapNoticeEmitted = AtomicBoolean(false)
 
     var schemaRegistrySerDeConfigs: GlueSchemaRegistryConfiguration? = configs
-
-    init {
-        objectMapper.nodeFactory = JsonNodeFactory.withExactBigDecimals(true)
-        if (configs != null) {
-            if (!CollectionUtils.isEmpty(configs.jacksonSerializationFeatures)) {
-                configs.jacksonSerializationFeatures!!.forEach { objectMapper.enable(it) }
-            }
-            if (!CollectionUtils.isEmpty(configs.jacksonDeserializationFeatures)) {
-                configs.jacksonDeserializationFeatures!!.forEach { objectMapper.enable(it) }
-            }
-            configs.jacksonSerializationFeatureToggles?.forEach { (feature, enabled) ->
-                objectMapper.configure(feature, enabled)
-            }
-            configs.jacksonDeserializationFeatureToggles?.forEach { (feature, enabled) ->
-                objectMapper.configure(feature, enabled)
-            }
-        }
-    }
 
     /**
      * Deserialize the bytes to the original JSON message given the schema retrieved

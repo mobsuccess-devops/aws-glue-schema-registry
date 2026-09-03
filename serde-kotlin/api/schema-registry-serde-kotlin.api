@@ -25,9 +25,11 @@ public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfig
 	public final fun getJsonClassNameResolutionEnabled ()Ljava/lang/Boolean;
 	public final fun getJsonSchemaCompatibilityCheckEnabled ()Ljava/lang/Boolean;
 	public final fun getJsonSchemaNullableEnabled ()Ljava/lang/Boolean;
+	public final fun getObjectMapperFactory ()Ljava/lang/String;
 	public final fun getProtobufMessageType ()Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
 	public final fun getProxyUrl ()Ljava/net/URI;
 	public final fun getRegion ()Ljava/lang/String;
+	public final fun getRegisterJavaTimeModule ()Ljava/lang/String;
 	public final fun getRegistryName ()Ljava/lang/String;
 	public final fun getSchemaName ()Ljava/lang/String;
 	public final fun getSchemaNamingStrategyClass ()Ljava/lang/String;
@@ -40,7 +42,9 @@ public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfig
 	public final fun jsonClassNameAllowlist ([Ljava/lang/Class;)V
 	public final fun jsonClassNameAllowlist ([Ljava/lang/String;)V
 	public final fun metadata (Ljava/util/Map;)V
+	public final fun objectMapperFactory (Ljava/lang/Class;)V
 	public final fun property (Ljava/lang/String;Ljava/lang/Object;)V
+	public final fun registerJavaTimeModule (Ljava/lang/Class;)V
 	public final fun setAutoRegistration (Ljava/lang/Boolean;)V
 	public final fun setAvroReaderSchema (Ljava/lang/String;)V
 	public final fun setAvroRecordType (Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;)V
@@ -54,9 +58,11 @@ public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfig
 	public final fun setJsonClassNameResolutionEnabled (Ljava/lang/Boolean;)V
 	public final fun setJsonSchemaCompatibilityCheckEnabled (Ljava/lang/Boolean;)V
 	public final fun setJsonSchemaNullableEnabled (Ljava/lang/Boolean;)V
+	public final fun setObjectMapperFactory (Ljava/lang/String;)V
 	public final fun setProtobufMessageType (Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;)V
 	public final fun setProxyUrl (Ljava/net/URI;)V
 	public final fun setRegion (Ljava/lang/String;)V
+	public final fun setRegisterJavaTimeModule (Ljava/lang/String;)V
 	public final fun setRegistryName (Ljava/lang/String;)V
 	public final fun setSchemaName (Ljava/lang/String;)V
 	public final fun setSchemaNamingStrategyClass (Ljava/lang/String;)V

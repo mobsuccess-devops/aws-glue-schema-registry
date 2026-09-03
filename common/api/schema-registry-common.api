@@ -182,11 +182,17 @@ public final class com/amazonaws/services/schemaregistry/common/compatibility/Js
 	public final fun checkCompatibility (Ljava/lang/String;Ljava/lang/String;Lsoftware/amazon/awssdk/services/glue/model/Compatibility;)Ljava/util/List;
 }
 
+public final class com/amazonaws/services/schemaregistry/common/configs/DefaultObjectMapperFactory : com/amazonaws/services/schemaregistry/common/configs/ObjectMapperFactory {
+	public fun <init> ()V
+	public fun newObjectMapper ()Lcom/fasterxml/jackson/databind/ObjectMapper;
+}
+
 public final class com/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration {
 	public static final field Companion Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration$Companion;
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/util/Map;)V
 	public fun <init> (Ljava/util/Properties;)V
+	public final fun buildObjectMapper ()Lcom/fasterxml/jackson/databind/ObjectMapper;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAvroReaderSchema ()Ljava/lang/String;
 	public final fun getAvroRecordType ()Lcom/amazonaws/services/schemaregistry/utils/AvroRecordType;
@@ -201,9 +207,11 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun getJacksonSerializationFeatures ()Ljava/util/List;
 	public final fun getJsonClassNameAllowlist ()Ljava/util/Set;
 	public final fun getMetadata ()Ljava/util/Map;
+	public final fun getObjectMapperFactory ()Ljava/lang/String;
 	public final fun getProtobufMessageType ()Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
 	public final fun getProxyUrl ()Ljava/net/URI;
 	public final fun getRegion ()Ljava/lang/String;
+	public final fun getRegisterJavaTimeModule ()Ljava/lang/String;
 	public final fun getRegistryName ()Ljava/lang/String;
 	public final fun getSecondaryDeserializer ()Ljava/lang/String;
 	public final fun getTags ()Ljava/util/Map;
@@ -231,9 +239,11 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun setJsonSchemaCompatibilityCheckEnabled (Z)V
 	public final fun setJsonSchemaNullableEnabled (Z)V
 	public final fun setMetadata (Ljava/util/Map;)V
+	public final fun setObjectMapperFactory (Ljava/lang/String;)V
 	public final fun setProtobufMessageType (Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;)V
 	public final fun setProxyUrl (Ljava/net/URI;)V
 	public final fun setRegion (Ljava/lang/String;)V
+	public final fun setRegisterJavaTimeModule (Ljava/lang/String;)V
 	public final fun setRegistryName (Ljava/lang/String;)V
 	public final fun setSchemaAutoRegistrationEnabled (Z)V
 	public final fun setSecondaryDeserializer (Ljava/lang/String;)V
@@ -244,6 +254,10 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 }
 
 public final class com/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration$Companion {
+}
+
+public abstract interface class com/amazonaws/services/schemaregistry/common/configs/ObjectMapperFactory {
+	public abstract fun newObjectMapper ()Lcom/fasterxml/jackson/databind/ObjectMapper;
 }
 
 public final class com/amazonaws/services/schemaregistry/common/configs/UserAgents {
@@ -310,8 +324,10 @@ public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistry
 	public static final field JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED Ljava/lang/String;
 	public static final field JSON_SCHEMA_NULLABLE_ENABLED Ljava/lang/String;
 	public static final field METADATA Ljava/lang/String;
+	public static final field OBJECT_MAPPER_FACTORY Ljava/lang/String;
 	public static final field PROTOBUF_MESSAGE_TYPE Ljava/lang/String;
 	public static final field PROXY_URL Ljava/lang/String;
+	public static final field REGISTER_JAVA_TIME_MODULE Ljava/lang/String;
 	public static final field REGISTRY_NAME Ljava/lang/String;
 	public static final field SCHEMA_AUTO_REGISTRATION_SETTING Ljava/lang/String;
 	public static final field SCHEMA_NAME Ljava/lang/String;

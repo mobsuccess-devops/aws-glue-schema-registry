@@ -21,6 +21,8 @@ import com.amazonaws.services.schemaregistry.utils.AvroRecordType
 import com.amazonaws.services.schemaregistry.utils.GlueSchemaRegistryUtils
 import com.amazonaws.services.schemaregistry.utils.ProtobufMessageType
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.Module
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import org.apache.commons.lang3.EnumUtils
 import org.slf4j.LoggerFactory
@@ -71,6 +73,20 @@ class GlueSchemaRegistryConfiguration {
     var jacksonSerializationFeatureToggles: Map<SerializationFeature, Boolean>? = null
     var jacksonDeserializationFeatureToggles: Map<DeserializationFeature, Boolean>? = null
 
+    /**
+     * Fully qualified name of a Jackson [Module] registered on the JSON mappers, or `null` to
+     * register none. Named after its most common value,
+     * `com.fasterxml.jackson.datatype.jsr310.JavaTimeModule`, which is what makes a POJO holding
+     * `java.time` values serializable and its schema generatable.
+     */
+    var registerJavaTimeModule: String? = null
+
+    /**
+     * Fully qualified name of an [ObjectMapperFactory] implementation, or `null` to build the
+     * mappers with [DefaultObjectMapperFactory].
+     */
+    var objectMapperFactory: String? = null
+
     constructor(region: String?) {
         val config = HashMap<String, Any?>()
         config[AWSSchemaRegistryConstants.AWS_REGION] = region
@@ -106,6 +122,8 @@ class GlueSchemaRegistryConfiguration {
         validateAndSetJsonSchemaCompatibilityCheckSetting(configs)
         validateAndSetJacksonSerializationFeatures(configs)
         validateAndSetJacksonDeserializationFeatures(configs)
+        validateAndSetObjectMapperFactory(configs)
+        validateAndSetRegisterJavaTimeModule(configs)
         validateAndSetTags(configs)
         validateAndSetMetadata(configs)
         validateAndSetUserAgent(configs)
@@ -408,6 +426,56 @@ class GlueSchemaRegistryConfiguration {
         }
     }
 
+    private fun validateAndSetObjectMapperFactory(configs: Map<String, *>) {
+        val key = AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY
+        if (isPresent(configs, key)) {
+            val className = classNameConfig(configs, key)
+            instantiate(className, ObjectMapperFactory::class.java, key)
+            objectMapperFactory = className
+        }
+    }
+
+    private fun validateAndSetRegisterJavaTimeModule(configs: Map<String, *>) {
+        val key = AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE
+        if (isPresent(configs, key)) {
+            val className = classNameConfig(configs, key)
+            instantiate(className, Module::class.java, key)
+            registerJavaTimeModule = className
+        }
+    }
+
+    /**
+     * Builds the [ObjectMapper] the JSON serializer and deserializer read and write with.
+     *
+     * The configured [ObjectMapperFactory] produces the mapper, the module named by
+     * [registerJavaTimeModule] is registered on it, and the Jackson feature properties are
+     * applied last, so a feature named there wins over the same feature set by the factory.
+     *
+     * A new mapper is returned on every call; the caller owns the one it is given.
+     */
+    fun buildObjectMapper(): ObjectMapper {
+        val objectMapper = newObjectMapperFactory().newObjectMapper()
+        registerJavaTimeModule?.let { className ->
+            objectMapper.registerModule(
+                instantiate(className, Module::class.java, AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE),
+            )
+        }
+        jacksonSerializationFeatures?.forEach { objectMapper.enable(it) }
+        jacksonDeserializationFeatures?.forEach { objectMapper.enable(it) }
+        jacksonSerializationFeatureToggles?.forEach { (feature, enabled) ->
+            objectMapper.configure(feature, enabled)
+        }
+        jacksonDeserializationFeatureToggles?.forEach { (feature, enabled) ->
+            objectMapper.configure(feature, enabled)
+        }
+        return objectMapper
+    }
+
+    private fun newObjectMapperFactory(): ObjectMapperFactory {
+        val className = objectMapperFactory ?: return DefaultObjectMapperFactory()
+        return instantiate(className, ObjectMapperFactory::class.java, AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY)
+    }
+
     private fun validateAndSetJacksonSerializationFeatures(configs: Map<String, *>) {
         if (isPresent(configs, AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES)) {
             val key = AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES
@@ -469,6 +537,51 @@ class GlueSchemaRegistryConfiguration {
                 "got ${describeValue(entry)}",
         )
     }
+
+    private fun classNameConfig(
+        configs: Map<String, *>,
+        key: String,
+    ): String = when (val value = configs[key]) {
+        is String -> value
+        is Class<*> -> value.name
+        else -> throw AWSSchemaRegistryException(
+            "Configuration property $key must be a class name, or a Class, not ${describeType(value)}",
+        )
+    }
+
+    private fun <T : Any> instantiate(
+        className: String,
+        type: Class<T>,
+        key: String,
+    ): T {
+        val instance =
+            try {
+                loadClass(className).getDeclaredConstructor().newInstance()
+            } catch (e: Exception) {
+                throw notInstantiable(key, className, type, e)
+            } catch (e: LinkageError) {
+                throw notInstantiable(key, className, type, e)
+            }
+        if (!type.isInstance(instance)) {
+            throw AWSSchemaRegistryException(
+                "Configuration property $key has to name a class implementing ${type.name}; " +
+                    "$className does not.",
+            )
+        }
+        return type.cast(instance)
+    }
+
+    private fun notInstantiable(
+        key: String,
+        className: String,
+        type: Class<*>,
+        cause: Throwable,
+    ): AWSSchemaRegistryException = AWSSchemaRegistryException(
+        "Configuration property $key names a class that could not be instantiated: $className. " +
+            "It has to be a public class with a public no-argument constructor, implementing " +
+            "${type.name}, and on the classpath.",
+        cause,
+    )
 
     private fun stringConfig(
         configs: Map<String, *>,
@@ -543,7 +656,9 @@ class GlueSchemaRegistryConfiguration {
             jacksonSerializationFeatures == other.jacksonSerializationFeatures &&
             jacksonDeserializationFeatures == other.jacksonDeserializationFeatures &&
             jacksonSerializationFeatureToggles == other.jacksonSerializationFeatureToggles &&
-            jacksonDeserializationFeatureToggles == other.jacksonDeserializationFeatureToggles
+            jacksonDeserializationFeatureToggles == other.jacksonDeserializationFeatureToggles &&
+            registerJavaTimeModule == other.registerJavaTimeModule &&
+            objectMapperFactory == other.objectMapperFactory
     }
 
     override fun hashCode(): Int = listOf(
@@ -554,6 +669,7 @@ class GlueSchemaRegistryConfiguration {
         tags, metadata, secondaryDeserializer, proxyUrl, userAgentApp,
         jacksonSerializationFeatures, jacksonDeserializationFeatures,
         jacksonSerializationFeatureToggles, jacksonDeserializationFeatureToggles,
+        registerJavaTimeModule, objectMapperFactory,
     ).fold(1) { acc, value -> 31 * acc + (value?.hashCode() ?: 0) }
 
     override fun toString(): String = "GlueSchemaRegistryConfiguration(compressionType=$compressionType, endPoint=$endPoint, " +
@@ -570,7 +686,8 @@ class GlueSchemaRegistryConfiguration {
         "jacksonSerializationFeatures=$jacksonSerializationFeatures, " +
         "jacksonDeserializationFeatures=$jacksonDeserializationFeatures, " +
         "jacksonSerializationFeatureToggles=$jacksonSerializationFeatureToggles, " +
-        "jacksonDeserializationFeatureToggles=$jacksonDeserializationFeatureToggles)"
+        "jacksonDeserializationFeatureToggles=$jacksonDeserializationFeatureToggles, " +
+        "registerJavaTimeModule=$registerJavaTimeModule, objectMapperFactory=$objectMapperFactory)"
 
     protected fun getMapFromPropertiesFile(properties: Properties): Map<String, *> = HashMap(properties.entries.associate { it.key.toString() to it.value })
 
@@ -579,6 +696,23 @@ class GlueSchemaRegistryConfiguration {
     companion object {
         private val log = LoggerFactory.getLogger(GlueSchemaRegistryConfiguration::class.java)
         private const val DELIMITER = "-"
+
+        /**
+         * Loads a class named by a configuration property, trying the thread context class loader
+         * first, as [com.amazonaws.services.schemaregistry.deserializers.PojoClassResolver] does:
+         * an application loaded apart from its dependencies — a Kafka Connect plugin directory, a
+         * repackaged Spring Boot jar, an application server — only exposes its own classes there.
+         */
+        private fun loadClass(className: String): Class<*> {
+            val contextClassLoader = Thread.currentThread().contextClassLoader ?: return Class.forName(className)
+            return try {
+                Class.forName(className, true, contextClassLoader)
+            } catch (_: ClassNotFoundException) {
+                Class.forName(className)
+            } catch (_: LinkageError) {
+                Class.forName(className)
+            }
+        }
 
         /**
          * Suffix marking an allowlist entry as a package rather than a class, as in

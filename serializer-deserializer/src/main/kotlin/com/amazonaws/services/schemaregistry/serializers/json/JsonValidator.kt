@@ -29,7 +29,14 @@ import java.io.InputStream
 /**
  * Json validator
  */
-class JsonValidator {
+class JsonValidator(
+    private val mapper: ObjectMapper,
+) {
+    /**
+     * Validates with a mapper of its own, for a caller that has none to share.
+     */
+    constructor() : this(ObjectMapper())
+
     /**
      * Validates data against JsonSchema.
      */
@@ -38,7 +45,6 @@ class JsonValidator {
         dataNode: JsonNode,
     ) {
         try {
-            val mapper = ObjectMapper()
             val rawSchema = JSONObject(mapper.writeValueAsString(schemaNode))
             val schema = SchemaLoader.load(rawSchema, ReferenceDisabledSchemaClient())
 

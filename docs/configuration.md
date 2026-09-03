@@ -34,6 +34,8 @@ ignored.
 | `jsonClassNameAllowlist`              | list or comma-separated        | empty                                     | deserializer           | Classes the deserializer may instantiate. `com.example.pojos.*` scopes one package; a bare `*` is rejected.                                                                                                                                        |
 | `jacksonSerializationFeatures`        | list, comma-separated, or map  | none                                      | both                   | `com.fasterxml.jackson.databind.SerializationFeature` entries. A list enables them; a `Map<String, Boolean>` enables or **disables** each one — see [enabling and disabling Jackson features](#enabling-and-disabling-jackson-features).           |
 | `jacksonDeserializationFeatures`      | list, comma-separated, or map  | none                                      | both                   | `com.fasterxml.jackson.databind.DeserializationFeature` entries. A list enables them; a `Map<String, Boolean>` enables or **disables** each one — see [enabling and disabling Jackson features](#enabling-and-disabling-jackson-features).         |
+| `registerJavaTimeModule`              | string (class name) or `Class` | none                                      | both                   | Fully qualified name of a Jackson `Module` registered on the JSON mappers — normally `JavaTimeModule`, which is what makes a `java.time` POJO work. Rejected by name at configuration time. Not declared in the Connect `ConfigDef` — see below.   |
+| `objectMapperFactory`                 | string (class name) or `Class` | `DefaultObjectMapperFactory`              | both                   | Fully qualified name of an `ObjectMapperFactory` building the JSON mappers, for everything the Jackson feature keys cannot express. Rejected by name at configuration time. Not declared in the Connect `ConfigDef` — see below.                   |
 | `secondaryDeserializer`               | string (class name) or `Class` | none                                      | deserializer           | Fallback for records that carry no Glue Schema Registry header.                                                                                                                                                                                    |
 | `timeToLiveMillis`                    | long                           | `86400000` (24 h)                         | both                   | Time to live of a cache entry.                                                                                                                                                                                                                     |
 | `cacheSize`                           | int                            | `200`                                     | both                   | Maximum number of cached schemas.                                                                                                                                                                                                                  |
@@ -58,6 +60,13 @@ works from a worker properties file.
 `tags` and `metadata` are deliberately left out of that `ConfigDef`: their values are maps, a
 shape Kafka's `ConfigDef` has no type for. They keep working when a converter is configured
 programmatically, and a Connect worker could not have passed them anyway.
+
+`registerJavaTimeModule`, `objectMapperFactory`, `jsonSchemaNullableEnabled` and
+`avroReaderSchema` are left out for a different reason: they act on a path no converter takes. A
+Connect converter derives its schema from the Connect schema it is handed and holds an
+`ObjectMapper` of its own, so it never generates a schema from a POJO nor reads one back into
+one. Declaring the first two would advertise, in a Connect UI, settings that change nothing there.
+The serde reads all four whichever way it is configured.
 
 ## Naming a key apart from a value
 
@@ -143,6 +152,90 @@ The map shape is not reachable from a Kafka Connect worker properties file: the 
 these keys as `ConfigDef.Type.LIST`, and a properties file has no map syntax — the same reason
 `tags` and `metadata` are absent from the `ConfigDef`. A converter configured programmatically
 accepts either shape.
+
+## Customising the Jackson mappers
+
+The JSON serializer and the JSON deserializer each build an `ObjectMapper`. Left alone it is a
+bare mapper reading numbers into exact `BigDecimal`s, with no module registered — which is why a
+POJO holding `java.time` values fails, at schema generation as much as at serialization. Two keys
+change what that mapper is.
+
+### `registerJavaTimeModule`
+
+The name of a Jackson `Module` to register. `jackson-datatype-jsr310` is **not** a dependency of
+this library: add it yourself, then name its module.
+
+```groovy
+implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+```
+
+```java
+configs.put(AWSSchemaRegistryConstants.REGISTER_JAVA_TIME_MODULE,
+        "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule");
+// Write the values as ISO-8601 strings rather than as epoch numbers.
+configs.put(AWSSchemaRegistryConstants.JACKSON_SERIALIZATION_FEATURES,
+        Map.of("WRITE_DATES_AS_TIMESTAMPS", false));
+```
+
+A `Class` is accepted as well as a name. The class is loaded and instantiated when the
+configuration is built, so a name that is not on the classpath, has no public no-argument
+constructor, or does not implement `com.fasterxml.jackson.databind.Module` fails there, with a
+message naming the class — the same contract as `schemaNameGenerationClass`.
+
+The key is named after the module it exists for, but nothing restricts it to that one: any
+Jackson module can be named. Register more than one through `objectMapperFactory`.
+
+### `objectMapperFactory`
+
+The name of a class implementing
+[`ObjectMapperFactory`](../common/src/main/kotlin/com/amazonaws/services/schemaregistry/common/configs/ObjectMapperFactory.kt),
+which builds the mapper from nothing. This is the hook for what the two Jackson feature keys
+cannot reach — a `MapperFeature`, several modules, a custom `SerializerProvider`, a naming
+strategy:
+
+```java
+public final class MyObjectMapperFactory implements ObjectMapperFactory {
+    @Override
+    public ObjectMapper newObjectMapper() {
+        return JsonMapper.builder()
+                .nodeFactory(JsonNodeFactory.withExactBigDecimals(true))
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+                .addModule(new JavaTimeModule())
+                .addModule(new MyOwnModule())
+                .build();
+    }
+}
+```
+
+```java
+configs.put(AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY, MyObjectMapperFactory.class.getName());
+```
+
+The implementation needs a public no-argument constructor, and `newObjectMapper()` has to return
+a **fresh** mapper on each call: the library configures the mapper it is given, and the serializer
+and the deserializer must not end up configuring each other's.
+`DefaultObjectMapperFactory` builds what the library builds when the key is unset, and is the
+place to start from to keep that and add to it.
+
+### Order of application
+
+1. `objectMapperFactory` builds the mapper.
+2. The module named by `registerJavaTimeModule` is registered on it.
+3. `jacksonSerializationFeatures` and `jacksonDeserializationFeatures` are applied.
+
+A feature set by the factory and named again in the feature keys therefore ends up as the feature
+keys say. With none of these keys set, the mapper is the one the library has always built, down
+to the byte.
+
+From Kotlin, through the `serde-kotlin` DSL:
+
+```kotlin
+glueSchemaRegistryConfiguration {
+    region = "eu-west-1"
+    registerJavaTimeModule(JavaTimeModule::class.java)
+    objectMapperFactory(MyObjectMapperFactory::class.java)
+}
+```
 
 ## Avro reader schema
 

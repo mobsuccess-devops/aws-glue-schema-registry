@@ -15,12 +15,14 @@
 
 package com.mobsuccess.schemaregistry.kotlin
 
+import com.amazonaws.services.schemaregistry.common.configs.DefaultObjectMapperFactory
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType
 import com.amazonaws.services.schemaregistry.utils.ProtobufMessageType
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -189,6 +191,50 @@ class GlueSchemaRegistryConfigBuilderTest {
             mapOf(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES to false),
             configuration.jacksonDeserializationFeatureToggles,
         )
+    }
+
+    @Test
+    fun testRegisterJavaTimeModule_isHandedOverAsTheClassName() {
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                registerJavaTimeModule = JavaTimeModule::class.java.name
+            }
+
+        assertEquals(JavaTimeModule::class.java.name, configuration.registerJavaTimeModule)
+    }
+
+    @Test
+    fun testRegisterJavaTimeModuleByType_isHandedOverAsTheClassName() {
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                registerJavaTimeModule(JavaTimeModule::class.java)
+            }
+
+        assertEquals(JavaTimeModule::class.java.name, configuration.registerJavaTimeModule)
+    }
+
+    @Test
+    fun testObjectMapperFactory_isHandedOverAsTheClassName() {
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                objectMapperFactory = DefaultObjectMapperFactory::class.java.name
+            }
+
+        assertEquals(DefaultObjectMapperFactory::class.java.name, configuration.objectMapperFactory)
+    }
+
+    @Test
+    fun testObjectMapperFactoryByType_isHandedOverAsTheClassName() {
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                objectMapperFactory(DefaultObjectMapperFactory::class.java)
+            }
+
+        assertEquals(DefaultObjectMapperFactory::class.java.name, configuration.objectMapperFactory)
     }
 
     @Test
