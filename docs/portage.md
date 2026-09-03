@@ -899,10 +899,14 @@ The only Java left in the repository is the Avro classes generated into the test
   Confluent's converter uses — with the top-level message taking the simple name of the schema
   rather than its dotted whole. The **references** are sanitized with it, in the same pass and by
   the same function: the file package, the parent-level test in `FieldBuilder.isParentLevel`, the
-  `type_name` of a struct, an array of structs and an enum field, the map-entry type, and the two
+  `type_name` of a struct, an array of structs and an enum field, the map-entry type, and the three
   places on the data path that resolve a descriptor by Connect name —
-  `ConnectDataToProtobufDataConverter.getPathName` for the top-level message and `findFieldByName`
-  for each field — so a reference still resolves to the message the schema pass generated. The
+  `ConnectDataToProtobufDataConverter.getPathName` for the top-level message, and `findFieldByName`
+  for a scalar, a nested struct and a map field — so a reference still resolves to the message the
+  schema pass generated. `toMapEntryName` sanitizes its **input** rather than its result, because
+  the `LOWER_UNDERSCORE` to `UPPER_CAMEL` step reads the underscores: sanitizing first is what makes
+  `toMapEntryName(name)` and `toMapEntryName(toValidIdentifier(name))` the same entry type, so the
+  schema pass and the data pass agree on it whichever one they hold. The
   sanitization is the identity on every name that is already a valid identifier, so a schema that
   converts today converts to the same descriptor, byte for byte: the nine expected
   `.filedescproto` oracles are unchanged, and the five new tests fail on the unfixed converter

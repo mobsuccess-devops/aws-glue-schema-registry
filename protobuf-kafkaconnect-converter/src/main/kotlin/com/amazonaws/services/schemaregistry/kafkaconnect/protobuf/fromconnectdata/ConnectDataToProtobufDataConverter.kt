@@ -74,7 +74,8 @@ class ConnectDataToProtobufDataConverter {
                     }
                     continue
                 }
-                val fieldDescriptor = dynamicMessageBuilder.descriptorForType.findFieldByName(field.name())
+                val fieldDescriptor =
+                    dynamicMessageBuilder.descriptorForType.findFieldByName(toValidIdentifier(field.name()))
                 dynamicMessageBuilder.setField(
                     fieldDescriptor,
                     convert(fileDescriptor, field.schema(), fieldValue, fieldDescriptor.messageType),
@@ -93,7 +94,7 @@ class ConnectDataToProtobufDataConverter {
     ): String {
         val fullName = toValidFullName(schemaName)
         return if (fullName.startsWith(packageName)) {
-            fullName.replace(packageName, "")
+            fullName.removePrefix(packageName)
         } else {
             ".${getSchemaSimpleName(schemaName)}"
         }

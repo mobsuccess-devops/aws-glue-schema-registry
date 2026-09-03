@@ -50,12 +50,12 @@ object ProtobufSchemaConverterUtils {
 
     @JvmStatic
     fun toMapEntryName(name: String): String {
-        var s = name
+        var s = toValidIdentifier(name)
         if (s.contains("_")) {
             s = LOWER_UNDERSCORE.to(UPPER_CAMEL, s)
         }
         s += MAP_ENTRY_SUFFIX
-        return toValidIdentifier(s.substring(0, 1).uppercase() + s.substring(1))
+        return s.substring(0, 1).uppercase() + s.substring(1)
     }
 
     @JvmStatic
