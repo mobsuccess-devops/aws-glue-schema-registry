@@ -15,6 +15,8 @@
 
 package com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema
 
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.getSchemaSimpleName
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.toValidFullName
 import com.amazonaws.services.schemaregistry.utils.apicurio.FileDescriptorUtils
 import com.google.protobuf.DescriptorProtos
 import com.google.protobuf.Descriptors
@@ -39,7 +41,7 @@ class ConnectSchemaToProtobufSchemaConverter {
         val schemaName = schema.name()
 
         // Set to a constant value; revisit during metadata storage to make it configurable.
-        fileDescriptorProtoBuilder.setPackage(PACKAGE_NAME_PREFIX + schemaName)
+        fileDescriptorProtoBuilder.setPackage(PACKAGE_NAME_PREFIX + toValidFullName(schemaName))
         fileDescriptorProtoBuilder.setName("$schemaName.proto")
         // Only Proto3 syntax is supported for schema generation for now.
         fileDescriptorProtoBuilder.setSyntax(PROTO3_SYNTAX)
@@ -56,8 +58,7 @@ class ConnectSchemaToProtobufSchemaConverter {
     ): DescriptorProtos.DescriptorProto.Builder {
         val messageDescriptorProtoBuilder = DescriptorProtos.DescriptorProto.newBuilder()
 
-        // TODO: Revisit for compilation
-        messageDescriptorProtoBuilder.setName(schema.name())
+        messageDescriptorProtoBuilder.setName(getSchemaSimpleName(schema.name()))
 
         FieldBuilder.build(schema, fileDescriptorProtoBuilder, messageDescriptorProtoBuilder)
 

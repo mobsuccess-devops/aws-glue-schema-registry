@@ -18,6 +18,9 @@ package com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectd
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterConstants.PROTOBUF_ONEOF_TYPE
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterConstants.PROTOBUF_TYPE
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.getSchemaSimpleName
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.toValidFullName
+import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema.ProtobufSchemaConverterUtils.toValidIdentifier
 import com.google.protobuf.Descriptors
 import com.google.protobuf.DynamicMessage
 import com.google.protobuf.Message
@@ -71,7 +74,8 @@ class ConnectDataToProtobufDataConverter {
                     }
                     continue
                 }
-                val fieldDescriptor = dynamicMessageBuilder.descriptorForType.findFieldByName(field.name())
+                val fieldDescriptor =
+                    dynamicMessageBuilder.descriptorForType.findFieldByName(toValidIdentifier(field.name()))
                 dynamicMessageBuilder.setField(
                     fieldDescriptor,
                     convert(fileDescriptor, field.schema(), fieldValue, fieldDescriptor.messageType),
@@ -87,7 +91,14 @@ class ConnectDataToProtobufDataConverter {
     private fun getPathName(
         packageName: String,
         schemaName: String,
-    ): String = if (schemaName.startsWith(packageName)) schemaName.replace(packageName, "") else ".$schemaName"
+    ): String {
+        val fullName = toValidFullName(schemaName)
+        return if (fullName.startsWith(packageName)) {
+            fullName.removePrefix(packageName)
+        } else {
+            ".${getSchemaSimpleName(schemaName)}"
+        }
+    }
 
     private fun addField(
         fileDescriptor: Descriptors.FileDescriptor,
@@ -95,7 +106,7 @@ class ConnectDataToProtobufDataConverter {
         field: Field,
         value: Any?,
     ) {
-        val protobufFieldName = field.name()
+        val protobufFieldName = toValidIdentifier(field.name())
         val fieldDescriptor = builder.descriptorForType.findFieldByName(protobufFieldName)
         val schema = field.schema()
 
@@ -119,7 +130,7 @@ class ConnectDataToProtobufDataConverter {
         field: Field,
         value: Any?,
     ) {
-        val protobufFieldName = field.name()
+        val protobufFieldName = toValidIdentifier(field.name())
         val schema = field.schema()
         val mapDescriptor =
             builder.descriptorForType.findNestedTypeByName(
@@ -143,7 +154,7 @@ class ConnectDataToProtobufDataConverter {
             )
 
             builder.addRepeatedField(
-                builder.descriptorForType.findFieldByName(field.name()),
+                builder.descriptorForType.findFieldByName(protobufFieldName),
                 mapBuilder.build(),
             )
         }
