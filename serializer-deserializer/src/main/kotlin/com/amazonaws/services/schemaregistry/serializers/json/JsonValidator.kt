@@ -19,6 +19,10 @@ import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryExceptio
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeType
+import com.google.common.annotations.VisibleForTesting
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
+import org.everit.json.schema.Schema
 import org.everit.json.schema.ValidationException
 import org.everit.json.schema.loader.SchemaClient
 import org.everit.json.schema.loader.SchemaLoader
@@ -32,6 +36,13 @@ import java.io.InputStream
 class JsonValidator(
     private val mapper: ObjectMapper,
 ) {
+    @VisibleForTesting
+    internal val parsedSchemaCache: Cache<String, Schema> =
+        CacheBuilder
+            .newBuilder()
+            .maximumSize(MAX_PARSED_SCHEMA_CACHE_SIZE)
+            .build()
+
     /**
      * Validates with a mapper of its own, for a caller that has none to share.
      */
@@ -45,8 +56,7 @@ class JsonValidator(
         dataNode: JsonNode,
     ) {
         try {
-            val rawSchema = JSONObject(mapper.writeValueAsString(schemaNode))
-            val schema = SchemaLoader.load(rawSchema, ReferenceDisabledSchemaClient())
+            val schema = parseSchema(mapper.writeValueAsString(schemaNode))
 
             when (dataNode.nodeType) {
                 JsonNodeType.OBJECT, JsonNodeType.POJO ->
@@ -66,10 +76,21 @@ class JsonValidator(
         }
     }
 
+    private fun parseSchema(rawSchema: String): Schema {
+        parsedSchemaCache.getIfPresent(rawSchema)?.let { return it }
+        val parsed = SchemaLoader.load(JSONObject(rawSchema), ReferenceDisabledSchemaClient())
+        parsedSchemaCache.put(rawSchema, parsed)
+        return parsed
+    }
+
     /**
      * The override SchemaClient which disables external schema reference.
      */
     inner class ReferenceDisabledSchemaClient : SchemaClient {
         override fun get(url: String): InputStream = throw ValidationException("Remote or local reference is not allowed: $url")
+    }
+
+    private companion object {
+        private const val MAX_PARSED_SCHEMA_CACHE_SIZE = 100L
     }
 }

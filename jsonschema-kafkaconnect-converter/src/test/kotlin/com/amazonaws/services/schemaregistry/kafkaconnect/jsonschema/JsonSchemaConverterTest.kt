@@ -15,6 +15,7 @@
 
 package com.amazonaws.services.schemaregistry.kafkaconnect.jsonschema
 
+import com.amazonaws.services.schemaregistry.common.AWSDeserializerInput
 import com.amazonaws.services.schemaregistry.common.AWSSchemaRegistryClient
 import com.amazonaws.services.schemaregistry.common.SchemaByDefinitionFetcher
 import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializationFacade
@@ -31,9 +32,12 @@ import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaAndValue
 import org.apache.kafka.connect.errors.DataException
 import org.apache.kafka.connect.json.DecimalFormat
+import org.everit.json.schema.BooleanSchema
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -45,11 +49,15 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.services.glue.model.DataFormat
 import software.amazon.awssdk.services.glue.model.GetSchemaVersionResponse
+import java.nio.ByteBuffer
 import java.util.UUID
 import org.everit.json.schema.Schema as JsonSchema
 
@@ -202,6 +210,92 @@ class JsonSchemaConverterTest {
     }
 
     /**
+     * Test that the JSON Schema is parsed once per schema definition and reused afterwards,
+     * while the registry lookup that produces the definition still happens on every record.
+     */
+    @Test
+    fun testConverter_toConnectData_reusesTheParsedJsonSchema() {
+        val facade = createFacade(STRING_SCHEMA_DEFINITION, A_STRING_PAYLOAD)
+        converter = JsonSchemaConverter(mockGsrKafkaSerializer, deserializerBackedBy(facade))
+        converter.configure(properties, false)
+
+        val first = converter.toConnectData(TEST_TOPIC, GSR_BYTES)
+        val parsed = converter.parsedSchemaCache.getIfPresent(STRING_SCHEMA_DEFINITION)
+        val second = converter.toConnectData(TEST_TOPIC, GSR_BYTES)
+
+        assertNotNull(parsed)
+        assertSame(parsed, converter.parsedSchemaCache.getIfPresent(STRING_SCHEMA_DEFINITION))
+        assertEquals(first, second)
+        verify(facade, times(2)).getSchemaDefinition(eq(GSR_BYTES))
+    }
+
+    /**
+     * Test that a cached entry, rather than the definition string, is what the conversion reads:
+     * a boolean schema parked under the key of a string definition yields a boolean Connect schema.
+     */
+    @Test
+    fun testConverter_toConnectData_convertsFromTheCachedSchema() {
+        val facade = createFacade(STRING_SCHEMA_DEFINITION, "true")
+        converter = JsonSchemaConverter(mockGsrKafkaSerializer, deserializerBackedBy(facade))
+        converter.configure(properties, false)
+        converter.parsedSchemaCache.put(STRING_SCHEMA_DEFINITION, BooleanSchema.builder().build())
+
+        val actual = converter.toConnectData(TEST_TOPIC, GSR_BYTES)
+
+        assertEquals(Schema.Type.BOOLEAN, actual.schema().type())
+        assertEquals(true, actual.value())
+    }
+
+    /**
+     * Test that a malformed schema definition raises the same exception it always did, and that
+     * the failure is not remembered.
+     */
+    @Test
+    fun testConverter_toConnectData_malformedSchemaThrowsAndIsNotCached() {
+        val facade = createFacade(MALFORMED_SCHEMA_DEFINITION, A_STRING_PAYLOAD)
+        converter = JsonSchemaConverter(mockGsrKafkaSerializer, deserializerBackedBy(facade))
+        converter.configure(properties, false)
+
+        val exception =
+            assertThrows(DataException::class.java) { converter.toConnectData(TEST_TOPIC, GSR_BYTES) }
+
+        assertEquals("Failed to read JSON Schema : $MALFORMED_SCHEMA_DEFINITION", exception.message)
+        assertNull(converter.parsedSchemaCache.getIfPresent(MALFORMED_SCHEMA_DEFINITION))
+        assertThrows(DataException::class.java) { converter.toConnectData(TEST_TOPIC, GSR_BYTES) }
+    }
+
+    /**
+     * To create a mocked deserialization facade answering with a fixed schema definition and
+     * payload, so that a record can be converted without a registry behind it.
+     *
+     * @return a mocked GlueSchemaRegistryDeserializationFacade instance
+     */
+    private fun createFacade(
+        schemaDefinition: String,
+        payload: String,
+    ): GlueSchemaRegistryDeserializationFacade {
+        val facade = mock<GlueSchemaRegistryDeserializationFacade>()
+        val input =
+            AWSDeserializerInput
+                .builder()
+                .buffer(ByteBuffer.wrap(GSR_BYTES))
+                .transportName(TEST_TOPIC)
+                .build()
+
+        whenever(facade.deserialize(input))
+            .thenReturn(JsonDataWithSchema.builder(STRING_SCHEMA_DEFINITION, payload).build())
+        whenever(facade.getSchemaDefinition(eq(GSR_BYTES))).thenReturn(schemaDefinition)
+
+        return facade
+    }
+
+    private fun deserializerBackedBy(
+        facade: GlueSchemaRegistryDeserializationFacade,
+    ): GlueSchemaRegistryKafkaDeserializer = GlueSchemaRegistryKafkaDeserializer(mockCredProvider, null).apply {
+        glueSchemaRegistryDeserializationFacade = facade
+    }
+
+    /**
      * To create a GlueSchemaRegistryKafkaSerializer instance with mocked parameters.
      *
      * @return a mocked GlueSchemaRegistryKafkaSerializer instance
@@ -288,6 +382,14 @@ class JsonSchemaConverterTest {
 
     companion object {
         private const val TEST_TOPIC = "User-Topic"
+        private const val STRING_SCHEMA_DEFINITION = """{"type":"string"}"""
+        private const val MALFORMED_SCHEMA_DEFINITION = "not a JSON Schema"
+        private const val A_STRING_PAYLOAD = "\"a string\""
+        private val GSR_BYTES =
+            byteArrayOf(
+                3, 0, -73, -76, -89, -16, -100, -106, 78, 74, -90, -121, -5,
+                93, -23, -17, 12, 99, 10, 115, 97, 110, 115, 97, -58, 1, 6, 114, 101, 100,
+            )
         private const val TEST_SCHEMA_ARN =
             "arn:aws:glue:us-east-1:111111111111:schema/registry_name/$TEST_TOPIC"
     }

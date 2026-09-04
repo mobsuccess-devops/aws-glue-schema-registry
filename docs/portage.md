@@ -176,6 +176,24 @@ The only Java left in the repository is the Avro classes generated into the test
   A `LoadingCache` was deliberately not used: it wraps a loader failure in an
   `ExecutionException`, which would change the cause chain of the `DataException` and
   `AWSSchemaRegistryException` those two methods raise on a malformed schema.
+- **The parsed JSON Schema is memoized on the two record-rate paths.** The same shape as the
+  Avro memoization above, at the two places JSON Schema pays for it. Upstream rebuilds the
+  everit `Schema` from the definition string in `JsonSchemaConverter.toConnectData` —
+  `SchemaLoader.builder().schemaJson(new JSONObject(jsonSchemaString))...load().build()` once
+  per record — and reloads it again in `JsonValidator.validateDataWithSchema`, which
+  `JsonSerializer.serialize` calls for every message it writes. The two converter caches that
+  were already there do not help: `toConnectSchemaCache` and `fromConnectSchemaCache` key on
+  the _already parsed_ everit schema, so the parse happens before either is consulted. Both
+  sites now keep their own bounded `Cache<String, Schema>` of 100 entries, keyed on the
+  definition string for the converter and on the rendering of the schema node for the
+  validator, and both use `getIfPresent`/`put` rather than a `LoadingCache` for the same
+  reason as the Avro caches: the `DataException` and `AWSSchemaRegistryException` raised on a
+  malformed schema keep the cause chain they had. Nothing about what is fetched changes — the
+  registry lookup behind `getSchemaDefinition`, and the write of the schema node through the
+  configured mapper, both still happen per record — only the parse is skipped. The everit
+  `Schema` is immutable once loaded and `validate` builds a fresh visitor per call, so sharing
+  one instance across records is safe. This addresses
+  [awslabs/aws-glue-schema-registry#275](https://github.com/awslabs/aws-glue-schema-registry/issues/275).
 - **Dependency scopes narrowed to what each module actually exposes.** The pom put every
   dependency at `compile` scope, and the Gradle port carried that over as `api` on all ten
   modules. `api` propagates to a consumer's _compile_ classpath, so consumers were compiling
@@ -886,6 +904,7 @@ The only Java left in the repository is the Avro classes generated into the test
   of the unreviewed pull request
   [awslabs/aws-glue-schema-registry#320](https://github.com/awslabs/aws-glue-schema-registry/pull/320)
   by [amcquistan](https://github.com/amcquistan).
+
 - **Connect names are sanitized into Protobuf identifiers.** `ConnectSchemaToProtobufSchemaConverter`
   set the message name from `schema.name()` verbatim — under a `// TODO: Revisit for compilation`
   it inherited — and derived the file package from the same string. A Connect schema named the way
