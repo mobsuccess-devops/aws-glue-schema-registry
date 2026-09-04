@@ -283,7 +283,7 @@ class JsonSchemaConverterTest {
                 .build()
 
         whenever(facade.deserialize(input))
-            .thenReturn(JsonDataWithSchema.builder(STRING_SCHEMA_DEFINITION, payload).build())
+            .thenReturn(JsonDataWithSchema.builder(schemaDefinition, payload).build())
         whenever(facade.getSchemaDefinition(eq(GSR_BYTES))).thenReturn(schemaDefinition)
 
         return facade

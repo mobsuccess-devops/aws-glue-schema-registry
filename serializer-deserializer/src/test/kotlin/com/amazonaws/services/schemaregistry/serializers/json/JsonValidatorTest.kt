@@ -64,11 +64,13 @@ class JsonValidatorTest {
         val schemaNode = mapper.readTree(stringSchema)
 
         validator.validateDataWithSchema(schemaNode, mapper.readTree(A_STRING_JSON))
-        val parsed = validator.parsedSchemaCache.getIfPresent(mapper.writeValueAsString(schemaNode))
+        val key = validator.parsedSchemaCache.asMap().keys.single()
+        val parsed = validator.parsedSchemaCache.getIfPresent(key)
         validator.validateDataWithSchema(schemaNode, mapper.readTree(ANOTHER_STRING_JSON))
 
         assertNotNull(parsed)
-        assertSame(parsed, validator.parsedSchemaCache.getIfPresent(mapper.writeValueAsString(schemaNode)))
+        assertEquals(1L, validator.parsedSchemaCache.size())
+        assertSame(parsed, validator.parsedSchemaCache.getIfPresent(key))
         verify(configuredMapper, times(2)).writeValueAsString(schemaNode)
     }
 
@@ -78,9 +80,11 @@ class JsonValidatorTest {
      */
     @Test
     fun testValidateDataWithSchema_validatesAgainstTheCachedSchema() {
+        val configuredMapper = ObjectMapper()
+        val validator = JsonValidator(configuredMapper)
         val schemaNode = mapper.readTree(stringSchema)
         validator.parsedSchemaCache.put(
-            mapper.writeValueAsString(schemaNode),
+            configuredMapper.writeValueAsString(schemaNode),
             BooleanSchema.builder().build(),
         )
 
