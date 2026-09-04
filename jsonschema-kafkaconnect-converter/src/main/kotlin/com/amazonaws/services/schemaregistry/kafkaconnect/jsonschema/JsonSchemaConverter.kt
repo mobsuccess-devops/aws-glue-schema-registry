@@ -27,6 +27,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.google.common.annotations.VisibleForTesting
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
 import org.apache.commons.collections.MapUtils
 import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.common.errors.SerializationException
@@ -47,6 +50,13 @@ class JsonSchemaConverter(
 ) : Converter {
     private val objectMapper: ObjectMapper =
         ObjectMapper().setNodeFactory(JsonNodeFactory.withExactBigDecimals(true))
+
+    @VisibleForTesting
+    internal val parsedSchemaCache: Cache<String, org.everit.json.schema.Schema> =
+        CacheBuilder
+            .newBuilder()
+            .maximumSize(MAX_PARSED_SCHEMA_CACHE_SIZE)
+            .build()
 
     var connectSchemaToJsonSchemaConverter: ConnectSchemaToJsonSchemaConverter? = null
     var connectValueToJsonNodeConverter: ConnectValueToJsonNodeConverter? = null
@@ -172,17 +182,7 @@ class JsonSchemaConverter(
         val jsonSchemaString =
             facade.getSchemaDefinition(value!!)
 
-        val jsonSchema =
-            try {
-                SchemaLoader
-                    .builder()
-                    .schemaJson(JSONObject(jsonSchemaString))
-                    .build()
-                    .load()
-                    .build()
-            } catch (e: Exception) {
-                throw DataException("Failed to read JSON Schema : $jsonSchemaString", e)
-            }
+        val jsonSchema = parseJsonSchema(jsonSchemaString)
 
         if (deserialized !is JsonDataWithSchema) {
             throw DataException("JSON Deserialized data is not in envelope format.")
@@ -204,7 +204,26 @@ class JsonSchemaConverter(
         return SchemaAndValue(connectSchema, connectValue)
     }
 
+    private fun parseJsonSchema(jsonSchemaString: String): org.everit.json.schema.Schema {
+        parsedSchemaCache.getIfPresent(jsonSchemaString)?.let { return it }
+        val parsed =
+            try {
+                SchemaLoader
+                    .builder()
+                    .schemaJson(JSONObject(jsonSchemaString))
+                    .build()
+                    .load()
+                    .build()
+            } catch (e: Exception) {
+                throw DataException("Failed to read JSON Schema : $jsonSchemaString", e)
+            }
+        parsedSchemaCache.put(jsonSchemaString, parsed)
+        return parsed
+    }
+
     companion object {
+        private const val MAX_PARSED_SCHEMA_CACHE_SIZE = 100L
+
         private const val NOT_CONFIGURED =
             "configure() has not been called, so this converter is not ready to convert anything"
 
