@@ -180,6 +180,7 @@ Protobuf, POJOs, compression, caching and the rest are in
 | [Java interop](docs/kotlin-interop.md)           | Where Kotlin and Java do not line up, for anyone writing Kotlin here           |
 | [Port notes](docs/portage.md)                    | Maven → Gradle → Kotlin, and the accepted deviations from upstream             |
 | [Upstream history](docs/upstream-history.md)     | Releases of `awslabs/aws-glue-schema-registry` from before the fork            |
+| [Upstream tracking](docs/upstream-tracking.md)   | Every open upstream issue and pull request, and how this fork relates to it    |
 | [Contributing](CONTRIBUTING.md)                  | Building, testing, house style, pull requests, releases                        |
 
 ## Building from source
