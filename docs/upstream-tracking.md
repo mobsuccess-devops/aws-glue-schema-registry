@@ -26,6 +26,8 @@ against the fork's current code; verdicts below reflect that review. Move the re
 when a fork pull request lands on one of these items; re-sync the whole inventory when
 upstream moves.
 
+The announcement campaign (the `· announced` stamps below) is paused from 2026-09-07 to 2026-09-10: the awslabs org deleted two of its comments on 2026-09-06 (the [#353] and [#511] rows). Resume with user-pain threads and ported-PR authors only, no follow-ups on older comments.
+
 ## To address
 
 3 pull requests, 7 issues.
