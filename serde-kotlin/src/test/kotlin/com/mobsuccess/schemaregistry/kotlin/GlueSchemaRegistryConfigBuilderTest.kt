@@ -17,15 +17,18 @@ package com.mobsuccess.schemaregistry.kotlin
 
 import com.amazonaws.services.schemaregistry.common.configs.DefaultObjectMapperFactory
 import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration
+import com.amazonaws.services.schemaregistry.serializers.json.JsonSchemaConfigFactory
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType
 import com.amazonaws.services.schemaregistry.utils.ProtobufMessageType
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.services.glue.model.Compatibility
@@ -235,6 +238,34 @@ class GlueSchemaRegistryConfigBuilderTest {
             }
 
         assertEquals(DefaultObjectMapperFactory::class.java.name, configuration.objectMapperFactory)
+    }
+
+    @Test
+    fun testJsonSchemaConfig_isHandedOverAsTheInstance() {
+        val config = JsonSchemaConfig.nullableJsonSchemaDraft4()
+
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                jsonSchemaConfig(config)
+            }
+
+        assertSame(config, configuration.jsonSchemaConfig)
+    }
+
+    @Test
+    fun testJsonSchemaConfigByFactoryType_isHandedOverAsTheClassName() {
+        val configuration =
+            glueSchemaRegistryConfiguration {
+                region = "eu-west-1"
+                jsonSchemaConfig(NullableJsonSchemaConfigFactory::class.java)
+            }
+
+        assertEquals(NullableJsonSchemaConfigFactory::class.java.name, configuration.jsonSchemaConfig)
+    }
+
+    class NullableJsonSchemaConfigFactory : JsonSchemaConfigFactory {
+        override fun newJsonSchemaConfig(): JsonSchemaConfig = JsonSchemaConfig.nullableJsonSchemaDraft4()
     }
 
     @Test

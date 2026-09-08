@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNotSame
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -1157,6 +1158,83 @@ class GlueSchemaRegistryConfigurationTest {
         assertEquals(withFactory, GlueSchemaRegistryConfiguration(HashMap(configs)))
         assertTrue(withFactory.toString().contains(SortingObjectMapperFactory::class.java.name))
         assertTrue(withFactory.toString().contains(JavaTimeModule::class.java.name))
+    }
+
+    @Test
+    fun testBuildConfig_jsonSchemaConfigUnset_isNull() {
+        assertNull(GlueSchemaRegistryConfiguration(configs).jsonSchemaConfig)
+    }
+
+    @Test
+    fun testBuildConfig_jsonSchemaConfigAsAnObject_isKeptAsIs() {
+        val generatorConfig = listOf("nullable")
+        configs[AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG] = generatorConfig
+
+        assertSame(generatorConfig, GlueSchemaRegistryConfiguration(configs).jsonSchemaConfig)
+    }
+
+    @Test
+    fun testBuildConfig_jsonSchemaConfigAsAClassName_isKeptByName() {
+        configs[AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG] = SortingObjectMapperFactory::class.java.name
+
+        assertEquals(
+            SortingObjectMapperFactory::class.java.name,
+            GlueSchemaRegistryConfiguration(configs).jsonSchemaConfig,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jsonSchemaConfigAsAClass_isKeptByName() {
+        configs[AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG] = SortingObjectMapperFactory::class.java
+
+        assertEquals(
+            SortingObjectMapperFactory::class.java.name,
+            GlueSchemaRegistryConfiguration(configs).jsonSchemaConfig,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jsonSchemaConfigNamingAClassNotOnTheClasspath_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG] = "com.example.NoSuchFactory"
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG} names a class that " +
+                "could not be instantiated: com.example.NoSuchFactory. It has to be a public class with a " +
+                "public no-argument constructor, and on the classpath.",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testBuildConfig_jsonSchemaConfigNamingAClassWithoutANoArgConstructor_namesTheClass() {
+        configs[AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG] = ConstructorTakingObjectMapperFactory::class.java
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) { GlueSchemaRegistryConfiguration(configs) }
+
+        assertTrue(
+            exception.message!!.startsWith(
+                "Configuration property ${AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG} names a class " +
+                    "that could not be instantiated: ${ConstructorTakingObjectMapperFactory::class.java.name}.",
+            ),
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testEquals_configurationsDifferingByTheJsonSchemaConfig_areNotEqual() {
+        val plain = GlueSchemaRegistryConfiguration(HashMap(configs))
+
+        configs[AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG] = listOf("nullable")
+        val withConfig = GlueSchemaRegistryConfiguration(HashMap(configs))
+
+        assertNotEquals(plain, withConfig)
+        assertNotEquals(plain.hashCode(), withConfig.hashCode())
+        assertEquals(withConfig, GlueSchemaRegistryConfiguration(HashMap(configs)))
+        assertTrue(withConfig.toString().contains("jsonSchemaConfig=[nullable]"), withConfig.toString())
     }
 
     class SortingObjectMapperFactory : ObjectMapperFactory {

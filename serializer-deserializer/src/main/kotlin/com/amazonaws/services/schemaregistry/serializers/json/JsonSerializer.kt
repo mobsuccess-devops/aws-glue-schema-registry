@@ -22,7 +22,6 @@ import com.amazonaws.services.schemaregistry.exception.AWSSchemaRegistryExceptio
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator
 import java.nio.charset.StandardCharsets
 
@@ -41,11 +40,12 @@ open class JsonSerializer(
     var schemaRegistrySerDeConfigs: GlueSchemaRegistryConfiguration? = configs
 
     init {
+        val jsonSchemaConfig = configs?.let { JsonSchemaConfigs.forConfiguration(it) }
         jsonSchemaGenerator =
-            if (configs != null && configs.isJsonSchemaNullableEnabled) {
-                JsonSchemaGenerator(objectMapper, JsonSchemaConfig.nullableJsonSchemaDraft4())
-            } else {
+            if (jsonSchemaConfig == null) {
                 JsonSchemaGenerator(objectMapper)
+            } else {
+                JsonSchemaGenerator(objectMapper, jsonSchemaConfig)
             }
     }
 
