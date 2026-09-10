@@ -287,6 +287,11 @@ properties[AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED] = true
 It is off by default because it changes the schema text, and therefore registers a new schema
 version for a POJO that was already in the registry.
 
+To go further than the preset — combine nullable support with other generator options, or set
+any of them — pass the whole generator configuration under `jsonSchemaConfig`, which takes
+precedence over this flag. See
+[configuring the JSON Schema generator](configuration.md#configuring-the-json-schema-generator).
+
 ## Checking JSON Schema compatibility on the client
 
 Glue enforces the compatibility mode of a schema for Avro and Protobuf, but **not for JSON**: a

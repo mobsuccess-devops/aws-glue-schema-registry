@@ -480,6 +480,10 @@ public final class com/amazonaws/services/schemaregistry/serializers/json/JsonDa
 	public final fun schema (Ljava/lang/String;)Lcom/amazonaws/services/schemaregistry/serializers/json/JsonDataWithSchema$JsonDataWithSchemaBuilder;
 }
 
+public abstract interface class com/amazonaws/services/schemaregistry/serializers/json/JsonSchemaConfigFactory {
+	public abstract fun newJsonSchemaConfig ()Lcom/kjetland/jackson/jsonSchema/JsonSchemaConfig;
+}
+
 public class com/amazonaws/services/schemaregistry/serializers/json/JsonSerializer : com/amazonaws/services/schemaregistry/common/GlueSchemaRegistryDataFormatSerializer {
 	public static final field Companion Lcom/amazonaws/services/schemaregistry/serializers/json/JsonSerializer$Companion;
 	public fun <init> (Lcom/amazonaws/services/schemaregistry/common/configs/GlueSchemaRegistryConfiguration;)V

@@ -41,6 +41,8 @@ public final class com/mobsuccess/schemaregistry/kotlin/GlueSchemaRegistryConfig
 	public final fun jacksonSerializationFeatures ([Lcom/fasterxml/jackson/databind/SerializationFeature;)V
 	public final fun jsonClassNameAllowlist ([Ljava/lang/Class;)V
 	public final fun jsonClassNameAllowlist ([Ljava/lang/String;)V
+	public final fun jsonSchemaConfig (Lcom/kjetland/jackson/jsonSchema/JsonSchemaConfig;)V
+	public final fun jsonSchemaConfig (Ljava/lang/Class;)V
 	public final fun metadata (Ljava/util/Map;)V
 	public final fun objectMapperFactory (Ljava/lang/Class;)V
 	public final fun property (Ljava/lang/String;Ljava/lang/Object;)V

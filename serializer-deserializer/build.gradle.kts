@@ -38,7 +38,7 @@ dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.commons.collections4)
     implementation(libs.protoGoogleCommon)
-    implementation(libs.mbknor.jsonSchema) {
+    api(libs.mbknor.jsonSchema) {
         exclude(group = "io.github.classgraph", module = "classgraph")
     }
     implementation(libs.okio)

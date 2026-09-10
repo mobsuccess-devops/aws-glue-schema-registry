@@ -206,6 +206,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun getJacksonSerializationFeatureToggles ()Ljava/util/Map;
 	public final fun getJacksonSerializationFeatures ()Ljava/util/List;
 	public final fun getJsonClassNameAllowlist ()Ljava/util/Set;
+	public final fun getJsonSchemaConfig ()Ljava/lang/Object;
 	public final fun getMetadata ()Ljava/util/Map;
 	public final fun getObjectMapperFactory ()Ljava/lang/String;
 	public final fun getProtobufMessageType ()Lcom/amazonaws/services/schemaregistry/utils/ProtobufMessageType;
@@ -237,6 +238,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun setJsonClassNameAllowlist (Ljava/util/Set;)V
 	public final fun setJsonClassNameResolutionEnabled (Z)V
 	public final fun setJsonSchemaCompatibilityCheckEnabled (Z)V
+	public final fun setJsonSchemaConfig (Ljava/lang/Object;)V
 	public final fun setJsonSchemaNullableEnabled (Z)V
 	public final fun setMetadata (Ljava/util/Map;)V
 	public final fun setObjectMapperFactory (Ljava/lang/String;)V
@@ -322,6 +324,7 @@ public final class com/amazonaws/services/schemaregistry/utils/AWSSchemaRegistry
 	public static final field JSON_CLASS_NAME_ALLOWLIST Ljava/lang/String;
 	public static final field JSON_CLASS_NAME_RESOLUTION_ENABLED Ljava/lang/String;
 	public static final field JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED Ljava/lang/String;
+	public static final field JSON_SCHEMA_CONFIG Ljava/lang/String;
 	public static final field JSON_SCHEMA_NULLABLE_ENABLED Ljava/lang/String;
 	public static final field METADATA Ljava/lang/String;
 	public static final field OBJECT_MAPPER_FACTORY Ljava/lang/String;

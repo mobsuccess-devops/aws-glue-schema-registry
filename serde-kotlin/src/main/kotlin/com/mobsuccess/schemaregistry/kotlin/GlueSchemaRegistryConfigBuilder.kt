@@ -16,12 +16,14 @@
 package com.mobsuccess.schemaregistry.kotlin
 
 import com.amazonaws.services.schemaregistry.common.configs.ObjectMapperFactory
+import com.amazonaws.services.schemaregistry.serializers.json.JsonSchemaConfigFactory
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType
 import com.amazonaws.services.schemaregistry.utils.ProtobufMessageType
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
 import software.amazon.awssdk.services.glue.model.Compatibility
 import software.amazon.awssdk.services.glue.model.DataFormat
 import java.net.URI
@@ -215,6 +217,19 @@ public class GlueSchemaRegistryConfigBuilder internal constructor() {
     /** The `ObjectMapperFactory` building the JSON mappers, given by type. */
     public fun objectMapperFactory(factory: Class<out ObjectMapperFactory>) {
         put(AWSSchemaRegistryConstants.OBJECT_MAPPER_FACTORY, factory.name)
+    }
+
+    /**
+     * The generator configuration a JSON schema derived from a POJO is generated with. Set, it
+     * takes precedence over [jsonSchemaNullableEnabled].
+     */
+    public fun jsonSchemaConfig(config: JsonSchemaConfig) {
+        put(AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG, config)
+    }
+
+    /** The `JsonSchemaConfigFactory` building that configuration, given by type. */
+    public fun jsonSchemaConfig(factory: Class<out JsonSchemaConfigFactory>) {
+        put(AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG, factory.name)
     }
 
     /**

@@ -354,6 +354,40 @@ The only Java left in the repository is the Avro classes generated into the test
   `JsonSchemaConfig.nullableJsonSchemaDraft4()`, which emits `oneOf [null, type]` for those
   fields. It defaults to false because turning it on changes the schema text, and therefore
   registers a new schema version. This is upstream PR #529 (upstream issue #73).
+
+  The whole generator configuration can be passed as well, under `jsonSchemaConfig`: an mbknor
+  `JsonSchemaConfig` instance, or the name of a `JsonSchemaConfigFactory` implementation that
+  builds one, for the configurations that can only carry a class name. Set, it wins over
+  `jsonSchemaNullableEnabled`, so nullable support can be combined with any other generator
+  option rather than chosen as a preset. This follows the 2026-09-08 revision of upstream PR
+  #529, which answered its review by adding the same key, with one difference of shape: upstream
+  types the property as `JsonSchemaConfig`, and `common` thereby takes a compile dependency on
+  `mbknor-jackson-jsonschema` — a cost its author flagged, offering an untyped field as the
+  alternative. Here the property is held untyped in `common` and resolved by `JsonSerializer`,
+  the module that owns the generator, so `common` gains no dependency: the reasoning that keeps
+  `jackson-datatype-jsr310` out of it behind `registerJavaTimeModule`, and the shape of
+  `secondaryDeserializer`, a name `common` stores and `serializer-deserializer` resolves. `common`
+  still loads and instantiates a named class when the configuration is built, so a misspelt name
+  fails there rather than at the first record, which is when the JSON serializer is built; only
+  the interface check, and the rejection of a value of another type, wait for the serializer.
+  `mbknor-jackson-jsonschema` moves from `implementation` to `api` in `schema-registry-serde`,
+  since `JsonSchemaConfigFactory` returns a type from it — the rule of the scope narrowing
+  recorded below. A test pins the default schema text byte for byte, as upstream's revision does;
+  the two literals are identical.
+
+  Upstream declined the pull request on 2026-09-08, the day of its revision: the maintainer's
+  objection is that JSON Schema unions — `oneOf [null, type]`, and any union of several types —
+  have no counterpart in a Kafka Connect schema, so the feature would break the contract between
+  the two. That objection does not reach this fork's shape of it. Both keys act on one path only,
+  the schema `JsonSerializer` derives from a POJO; the JSON Schema Connect converter derives its
+  schema from the Connect schema it is handed and never reads either key, as the note on
+  `objectMapperFactory` below records. And the converter's reading side already accepts
+  `oneOf [null, type]` and its `anyOf` and `["type", "null"]` spellings as an optional field of the
+  real type — the port of upstream #526, recorded above — so a schema a producer registers with
+  either key on is read back by a Connect sink as it should be. Both keys are therefore features
+  of this fork rather than a port awaiting its upstream merge, and there is no prospect of
+  contributing them back.
+
 - **JSON schema compatibility can be checked on the client.** Glue enforces the compatibility
   mode of a schema for Avro and Protobuf but not for JSON, so a JSON schema version that breaks
   its declared mode is accepted by `RegisterSchemaVersion` and the breakage surfaces in a
