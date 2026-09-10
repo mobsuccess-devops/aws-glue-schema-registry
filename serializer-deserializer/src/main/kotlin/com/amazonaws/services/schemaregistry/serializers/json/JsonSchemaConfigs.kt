@@ -29,8 +29,8 @@ internal object JsonSchemaConfigs {
         is String -> factory(value).newJsonSchemaConfig()
         is Class<*> -> factory(value.name).newJsonSchemaConfig()
         else -> throw AWSSchemaRegistryException(
-            "Configuration property $KEY must be a ${JsonSchemaConfig::class.java.name}, or the name of a " +
-                "class implementing ${JsonSchemaConfigFactory::class.java.name}, not a ${value.javaClass.name}",
+            "Configuration property $KEY must be a ${JsonSchemaConfig::class.java.name}, or the name or Class " +
+                "of a class implementing ${JsonSchemaConfigFactory::class.java.name}, not a ${value.javaClass.name}",
         )
     }
 

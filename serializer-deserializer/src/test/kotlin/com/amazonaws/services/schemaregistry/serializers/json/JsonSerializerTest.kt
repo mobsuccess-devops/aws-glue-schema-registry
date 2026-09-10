@@ -295,7 +295,7 @@ class JsonSerializerTest {
 
         assertEquals(
             "Configuration property ${AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG} must be a " +
-                "com.kjetland.jackson.jsonSchema.JsonSchemaConfig, or the name of a class implementing " +
+                "com.kjetland.jackson.jsonSchema.JsonSchemaConfig, or the name or Class of a class implementing " +
                 "${JsonSchemaConfigFactory::class.java.name}, not a java.lang.Integer",
             exception.message,
         )
