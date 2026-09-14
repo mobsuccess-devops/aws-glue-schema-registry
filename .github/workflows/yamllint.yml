@@ -13,6 +13,15 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+# Cancel a run as soon as a newer commit supersedes it. Scoped to
+# pull_request/synchronize, so a push on master/preprod/prod and a merge_group
+# run are never cancelled: those results must always be recorded. A cancelled
+# run always belongs to a SHA that is no longer the head of the pull request,
+# and branch protection only evaluates the required check on the current head.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}
+
 jobs:
   validate-yaml:
     name: Validate YAML files
