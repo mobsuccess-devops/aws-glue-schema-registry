@@ -87,6 +87,13 @@ class GlueSchemaRegistryConfiguration {
      */
     var objectMapperFactory: String? = null
 
+    /**
+     * The `JsonSchemaConfig` a JSON schema derived from a POJO is generated with, or the name of
+     * a `JsonSchemaConfigFactory` implementation building it. Resolved by the JSON serializer;
+     * when set, it takes precedence over [isJsonSchemaNullableEnabled].
+     */
+    var jsonSchemaConfig: Any? = null
+
     constructor(region: String?) {
         val config = HashMap<String, Any?>()
         config[AWSSchemaRegistryConstants.AWS_REGION] = region
@@ -124,6 +131,7 @@ class GlueSchemaRegistryConfiguration {
         validateAndSetJacksonDeserializationFeatures(configs)
         validateAndSetObjectMapperFactory(configs)
         validateAndSetRegisterJavaTimeModule(configs)
+        validateAndSetJsonSchemaConfig(configs)
         validateAndSetTags(configs)
         validateAndSetMetadata(configs)
         validateAndSetUserAgent(configs)
@@ -444,6 +452,18 @@ class GlueSchemaRegistryConfiguration {
         }
     }
 
+    private fun validateAndSetJsonSchemaConfig(configs: Map<String, *>) {
+        val key = AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG
+        if (isPresent(configs, key)) {
+            jsonSchemaConfig =
+                when (val value = configs[key]) {
+                    is String -> value.also { newInstance(it, null, key) }
+                    is Class<*> -> value.name.also { newInstance(it, null, key) }
+                    else -> value
+                }
+        }
+    }
+
     /**
      * Builds the [ObjectMapper] the JSON serializer and deserializer read and write with.
      *
@@ -554,14 +574,7 @@ class GlueSchemaRegistryConfiguration {
         type: Class<T>,
         key: String,
     ): T {
-        val instance =
-            try {
-                loadClass(className).getDeclaredConstructor().newInstance()
-            } catch (e: Exception) {
-                throw notInstantiable(key, className, type, e)
-            } catch (e: LinkageError) {
-                throw notInstantiable(key, className, type, e)
-            }
+        val instance = newInstance(className, type, key)
         if (!type.isInstance(instance)) {
             throw AWSSchemaRegistryException(
                 "Configuration property $key has to name a class implementing ${type.name}; " +
@@ -571,15 +584,28 @@ class GlueSchemaRegistryConfiguration {
         return type.cast(instance)
     }
 
+    private fun newInstance(
+        className: String,
+        type: Class<*>?,
+        key: String,
+    ): Any = try {
+        loadClass(className).getDeclaredConstructor().newInstance()
+    } catch (e: Exception) {
+        throw notInstantiable(key, className, type, e)
+    } catch (e: LinkageError) {
+        throw notInstantiable(key, className, type, e)
+    }
+
     private fun notInstantiable(
         key: String,
         className: String,
-        type: Class<*>,
+        type: Class<*>?,
         cause: Throwable,
     ): AWSSchemaRegistryException = AWSSchemaRegistryException(
         "Configuration property $key names a class that could not be instantiated: $className. " +
-            "It has to be a public class with a public no-argument constructor, implementing " +
-            "${type.name}, and on the classpath.",
+            "It has to be a public class with a public no-argument constructor, " +
+            (if (type == null) "" else "implementing ${type.name}, ") +
+            "and on the classpath.",
         cause,
     )
 
@@ -658,7 +684,8 @@ class GlueSchemaRegistryConfiguration {
             jacksonSerializationFeatureToggles == other.jacksonSerializationFeatureToggles &&
             jacksonDeserializationFeatureToggles == other.jacksonDeserializationFeatureToggles &&
             registerJavaTimeModule == other.registerJavaTimeModule &&
-            objectMapperFactory == other.objectMapperFactory
+            objectMapperFactory == other.objectMapperFactory &&
+            jsonSchemaConfig == other.jsonSchemaConfig
     }
 
     override fun hashCode(): Int = listOf(
@@ -669,7 +696,7 @@ class GlueSchemaRegistryConfiguration {
         tags, metadata, secondaryDeserializer, proxyUrl, userAgentApp,
         jacksonSerializationFeatures, jacksonDeserializationFeatures,
         jacksonSerializationFeatureToggles, jacksonDeserializationFeatureToggles,
-        registerJavaTimeModule, objectMapperFactory,
+        registerJavaTimeModule, objectMapperFactory, jsonSchemaConfig,
     ).fold(1) { acc, value -> 31 * acc + (value?.hashCode() ?: 0) }
 
     override fun toString(): String = "GlueSchemaRegistryConfiguration(compressionType=$compressionType, endPoint=$endPoint, " +
@@ -687,7 +714,8 @@ class GlueSchemaRegistryConfiguration {
         "jacksonDeserializationFeatures=$jacksonDeserializationFeatures, " +
         "jacksonSerializationFeatureToggles=$jacksonSerializationFeatureToggles, " +
         "jacksonDeserializationFeatureToggles=$jacksonDeserializationFeatureToggles, " +
-        "registerJavaTimeModule=$registerJavaTimeModule, objectMapperFactory=$objectMapperFactory)"
+        "registerJavaTimeModule=$registerJavaTimeModule, objectMapperFactory=$objectMapperFactory, " +
+        "jsonSchemaConfig=$jsonSchemaConfig)"
 
     protected fun getMapFromPropertiesFile(properties: Properties): Map<String, *> = HashMap(properties.entries.associate { it.key.toString() to it.value })
 

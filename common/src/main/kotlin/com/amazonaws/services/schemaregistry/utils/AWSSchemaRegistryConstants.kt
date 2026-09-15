@@ -64,6 +64,7 @@ object AWSSchemaRegistryConstants {
     const val OBJECT_MAPPER_FACTORY = "objectMapperFactory"
     const val USER_AGENT_APP = "userAgentApp"
     const val JSON_SCHEMA_NULLABLE_ENABLED = "jsonSchemaNullableEnabled"
+    const val JSON_SCHEMA_CONFIG = "jsonSchemaConfig"
     const val JSON_SCHEMA_COMPATIBILITY_CHECK_ENABLED = "jsonSchemaCompatibilityCheckEnabled"
     const val JSON_CLASS_NAME_RESOLUTION_ENABLED = "jsonClassNameResolutionEnabled"
     const val JSON_CLASS_NAME_ALLOWLIST = "jsonClassNameAllowlist"

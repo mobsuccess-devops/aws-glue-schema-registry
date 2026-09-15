@@ -22,6 +22,7 @@ import com.amazonaws.services.schemaregistry.utils.RecordGenerator
 import com.amazonaws.services.schemaregistry.utils.nullOf
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -45,15 +46,13 @@ class JsonSerializerTest {
             GlueSchemaRegistryConfiguration(hashMapOf(AWSSchemaRegistryConstants.AWS_REGION to "us-west-2")),
         )
 
-    private val nullableJsonSerializer =
-        JsonSerializer(
-            GlueSchemaRegistryConfiguration(
-                hashMapOf(
-                    AWSSchemaRegistryConstants.AWS_REGION to "us-west-2",
-                    AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED to true,
-                ),
-            ),
-        )
+    private val nullableJsonSerializer = serializerWith(AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED to true)
+
+    private fun serializerWith(vararg entries: Pair<String, Any>): JsonSerializer = JsonSerializer(
+        GlueSchemaRegistryConfiguration(
+            hashMapOf(AWSSchemaRegistryConstants.AWS_REGION to "us-west-2", *entries),
+        ),
+    )
 
     @Test
     fun testWrapper_serializeWithGenericRecord_bytesMatch() {
@@ -199,6 +198,11 @@ class JsonSerializerTest {
     }
 
     @Test
+    fun testGetSchemaDefinition_withoutAnyGeneratorSetting_isTheSchemaTheLibraryHasAlwaysGenerated() {
+        assertEquals(DEFAULT_CAR_SCHEMA, jsonSerializer.getSchemaDefinition(SPECIFIC_TEST_RECORD))
+    }
+
+    @Test
     fun testGetSchemaDefinition_withoutTheNullableSetting_typesAnOptionalFieldDirectly() {
         val schema = ObjectMapper().readTree(jsonSerializer.getSchemaDefinition(SPECIFIC_TEST_RECORD))
 
@@ -232,9 +236,116 @@ class JsonSerializerTest {
         assertDoesNotThrow { nullableJsonSerializer.serialize(car) }
     }
 
+    @Test
+    fun testGetSchemaDefinition_withAGeneratorConfig_generatesWithIt() {
+        val serializer = serializerWith(AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG to JsonSchemaConfig.nullableJsonSchemaDraft4())
+
+        assertEquals(
+            nullableJsonSerializer.getSchemaDefinition(SPECIFIC_TEST_RECORD),
+            serializer.getSchemaDefinition(SPECIFIC_TEST_RECORD),
+        )
+    }
+
+    @Test
+    fun testGetSchemaDefinition_withAGeneratorConfigAndTheNullableSettingOff_theConfigWins() {
+        val serializer =
+            serializerWith(
+                AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED to false,
+                AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG to JsonSchemaConfig.nullableJsonSchemaDraft4(),
+            )
+
+        val branches = purchaseDateOf(serializer).path("oneOf")
+        assertEquals(2, branches.size())
+        assertTrue(branches.any { it.path("type").asText() == "null" })
+    }
+
+    @Test
+    fun testGetSchemaDefinition_withAGeneratorConfigAndTheNullableSettingOn_theConfigWins() {
+        val serializer =
+            serializerWith(
+                AWSSchemaRegistryConstants.JSON_SCHEMA_NULLABLE_ENABLED to true,
+                AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG to JsonSchemaConfig.vanillaJsonSchemaDraft4(),
+            )
+
+        assertEquals(DEFAULT_CAR_SCHEMA, serializer.getSchemaDefinition(SPECIFIC_TEST_RECORD))
+    }
+
+    @Test
+    fun testGetSchemaDefinition_withAGeneratorConfigFactoryByName_generatesWithWhatItBuilds() {
+        val serializer = serializerWith(AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG to Html5JsonSchemaConfigFactory::class.java.name)
+
+        val purchaseDate = purchaseDateOf(serializer)
+        assertEquals("integer", purchaseDate.path("type").asText())
+        assertEquals("Purchase Date", purchaseDate.path("title").asText())
+    }
+
+    @Test
+    fun testGetSchemaDefinition_withAGeneratorConfigFactoryByClass_generatesWithWhatItBuilds() {
+        val serializer = serializerWith(AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG to Html5JsonSchemaConfigFactory::class.java)
+
+        assertEquals("Purchase Date", purchaseDateOf(serializer).path("title").asText())
+    }
+
+    @Test
+    fun testConstructor_generatorConfigOfAnotherType_isRejected() {
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) {
+                serializerWith(AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG to 42)
+            }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG} must be a " +
+                "com.kjetland.jackson.jsonSchema.JsonSchemaConfig, or the name or Class of a class implementing " +
+                "${JsonSchemaConfigFactory::class.java.name}, not a java.lang.Integer",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testConstructor_generatorConfigNamingAClassThatIsNoFactory_isRejected() {
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) {
+                serializerWith(AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG to "java.lang.Object")
+            }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG} has to name a class " +
+                "implementing ${JsonSchemaConfigFactory::class.java.name}; java.lang.Object does not.",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testConstructor_generatorConfigNamingAMissingClassPastTheConfigurationCheck_isRejected() {
+        val configuration = GlueSchemaRegistryConfiguration(hashMapOf(AWSSchemaRegistryConstants.AWS_REGION to "us-west-2"))
+        configuration.jsonSchemaConfig = "com.example.NoSuchFactory"
+
+        val exception = assertThrows(AWSSchemaRegistryException::class.java) { JsonSerializer(configuration) }
+
+        assertEquals(
+            "Configuration property ${AWSSchemaRegistryConstants.JSON_SCHEMA_CONFIG} names a class that " +
+                "could not be instantiated: com.example.NoSuchFactory. It has to be a public class with a " +
+                "public no-argument constructor, implementing ${JsonSchemaConfigFactory::class.java.name}, " +
+                "and on the classpath.",
+            exception.message,
+        )
+        assertTrue(exception.cause is ClassNotFoundException, exception.cause.toString())
+    }
+
+    private fun purchaseDateOf(serializer: JsonSerializer) = ObjectMapper()
+        .readTree(serializer.getSchemaDefinition(SPECIFIC_TEST_RECORD))
+        .path("properties")
+        .path("purchaseDate")
+
+    class Html5JsonSchemaConfigFactory : JsonSchemaConfigFactory {
+        override fun newJsonSchemaConfig(): JsonSchemaConfig = JsonSchemaConfig.html5EnabledSchema()
+    }
+
     companion object {
         private val GENERIC_TEST_RECORD: JsonDataWithSchema =
             RecordGenerator.createGenericJsonRecord(RecordGenerator.TestJsonRecord.GEOLOCATION)
         private val SPECIFIC_TEST_RECORD = RecordGenerator.createSpecificJsonRecord()
+        private const val DEFAULT_CAR_SCHEMA =
+            """{"${'$'}schema":"http://json-schema.org/draft-04/schema#","title":"Simple Car Schema","type":"object","additionalProperties":false,"description":"This is a car","className":"com.amazonaws.services.schemaregistry.serializers.json.Car","properties":{"make":{"type":"string"},"model":{"type":"string"},"used":{"type":"boolean","default":true},"miles":{"type":"integer","maximum":200000,"multipleOf":1000},"year":{"type":"integer","minimum":2000},"purchaseDate":{"type":"integer","format":"utc-millisec"},"listedDate":{"type":"integer","format":"utc-millisec"},"owners":{"type":"array","items":{"type":"string"}},"serviceChecks":{"type":"array","items":{"type":"number"}}},"required":["make","model","used","miles","year"]}"""
     }
 }
