@@ -38,17 +38,19 @@ verbatim, so `git diff eed1506` shows every change.
 | Distribution | Maven Central                           | Maven Central (snapshots on GH)         |
 | Group        | `software.amazon.glue`                  | `com.mobsuccess`                        |
 | JVM target   | 8                                       | 17                                      |
-| Dependencies | Kafka 3.6.1, Wire 5.2.0, Jackson 2.12.2 | Kafka 3.9.2, Wire 6.4.6, Jackson 2.22.2 |
+| Dependencies | Avro 1.11.4, protobuf 3, Jackson 2.12.2 | Avro 1.12.1, protobuf 4, Jackson 2.22.2 |
 
 What the fork adds on top of the port:
 
-- **Dependencies that keep moving.** Upstream's are where its last release left them.
+- **Dependencies that keep moving.** Upstream's move when it releases: v2.0.0, in September
+  2026, brought its Kafka and Wire to the versions this fork carries. This fork's move
+  between releases.
   Dependabot watches `gradle/libs.versions.toml`, and the _resolved_ runtime graph — the
   transitives, which is where most CVEs sit —
   is submitted to GitHub so that its alerts see them too. A transitive that carries one is
   constrained out rather than waited on — `scala-library` is held above CVE-2022-36944.
-  protobuf 4.36.0 is on `master` and ships in the next major; the current release still
-  resolves 3.25.5.
+  protobuf 4.36.0 has shipped since the fork's v4.0.0, over a gencode floor of 4.33.2 that a
+  consumer's own protobuf runtime must clear.
 - **GraalVM native-image support.** `schema-registry-serde` and
   `schema-registry-kafkastreams-serde` carry their own reachability metadata in
   `META-INF/native-image`, verified by building a real Quarkus consumer as a native image, so

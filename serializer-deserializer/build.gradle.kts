@@ -50,7 +50,6 @@ dependencies {
     runtimeOnly(libs.kotlin.reflect)
     runtimeOnly(libs.kotlin.scriptingCompilerImplEmbeddable)
     runtimeOnly(libs.kotlin.scriptingCompilerEmbeddable)
-    runtimeOnly(libs.kotlinx.serializationCore)
     runtimeOnly(libs.wire.compiler) {
         exclude(group = "com.squareup.wire", module = "wire-grpc-client")
         exclude(group = "com.charleskorn.kaml", module = "kaml")
