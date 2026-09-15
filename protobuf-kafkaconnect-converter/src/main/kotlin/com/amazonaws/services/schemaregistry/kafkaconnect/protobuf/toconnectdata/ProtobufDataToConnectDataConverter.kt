@@ -51,8 +51,7 @@ class ProtobufDataToConnectDataConverter {
 
         for (field in connectSchema.fields()) {
             if (field.schema().type() == Schema.Type.STRUCT &&
-                field.schema().parameters().containsKey(PROTOBUF_TYPE) &&
-                field.schema().parameters()[PROTOBUF_TYPE] == PROTOBUF_ONEOF_TYPE
+                field.schema().parameters()?.get(PROTOBUF_TYPE) == PROTOBUF_ONEOF_TYPE
             ) {
                 val oneof = Struct(field.schema())
                 for (oneofField in field.schema().fields()) {

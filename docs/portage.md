@@ -961,3 +961,25 @@ The only Java left in the repository is the Avro classes generated into the test
   `protobuf.type` at each struct it descends into, and `FieldBuilder.buildOneof` reads the grouping
   back the other way — which the new round-trip test exercises. This is
   [awslabs/aws-glue-schema-registry#347](https://github.com/awslabs/aws-glue-schema-registry/issues/347).
+- **`Schema.parameters()` is read as the nullable it is, everywhere.** Kafka Connect returns
+  `null` from `Schema.parameters()` for a schema that declares no parameter, which is what
+  Debezium produces for a STRUCT field carrying no Protobuf metadata. Four sites dereferenced it.
+  Two were the ones upstream fixed in
+  [awslabs/aws-glue-schema-registry#532](https://github.com/awslabs/aws-glue-schema-registry/pull/532):
+  `FieldBuilder` on the schema path and `ConnectDataToProtobufDataConverter` on the data path,
+  both already guarded here by #67 and #176, and upstream's own regression test for them passes
+  on this fork unchanged. The two that remained are on the paths that pull request did not reach.
+  `ProtobufDataToConnectDataConverter.toConnectData` tested `protobuf.type` on every STRUCT field
+  of the Connect schema it is handed, so a caller passing a schema it built itself — the converter
+  never does, since `ProtobufSchemaToConnectSchemaConverter` tags every field it emits — died on
+  the first metadata-free struct. `DecimalSchemaTypeConverter` read `connect.decimal.scale` the
+  same way, so a `SchemaBuilder.bytes().name(Decimal.LOGICAL_NAME)` built without
+  `Decimal.builder(scale)` died before the field was written. Both now read the map through a
+  null check and take the branch they already took for a schema whose parameters are present but
+  hold no such key: the oneof grouping is skipped, the scale metadata is not emitted. A schema
+  that converts today converts to the same descriptor and the same bytes. What stays a limitation,
+  as upstream's 2.0.0 changelog records for its own fix, is a **top-level** STRUCT built with
+  `SchemaBuilder.struct()` and no `.name(...)`: it still throws, here with the `DataException`
+  #176 gave it rather than a `NullPointerException`. A nested one is handled — it takes the
+  capitalized field name. This is
+  [awslabs/aws-glue-schema-registry#289](https://github.com/awslabs/aws-glue-schema-registry/issues/289).

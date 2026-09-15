@@ -40,7 +40,8 @@ class DecimalSchemaTypeConverter : SchemaTypeConverter {
 
         addImportToProtobufSchema(fileDescriptorProtoBuilder, DECIMAL_IMPORT)
 
-        if (schema.parameters().containsKey(DECIMAL_SCALE_VALUE)) {
+        val schemaParameters = schema.parameters()
+        if (schemaParameters != null && schemaParameters.containsKey(DECIMAL_SCALE_VALUE)) {
             addImportToProtobufSchema(fileDescriptorProtoBuilder, METADATA_IMPORT)
 
             val keyOptionsBuilder = DescriptorProtos.FieldOptions.newBuilder()
@@ -50,7 +51,7 @@ class DecimalSchemaTypeConverter : SchemaTypeConverter {
             val valueOptionsBuilder = DescriptorProtos.FieldOptions.newBuilder()
             valueOptionsBuilder.setExtension(
                 ProtobufSchemaMetadata.metadataValue,
-                schema.parameters()[DECIMAL_SCALE_VALUE],
+                schemaParameters[DECIMAL_SCALE_VALUE],
             )
             builder.mergeOptions(valueOptionsBuilder.build())
         }

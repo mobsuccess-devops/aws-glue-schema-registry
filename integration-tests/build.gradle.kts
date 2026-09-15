@@ -15,6 +15,7 @@ dependencies {
 
     testImplementation(project(":schema-registry-serde"))
     testImplementation(project(":schema-registry-kafkastreams-serde"))
+    testImplementation(project(":protobuf-kafkaconnect-converter"))
     testImplementation(platform(libs.aws.bom))
     testImplementation(platform(libs.jackson.bom))
     testImplementation(libs.aws.kinesis)
