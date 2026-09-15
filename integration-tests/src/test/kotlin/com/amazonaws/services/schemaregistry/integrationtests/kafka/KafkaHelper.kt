@@ -51,7 +51,6 @@ import java.util.concurrent.CompletionException
 
 class KafkaHelper(
     private val bootstrapBrokers: String,
-    private val zookeeperConnect: String,
     private val clusterArn: String,
 ) {
     /**

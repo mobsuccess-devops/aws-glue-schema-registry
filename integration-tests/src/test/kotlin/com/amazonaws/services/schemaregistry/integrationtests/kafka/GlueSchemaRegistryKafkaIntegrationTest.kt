@@ -618,9 +618,7 @@ class GlueSchemaRegistryKafkaIntegrationTest {
                 )
 
             val bootstrapString = localKafkaClusterHelper.getBootstrapString()
-            val zookeeperConnectString = localKafkaClusterHelper.getZookeeperConnectString()
-            val kafkaHelper =
-                KafkaHelper(bootstrapString, zookeeperConnectString, localKafkaClusterHelper.getOrCreateCluster())
+            val kafkaHelper = KafkaHelper(bootstrapString, localKafkaClusterHelper.getOrCreateCluster())
             kafkaHelper.createTopic(
                 topic,
                 localKafkaClusterHelper.getNumberOfPartitions(),

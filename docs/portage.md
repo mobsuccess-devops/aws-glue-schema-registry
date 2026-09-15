@@ -763,6 +763,14 @@ The only Java left in the repository is the Avro classes generated into the test
   by [@subramp](https://github.com/subramp), which fixes the same broken images by moving to
   the Confluent ZooKeeper and Kafka images; the fork follows its own CI instead, so that a
   local failure and a nightly failure mean the same thing.
+- **The ZooKeeper plumbing in the Kafka test helpers is gone.** `KafkaHelper` took a
+  `zookeeperConnect` constructor argument that it stored and never read, fed by
+  `KafkaClusterHelper.getZookeeperConnectString()`, whose one implementation returned the
+  constant `127.0.0.1:2181`. Nothing has listened on that port since the integration stack
+  became a single `apache/kafka` broker in KRaft mode, so the parameter, the interface
+  method, the constant and the call site that carried the value between them are removed.
+  This is test-only code in `integration-tests`: no production source and no public ABI is
+  involved.
 - **A missing `SPECIFIC_RECORD` class is named instead of failing on a cast.**
   `DatumReaderInstance.from` resolved the reader class with
   `SpecificData.get().getClass(writerSchema) as Class<SpecificRecord>`. `getClass` returns
