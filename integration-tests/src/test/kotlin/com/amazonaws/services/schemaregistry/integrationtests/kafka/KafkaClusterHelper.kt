@@ -19,8 +19,6 @@ interface KafkaClusterHelper {
 
     fun getBootstrapString(): String
 
-    fun getZookeeperConnectString(): String
-
     fun getNumberOfPartitions(): Int
 
     fun getReplicationFactor(): Short

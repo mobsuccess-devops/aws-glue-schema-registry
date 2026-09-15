@@ -26,8 +26,6 @@ class LocalKafkaClusterHelper : KafkaClusterHelper {
         return if (!override.isNullOrEmpty()) override else BOOTSTRAP_STRING
     }
 
-    override fun getZookeeperConnectString(): String = ZOOKEEPER_STRING
-
     override fun getNumberOfPartitions(): Int = NUMBER_OF_PARTITIONS
 
     override fun getReplicationFactor(): Short = REPLICATION_FACTOR
@@ -35,7 +33,6 @@ class LocalKafkaClusterHelper : KafkaClusterHelper {
     companion object {
         private const val FAKE_CLUSTER_ARN = "FAKE_CLUSTER_ARN"
         private const val BOOTSTRAP_STRING = "127.0.0.1:9092"
-        private const val ZOOKEEPER_STRING = "127.0.0.1:2181"
         private const val NUMBER_OF_PARTITIONS = 1
         private const val REPLICATION_FACTOR: Short = 1
     }
