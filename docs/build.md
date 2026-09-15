@@ -253,8 +253,10 @@ com/google/protobuf/GeneratedFile`. Otherwise the floor moves up only when no co
 - **`serializer-deserializer` builds a `tests` jar, and does not publish it.**
   `integration-tests` consumes it through the `testArtifacts` configuration, which is a
   project dependency and needs no publication. See [portage.md](portage.md).
-- The Kotlin dependencies pulled in by `mbknor-jackson-jsonschema` and `wire` are pinned at
-  `1.9.25` (`kotlinRuntime` in the catalog): that is distinct from the compiler version.
+- The Kotlin dependencies pulled in by `mbknor-jackson-jsonschema` and `wire` are raised to
+  `2.4.10` (`kotlinRuntime` in the catalog), well above the 1.3.50 to 2.3.20 those libraries
+  request. It is a knob of its own, not the `kotlin` version the compiler plugin reads, even
+  when the two carry the same number, as they do today.
 
 ## Integration tests
 

@@ -12,7 +12,7 @@ flink = "1.20.5"
 protobufGencode = "4.33.2"
 protobufRuntime = "4.36.0"
 apicurio = "3.3.1"
-wire = "6.4.6"
+wire = "7.0.1"
 kotlinRuntime = "2.4.10"       # Kotlin deps pulled in by mbknor/wire, distinct from the compiler version
 mbknorJsonSchema = "1.0.39"
 scalaLibrary = "2.13.18"
@@ -38,9 +38,8 @@ awaitility = "4.3.0"
 kinesisClient = "3.5.1"
 kinesisProducer = "1.0.7"
 localstackUtils = "0.2.23"
-okio = "3.18.1"
-okioFakeFs = "3.18.1"
-kotlinxSerialization = "1.11.0"
+okio = "3.18.2"
+okioFakeFs = "3.18.2"
 protoGoogleCommon = "2.7.4"
 truth = "1.4.5"
 powermockReflect = "2.0.9"
@@ -97,7 +96,6 @@ jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr
 mbknor-jsonSchema = { module = "com.kjetland:mbknor-jackson-jsonschema_2.13", version.ref = "mbknorJsonSchema" }
 scala-library = { module = "org.scala-lang:scala-library", version.ref = "scalaLibrary" }
 everit-jsonSchema = { module = "com.github.erosb:everit-json-schema", version.ref = "everitJsonSchema" }
-kotlinx-serializationCore = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm", version.ref = "kotlinxSerialization" }
 
 # --- Kotlin runtime pulled in by third-party libraries ---
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinRuntime" }

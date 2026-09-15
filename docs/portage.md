@@ -263,6 +263,22 @@ The only Java left in the repository is the Avro classes generated into the test
   onto the wrong parameter — caught by the compiler here only because the types differ.
   The call now names its arguments and lets `weakImports` take its default, so the next
   parameter Wire inserts cannot silently land in the wrong slot.
+- **Wire 5.2.0 → 7.0.1, and no explicit `kotlinx-serialization-core`.** The pom pins
+  `square-wireschema.version` at 5.2.0; the fork had moved to 6.4.6 and takes 7.0.1, the
+  version upstream moved to in
+  [awslabs#542](https://github.com/awslabs/aws-glue-schema-registry/pull/542). No source
+  changes with it: the named-argument call above already passes `weakImports`, and of the
+  twenty-four Wire classes this module uses, 7.0.1 changes no signature and only adds
+  `ProtoType.FIELD_MASK`. `okio` and `okio-fakefilesystem` follow Wire to 3.18.2, the version
+  `wire-schema-jvm:7.0.1` itself requests, so neither is forced up any more. The explicit
+  `kotlinx-serialization-core-jvm` declaration is gone: `wire-compiler:7.0.1` requests exactly
+  the 1.11.0 the catalog was pinning, so `runtimeClasspath` resolves the same module at the
+  same version without it. Upstream's [#313](https://github.com/awslabs/aws-glue-schema-registry/issues/313)
+  — the Kotlin serialization plugin reading `Require-Kotlin-Version` off a jar on a consumer's
+  compile classpath — never applied here, because the fork declared it `runtimeOnly` rather
+  than at compile scope. What stays a deviation is the `com.charleskorn.kaml:kaml` exclusion on
+  `wire-compiler`, which the fork has carried since the Gradle port: upstream resolves
+  `kaml-jvm` at runtime scope, this build resolves none.
 - **Widened visibility on a few nested types.** `ProtobufSchemaLoaderContext` was
   `protected static` and `AvroData.FromConnectContext` was `private static`, both exposed
   through public methods — legal in Java, rejected by Kotlin. They are now public classes
