@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
@@ -43,6 +44,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.http.SdkHttpClient
+import software.amazon.awssdk.http.apache.ApacheHttpClient
 import software.amazon.awssdk.services.glue.GlueClient
 import software.amazon.awssdk.services.glue.model.Compatibility
 import software.amazon.awssdk.services.glue.model.CreateSchemaRequest
@@ -170,6 +173,116 @@ class AWSSchemaRegistryClientTest {
 
         val expectedMessage = "Malformed uri, please pass the valid uri for creating the client"
         assertEquals(expectedMessage, awsSchemaRegistryException.message)
+    }
+
+    /**
+     * When a custom [SdkHttpClient.Builder] is set on the configuration, the client must build its
+     * HTTP client from that injected builder rather than the default. Verifying that `build()` is
+     * called on the injected builder proves the injected client is the one actually used.
+     */
+    @Test
+    fun testConstructor_injectedHttpClientBuilder_isUsedToBuildClient() {
+        val mockHttpClientBuilder = mock<SdkHttpClient.Builder<*>>()
+        whenever(mockHttpClientBuilder.build()).thenReturn(mock<SdkHttpClient>())
+
+        glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(configs)
+        glueSchemaRegistryConfiguration.httpClientBuilder = mockHttpClientBuilder
+        val mockAwsCredentialsProvider = mock<AwsCredentialsProvider>()
+
+        assertDoesNotThrow {
+            AWSSchemaRegistryClient(mockAwsCredentialsProvider, glueSchemaRegistryConfiguration)
+        }
+
+        verify(mockHttpClientBuilder, times(1)).build()
+    }
+
+    /**
+     * A real Apache HTTP client builder injected through the configuration must be accepted and
+     * produce a working Glue client. This is the additive path that lets IRSA
+     * (`WebIdentityTokenFileCredentialsProvider` + STS) work and avoids the "Multiple HTTP
+     * implementations were found on the classpath" error.
+     */
+    @Test
+    fun testConstructor_injectedApacheHttpClientBuilder_buildsClientSuccessfully() {
+        glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(configs)
+        glueSchemaRegistryConfiguration.httpClientBuilder = ApacheHttpClient.builder()
+        val mockAwsCredentialsProvider = mock<AwsCredentialsProvider>()
+
+        assertDoesNotThrow {
+            AWSSchemaRegistryClient(mockAwsCredentialsProvider, glueSchemaRegistryConfiguration)
+        }
+    }
+
+    /**
+     * With no HTTP client builder set (the default), the client must still build successfully,
+     * falling back to `UrlConnectionHttpClient`. This preserves the historical behaviour for
+     * existing consumers.
+     */
+    @Test
+    fun testConstructor_noHttpClientBuilder_usesDefaultAndBuildsClientSuccessfully() {
+        glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(configs)
+        assertNull(glueSchemaRegistryConfiguration.httpClientBuilder)
+        val mockAwsCredentialsProvider = mock<AwsCredentialsProvider>()
+
+        assertDoesNotThrow {
+            AWSSchemaRegistryClient(mockAwsCredentialsProvider, glueSchemaRegistryConfiguration)
+        }
+    }
+
+    /**
+     * When both a proxy URL and a custom HTTP client builder are configured, the injected builder
+     * wins and the configured proxy is ignored — proxy configuration is the caller's
+     * responsibility on their own builder. The client must still build from the injected builder.
+     */
+    @Test
+    fun testConstructor_proxyUrlWithInjectedBuilder_usesInjectedBuilderAndIgnoresProxy() {
+        val mockHttpClientBuilder = mock<SdkHttpClient.Builder<*>>()
+        whenever(mockHttpClientBuilder.build()).thenReturn(mock<SdkHttpClient>())
+
+        val proxyConfigs = HashMap<String, Any>(configs)
+        proxyConfigs[AWSSchemaRegistryConstants.PROXY_URL] = "http://proxy.example.com:8080"
+        glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(proxyConfigs)
+        glueSchemaRegistryConfiguration.httpClientBuilder = mockHttpClientBuilder
+        val mockAwsCredentialsProvider = mock<AwsCredentialsProvider>()
+
+        assertDoesNotThrow {
+            AWSSchemaRegistryClient(mockAwsCredentialsProvider, glueSchemaRegistryConfiguration)
+        }
+
+        verify(mockHttpClientBuilder, times(1)).build()
+    }
+
+    /**
+     * Negative case: when the injected HTTP client builder fails to build — a missing or
+     * incompatible dependency, an invalid builder configuration — the client-specific exception
+     * must be wrapped in an [AWSSchemaRegistryException] so callers see the same failure type this
+     * constructor already uses, with an actionable message and the original cause preserved.
+     */
+    @Test
+    fun testConstructor_injectedHttpClientBuilderThrows_wrapsInAWSSchemaRegistryException() {
+        val mockHttpClientBuilder = mock<SdkHttpClient.Builder<*>>()
+        val cause = IllegalStateException("boom from injected client")
+        whenever(mockHttpClientBuilder.build()).thenThrow(cause)
+
+        glueSchemaRegistryConfiguration = GlueSchemaRegistryConfiguration(configs)
+        glueSchemaRegistryConfiguration.httpClientBuilder = mockHttpClientBuilder
+        val mockAwsCredentialsProvider = mock<AwsCredentialsProvider>()
+
+        val exception =
+            assertThrows(AWSSchemaRegistryException::class.java) {
+                AWSSchemaRegistryClient(mockAwsCredentialsProvider, glueSchemaRegistryConfiguration)
+            }
+
+        assertTrue(
+            exception.message!!.contains("httpClientBuilder"),
+            "wrapped message should point the caller at the injected httpClientBuilder",
+        )
+        assertEquals(
+            cause,
+            exception.cause,
+            "original client-specific exception must be preserved as the cause",
+        )
+        verify(mockHttpClientBuilder, times(1)).build()
     }
 
     /**

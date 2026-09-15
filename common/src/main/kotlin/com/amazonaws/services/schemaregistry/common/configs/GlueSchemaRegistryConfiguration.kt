@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import org.apache.commons.lang3.EnumUtils
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.core.exception.SdkClientException
+import software.amazon.awssdk.http.SdkHttpClient
 import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 import software.amazon.awssdk.services.glue.model.Compatibility
 import java.net.URI
@@ -59,6 +60,24 @@ class GlueSchemaRegistryConfiguration {
     var metadata: Map<String, String>? = null
     var secondaryDeserializer: String? = null
     var proxyUrl: URI? = null
+
+    /**
+     * Builder for the [SdkHttpClient] the internal Glue client runs on. This is a
+     * programmatic-only option — it is never read from the property map — so a caller that builds
+     * the configuration in code may set it, for example
+     * `config.httpClientBuilder = ApacheHttpClient.builder()`.
+     *
+     * Left `null`, the client builds a
+     * `software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient`, the historical
+     * behaviour. Injecting a builder lets a caller avoid the "Multiple HTTP implementations were
+     * found on the classpath" error, and use a client that works with a credentials provider
+     * calling STS, such as `WebIdentityTokenFileCredentialsProvider` (IAM Roles for Service
+     * Accounts).
+     *
+     * When a builder is injected, [proxyUrl] is ignored: configure any proxy on the injected
+     * builder instead.
+     */
+    var httpClientBuilder: SdkHttpClient.Builder<*>? = null
 
     /**
      * Name of the application using the serializer/deserializer.
@@ -652,6 +671,7 @@ class GlueSchemaRegistryConfiguration {
             metadata == other.metadata &&
             secondaryDeserializer == other.secondaryDeserializer &&
             proxyUrl == other.proxyUrl &&
+            httpClientBuilder == other.httpClientBuilder &&
             userAgentApp == other.userAgentApp &&
             jacksonSerializationFeatures == other.jacksonSerializationFeatures &&
             jacksonDeserializationFeatures == other.jacksonDeserializationFeatures &&
@@ -666,7 +686,7 @@ class GlueSchemaRegistryConfiguration {
         protobufMessageType, registryName, compatibilitySetting, description,
         isSchemaAutoRegistrationEnabled, isJsonClassNameResolutionEnabled, isJsonSchemaNullableEnabled,
         isJsonSchemaCompatibilityCheckEnabled, jsonClassNameAllowlist,
-        tags, metadata, secondaryDeserializer, proxyUrl, userAgentApp,
+        tags, metadata, secondaryDeserializer, proxyUrl, httpClientBuilder, userAgentApp,
         jacksonSerializationFeatures, jacksonDeserializationFeatures,
         jacksonSerializationFeatureToggles, jacksonDeserializationFeatureToggles,
         registerJavaTimeModule, objectMapperFactory,
@@ -682,7 +702,8 @@ class GlueSchemaRegistryConfiguration {
         "jsonSchemaNullableEnabled=$isJsonSchemaNullableEnabled, " +
         "jsonSchemaCompatibilityCheckEnabled=$isJsonSchemaCompatibilityCheckEnabled, " +
         "jsonClassNameAllowlist=$jsonClassNameAllowlist, tags=$tags, metadata=$metadata, " +
-        "secondaryDeserializer=$secondaryDeserializer, proxyUrl=$proxyUrl, userAgentApp=$userAgentApp, " +
+        "secondaryDeserializer=$secondaryDeserializer, proxyUrl=$proxyUrl, " +
+        "httpClientBuilder=$httpClientBuilder, userAgentApp=$userAgentApp, " +
         "jacksonSerializationFeatures=$jacksonSerializationFeatures, " +
         "jacksonDeserializationFeatures=$jacksonDeserializationFeatures, " +
         "jacksonSerializationFeatureToggles=$jacksonSerializationFeatureToggles, " +

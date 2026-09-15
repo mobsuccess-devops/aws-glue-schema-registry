@@ -31,6 +31,7 @@ import software.amazon.awssdk.core.interceptor.Context
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes
 import software.amazon.awssdk.core.interceptor.ExecutionInterceptor
 import software.amazon.awssdk.core.retry.RetryPolicy
+import software.amazon.awssdk.http.SdkHttpClient
 import software.amazon.awssdk.http.urlconnection.ProxyConfiguration
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient
 import software.amazon.awssdk.regions.Region
@@ -89,21 +90,12 @@ open class AWSSchemaRegistryClient {
                 .addExecutionInterceptor(UserAgentRequestInterceptor())
                 .build()
 
-        val urlConnectionHttpClientBuilder = UrlConnectionHttpClient.builder()
-        val proxyUrl = glueSchemaRegistryConfiguration.proxyUrl
-        if (proxyUrl != null) {
-            log.debug("Creating http client using proxy {}", proxyUrl.toString())
-            urlConnectionHttpClientBuilder.proxyConfiguration(
-                ProxyConfiguration.builder().endpoint(proxyUrl).build(),
-            )
-        }
-
         val glueClientBuilder =
             GlueClient
                 .builder()
                 .credentialsProvider(credentialsProvider)
                 .overrideConfiguration(overrideConfiguration)
-                .httpClient(urlConnectionHttpClientBuilder.build())
+                .httpClient(buildHttpClient(glueSchemaRegistryConfiguration))
                 .region(Region.of(glueSchemaRegistryConfiguration.region))
 
         val endPoint = glueSchemaRegistryConfiguration.endPoint
@@ -135,6 +127,46 @@ open class AWSSchemaRegistryClient {
         get() = glueSchemaRegistryConfiguration!!
 
     private val jsonSchemaCompatibilityChecker = JsonSchemaCompatibilityChecker()
+
+    /**
+     * Builds the HTTP client the Glue client runs on. A [SdkHttpClient.Builder] carried by the
+     * configuration is used as supplied, and the configured proxy URL is then ignored — the caller
+     * owns proxy configuration on their own builder. Otherwise the historical default,
+     * [UrlConnectionHttpClient], is built with the configured proxy applied.
+     *
+     * @throws AWSSchemaRegistryException when the injected builder fails to build
+     */
+    private fun buildHttpClient(config: GlueSchemaRegistryConfiguration): SdkHttpClient {
+        val injectedBuilder = config.httpClientBuilder
+        if (injectedBuilder != null) {
+            if (config.proxyUrl != null) {
+                log.warn(
+                    "Both a custom httpClientBuilder and proxyUrl ({}) are configured; the proxyUrl " +
+                        "is ignored. Configure the proxy on the injected HTTP client builder.",
+                    config.proxyUrl,
+                )
+            }
+            return try {
+                injectedBuilder.build()
+            } catch (e: RuntimeException) {
+                throw AWSSchemaRegistryException(
+                    "Failed to build the injected HTTP client from the supplied httpClientBuilder. " +
+                        "Verify the SdkHttpClient.Builder set on GlueSchemaRegistryConfiguration.",
+                    e,
+                )
+            }
+        }
+
+        val urlConnectionHttpClientBuilder = UrlConnectionHttpClient.builder()
+        val proxyUrl = config.proxyUrl
+        if (proxyUrl != null) {
+            log.debug("Creating http client using proxy {}", proxyUrl.toString())
+            urlConnectionHttpClientBuilder.proxyConfiguration(
+                ProxyConfiguration.builder().endpoint(proxyUrl).build(),
+            )
+        }
+        return urlConnectionHttpClientBuilder.build()
+    }
 
     /**
      * Get Schema Version ID by passing the schema definition.

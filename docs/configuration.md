@@ -288,3 +288,42 @@ change through.
 `FULL_ALL` are checked as `BACKWARD`, `FORWARD` and `FULL`: the comparison is against the latest
 version of the schema and never against the versions before it, so a change that is compatible
 with the latest version but breaks an older one passes.
+
+## Injecting a custom HTTP client
+
+The Glue client this library builds for itself runs on `UrlConnectionHttpClient`. A caller can hand
+it a different `SdkHttpClient` through `httpClientBuilder` on the configuration object:
+
+```java
+GlueSchemaRegistryConfiguration config = new GlueSchemaRegistryConfiguration(properties);
+config.setHttpClientBuilder(software.amazon.awssdk.http.apache.ApacheHttpClient.builder());
+```
+
+```kotlin
+val config = GlueSchemaRegistryConfiguration(properties).apply {
+    httpClientBuilder = ApacheHttpClient.builder()
+}
+```
+
+This is the one option that is **not a property key**. It holds an object rather than a string, so
+it is set in code and never read from the property map, from a `Properties` file, or from a Connect
+worker configuration — which also puts it out of reach of the Kotlin DSL, whose `build()` returns
+that same property map.
+
+Two situations call for it:
+
+- **Another SDK HTTP implementation is already on the classpath.** The AWS SDK refuses to guess
+  between them and fails with "Multiple HTTP implementations were found on the classpath". Naming
+  the one this library should use settles it without anyone having to exclude a dependency.
+- **The credentials provider calls STS** — `WebIdentityTokenFileCredentialsProvider`, which is what
+  IAM Roles for Service Accounts (IRSA) resolves to on EKS. That provider builds an STS client of
+  its own, and the HTTP implementation it picks has to be one the application actually ships.
+
+Left unset, nothing changes: the client builds `UrlConnectionHttpClient` and applies `proxyUrl`, as
+it always did. Set, the builder is used exactly as supplied and `proxyUrl` is **ignored** — a WARN
+records it, and any proxy belongs on the injected builder instead. A builder that throws while
+building is wrapped in `AWSSchemaRegistryException`, naming `httpClientBuilder`, rather than
+surfacing a client-specific exception the caller cannot place.
+
+The option changes how the Glue calls travel, not what they carry: the bytes a serializer writes are
+the same either way, so a producer and a consumer need not agree on an HTTP client.

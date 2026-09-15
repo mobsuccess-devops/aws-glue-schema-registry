@@ -23,6 +23,7 @@ dependencies {
     runtimeOnly(libs.aws.jsonProtocol)
 
     testImplementation(libs.jackson.jsr310)
+    testImplementation(libs.aws.apacheClient)
 }
 
 val generateVersionSource by tasks.registering(Copy::class) {
