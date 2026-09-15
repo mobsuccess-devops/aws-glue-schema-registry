@@ -15,6 +15,8 @@
 package com.amazonaws.services.schemaregistry.integrationtests.properties
 
 import software.amazon.awssdk.core.exception.SdkClientException
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.regions.ServiceMetadata
 import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 
 interface GlueSchemaRegistryConnectionProperties {
@@ -35,15 +37,17 @@ interface GlueSchemaRegistryConnectionProperties {
         /**
          * GLUE_ENDPOINT points the tests at a Glue-compatible endpoint other than the public
          * one — a local emulator, or a VPC endpoint. Unset, the tests use the public endpoint
-         * of [REGION]. The region itself needs no override of its own: the provider chain
-         * above already reads AWS_REGION.
+         * of [REGION], whose host carries the suffix of that region's partition. The region
+         * itself needs no override of its own: the provider chain above already reads
+         * AWS_REGION.
          */
         private fun resolveEndpoint(): String {
             val override = System.getenv("GLUE_ENDPOINT")
             if (!override.isNullOrEmpty()) {
                 return override
             }
-            return String.format("https://glue.%s.amazonaws.com", REGION)
+            val host = ServiceMetadata.of("glue").endpointFor(Region.of(REGION))
+            return "https://$host"
         }
     }
 }
