@@ -52,6 +52,7 @@ dependencies {
     }
     testRuntimeOnly(libs.classgraph)
     testImplementation(libs.aws.urlConnectionClient)
+    testImplementation(libs.aws.apacheClient)
 
     // Classes generated from serializer-deserializer/src/test/proto, consumed through
     // the test jar just as the Maven `tests` classifier did.

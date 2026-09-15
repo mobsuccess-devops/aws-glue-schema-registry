@@ -983,3 +983,15 @@ The only Java left in the repository is the Avro classes generated into the test
   #176 gave it rather than a `NullPointerException`. A nested one is handled — it takes the
   capitalized field name. This is
   [awslabs/aws-glue-schema-registry#289](https://github.com/awslabs/aws-glue-schema-registry/issues/289).
+- **The cross-client wire-compatibility integration test resolves its endpoint like every other
+  one in the module.**
+  [awslabs/aws-glue-schema-registry#537](https://github.com/awslabs/aws-glue-schema-registry/pull/537)
+  ships `CrossClientWireCompatIntegrationTest`, which proves that injecting an
+  `SdkHttpClient.Builder` leaves the serialized bytes untouched. Upstream's version pins
+  `us-east-2` and the public Glue endpoint, so it only ever runs against a real account; the port
+  reads `GlueSchemaRegistryConnectionProperties` instead, the way the Kafka and Kinesis classes
+  already do, so the nightly reaches it through `GLUE_ENDPOINT` and the moto container. Its
+  `@AfterAll` also names an HTTP client on the teardown `GlueClient`: the test scope of this module
+  now carries `apache-client` alongside `url-connection-client`, and an AWS SDK client built
+  without one refuses to choose between two implementations on the classpath — the very failure
+  the change exists to fix. The assertions are upstream's, unchanged.

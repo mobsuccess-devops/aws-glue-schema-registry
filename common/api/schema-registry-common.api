@@ -201,6 +201,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun getCompressionType ()Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;
 	public final fun getDescription ()Ljava/lang/String;
 	public final fun getEndPoint ()Ljava/lang/String;
+	public final fun getHttpClientBuilder ()Lsoftware/amazon/awssdk/http/SdkHttpClient$Builder;
 	public final fun getJacksonDeserializationFeatureToggles ()Ljava/util/Map;
 	public final fun getJacksonDeserializationFeatures ()Ljava/util/List;
 	public final fun getJacksonSerializationFeatureToggles ()Ljava/util/Map;
@@ -230,6 +231,7 @@ public final class com/amazonaws/services/schemaregistry/common/configs/GlueSche
 	public final fun setCompressionType (Lcom/amazonaws/services/schemaregistry/utils/AWSSchemaRegistryConstants$COMPRESSION;)V
 	public final fun setDescription (Ljava/lang/String;)V
 	public final fun setEndPoint (Ljava/lang/String;)V
+	public final fun setHttpClientBuilder (Lsoftware/amazon/awssdk/http/SdkHttpClient$Builder;)V
 	public final fun setJacksonDeserializationFeatureToggles (Ljava/util/Map;)V
 	public final fun setJacksonDeserializationFeatures (Ljava/util/List;)V
 	public final fun setJacksonSerializationFeatureToggles (Ljava/util/Map;)V

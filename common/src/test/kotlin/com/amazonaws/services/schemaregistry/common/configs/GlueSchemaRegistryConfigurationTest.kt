@@ -38,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import software.amazon.awssdk.http.apache.ApacheHttpClient
 import software.amazon.awssdk.services.glue.model.Compatibility
 import java.math.BigDecimal
 import java.net.URI
@@ -1157,6 +1158,30 @@ class GlueSchemaRegistryConfigurationTest {
         assertEquals(withFactory, GlueSchemaRegistryConfiguration(HashMap(configs)))
         assertTrue(withFactory.toString().contains(SortingObjectMapperFactory::class.java.name))
         assertTrue(withFactory.toString().contains(JavaTimeModule::class.java.name))
+    }
+
+    @Test
+    fun testEquals_configurationsDifferingByTheHttpClientBuilder_areNotEqual() {
+        val builder = ApacheHttpClient.builder()
+
+        val plain = GlueSchemaRegistryConfiguration(HashMap(configs))
+
+        val withBuilder = GlueSchemaRegistryConfiguration(HashMap(configs))
+        withBuilder.httpClientBuilder = builder
+
+        val withTheSameBuilder = GlueSchemaRegistryConfiguration(HashMap(configs))
+        withTheSameBuilder.httpClientBuilder = builder
+
+        val withAnotherBuilder = GlueSchemaRegistryConfiguration(HashMap(configs))
+        withAnotherBuilder.httpClientBuilder = ApacheHttpClient.builder()
+
+        assertNotEquals(plain, withBuilder)
+        assertNotEquals(withBuilder, withAnotherBuilder)
+        assertNotEquals(plain.hashCode(), withBuilder.hashCode())
+        assertEquals(withBuilder, withTheSameBuilder)
+        assertEquals(withBuilder.hashCode(), withTheSameBuilder.hashCode())
+        assertTrue(withBuilder.toString().contains("httpClientBuilder=$builder"))
+        assertTrue(plain.toString().contains("httpClientBuilder=null"))
     }
 
     class SortingObjectMapperFactory : ObjectMapperFactory {

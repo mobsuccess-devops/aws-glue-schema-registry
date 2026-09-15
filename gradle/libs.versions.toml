@@ -66,6 +66,7 @@ aws-auth = { module = "software.amazon.awssdk:auth" }
 aws-kinesis = { module = "software.amazon.awssdk:kinesis" }
 aws-jsonProtocol = { module = "software.amazon.awssdk:aws-json-protocol" }
 aws-urlConnectionClient = { module = "software.amazon.awssdk:url-connection-client" }
+aws-apacheClient = { module = "software.amazon.awssdk:apache-client" }
 aws-mskIamAuth = { module = "software.amazon.msk:aws-msk-iam-auth", version.ref = "mskIamAuth" }
 kinesis-client = { module = "software.amazon.kinesis:amazon-kinesis-client", version.ref = "kinesisClient" }
 kinesis-producer = { module = "software.amazon.kinesis:amazon-kinesis-producer", version.ref = "kinesisProducer" }
