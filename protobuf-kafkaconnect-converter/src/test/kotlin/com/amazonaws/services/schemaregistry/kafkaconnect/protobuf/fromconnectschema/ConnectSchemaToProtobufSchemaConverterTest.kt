@@ -15,6 +15,7 @@
 
 package com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectschema
 
+import additionalTypes.Decimals
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToProtobufTestDataGenerator.getAllTypesSchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToProtobufTestDataGenerator.getArraySchema
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.ToProtobufTestDataGenerator.getDecimalSchema
@@ -31,11 +32,14 @@ import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.fromconnectsc
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.nullOf
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.toconnectdata.ProtobufDataToConnectDataConverter
 import com.amazonaws.services.schemaregistry.kafkaconnect.protobuf.toconnectschema.ProtobufSchemaToConnectSchemaConverter
+import metadata.ProtobufSchemaMetadata
+import org.apache.kafka.connect.data.Decimal
 import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaBuilder
 import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.errors.DataException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -86,6 +90,18 @@ class ConnectSchemaToProtobufSchemaConverterTest {
     }
 
     @Test
+    fun fromConnectSchema_onUnnamedTopLevelStruct_ThrowsException() {
+        val unnamedSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .field("innerField", Schema.STRING_SCHEMA)
+                .build()
+
+        assertThrows(NullPointerException::class.java) {
+            CONNECT_SCHEMA_TO_PROTOBUF_SCHEMA_CONVERTER.convert(unnamedSchema)
+        }
+    }
+
+    @Test
     fun fromConnectSchema_structWithNullParametersAndName_doesNotThrowNPE() {
         val nestedStruct =
             SchemaBuilder(Schema.Type.STRUCT)
@@ -103,6 +119,21 @@ class ConnectSchemaToProtobufSchemaConverterTest {
         val parentMessage = protobufSchema.messageTypes[0]
         assertEquals("NestedField", parentMessage.nestedTypes[0].name)
         assertEquals(parentMessage.nestedTypes[0], parentMessage.findFieldByName("nestedField").messageType)
+    }
+
+    @Test
+    fun fromConnectSchema_decimalFieldWithNullParameters_doesNotThrowNPE() {
+        val parentSchema =
+            SchemaBuilder(Schema.Type.STRUCT)
+                .name("DecimalWithoutParameters")
+                .field("amount", SchemaBuilder.bytes().name(Decimal.LOGICAL_NAME).build())
+                .build()
+
+        val protobufSchema = CONNECT_SCHEMA_TO_PROTOBUF_SCHEMA_CONVERTER.convert(parentSchema)
+
+        val amountField = protobufSchema.messageTypes[0].findFieldByName("amount")
+        assertEquals(Decimals.getDescriptor().messageTypes[0].fullName, amountField.messageType.fullName)
+        assertFalse(amountField.options.hasExtension(ProtobufSchemaMetadata.metadataKey))
     }
 
     @Test

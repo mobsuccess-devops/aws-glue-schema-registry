@@ -141,6 +141,32 @@ class ProtobufDataToConnectDataConverterTest {
     }
 
     @ParameterizedTest
+    @MethodSource("getStructTestCases")
+    fun toConnectData_forStructFieldWithoutSchemaParameters_convertsSuccessfully(nestedMessage: Message) {
+        val addressSchema =
+            SchemaBuilder
+                .struct()
+                .name("Address")
+                .field("street", Schema.STRING_SCHEMA)
+                .field("zipcode", Schema.INT32_SCHEMA)
+                .build()
+        val connectSchema =
+            SchemaBuilder
+                .struct()
+                .name("NestedType")
+                .field("address", addressSchema)
+                .build()
+
+        val actualData =
+            PROTOBUF_DATA_TO_CONNECT_DATA_CONVERTER.toConnectData(nestedMessage, connectSchema) as Struct
+
+        val expectedData =
+            Struct(connectSchema)
+                .put("address", Struct(addressSchema).put("street", "8th").put("zipcode", 98121))
+        assertEquals(expectedData, actualData)
+    }
+
+    @ParameterizedTest
     @MethodSource("getOneofTestCases")
     fun toConnectData_convertsProtobufMessageToConnect_forOneofType(oneofMessage: Message) {
         val packageName = oneofMessage.descriptorForType.file.`package`
