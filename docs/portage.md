@@ -770,7 +770,7 @@ The only Java left in the repository is the Avro classes generated into the test
   integration stack has meanwhile been written down twice — once in
   `.github/workflows/integration.yml`, once as `docker run` lines in
   [build.md](build.md#running-the-suite-locally) — and the compose file matched neither. It is
-  now the workflow's three services and nothing else: `apache/kafka:3.9.1` in KRaft mode (so
+  now the workflow's three services and nothing else: `apache/kafka:3.9.2` in KRaft mode (so
   no ZooKeeper at all), `localstack/localstack:3.8` with `sts` in `SERVICES`, and
   `motoserver/moto:5.2.2` for the Glue calls, with the same health checks. The obsolete
   `version:` key and the `links:` block go with them — Compose v2 ignores the first and
@@ -778,7 +778,12 @@ The only Java left in the repository is the Avro classes generated into the test
   [awslabs/aws-glue-schema-registry#534](https://github.com/awslabs/aws-glue-schema-registry/pull/534)
   by [@subramp](https://github.com/subramp), which fixes the same broken images by moving to
   the Confluent ZooKeeper and Kafka images; the fork follows its own CI instead, so that a
-  local failure and a nightly failure mean the same thing.
+  local failure and a nightly failure mean the same thing. Upstream has since arrived at the
+  same shape in
+  [awslabs/aws-glue-schema-registry#537](https://github.com/awslabs/aws-glue-schema-registry/pull/537)
+  — one KRaft `apache/kafka` service, no ZooKeeper — pinned there to `3.8.0`. The fork pins
+  the tag to the `kafka` version of the catalogue instead, so the broker under test and the
+  client under test are the same release.
 - **The ZooKeeper plumbing in the Kafka test helpers is gone.** `KafkaHelper` took a
   `zookeeperConnect` constructor argument that it stored and never read, fed by
   `KafkaClusterHelper.getZookeeperConnectString()`, whose one implementation returned the
