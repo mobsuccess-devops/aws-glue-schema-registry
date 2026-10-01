@@ -38,7 +38,7 @@ verbatim, so `git diff eed1506` shows every change.
 | Distribution | Maven Central                           | Maven Central (snapshots on GH)         |
 | Group        | `software.amazon.glue`                  | `com.mobsuccess`                        |
 | JVM target   | 8                                       | 17                                      |
-| Dependencies | Avro 1.11.4, protobuf 3, Jackson 2.12.2 | Avro 1.12.1, protobuf 4, Jackson 2.22.2 |
+| Dependencies | Avro 1.11.4, protobuf 3, Jackson 2.12.2 | Avro 1.12.1, protobuf 4, Jackson 2.22.3 |
 
 What the fork adds on top of the port:
 
