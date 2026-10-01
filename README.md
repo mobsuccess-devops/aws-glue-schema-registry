@@ -33,7 +33,7 @@ verbatim, so `git diff eed1506` shows every change.
 
 |              | Upstream                                | This fork                               |
 | ------------ | --------------------------------------- | --------------------------------------- |
-| Build        | Maven                                   | Gradle 9.7.0, Kotlin DSL                |
+| Build        | Maven                                   | Gradle 9.7.1, Kotlin DSL                |
 | Languages    | Java + C#                               | Kotlin, tests included                  |
 | Distribution | Maven Central                           | Maven Central (snapshots on GH)         |
 | Group        | `software.amazon.glue`                  | `com.mobsuccess`                        |
