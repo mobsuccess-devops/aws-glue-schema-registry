@@ -23,6 +23,9 @@ updates:
           - ">= 1.12.2"
       - dependency-name: "com.google.protobuf:protoc"
       - dependency-name: "com.google.api.grpc:proto-google-common-protos"
+      - dependency-name: "io.apicurio:*"
+        versions:
+          - ">= 3.3.2"
     groups:
       kotlin:
         patterns:
