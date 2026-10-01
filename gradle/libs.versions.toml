@@ -4,8 +4,8 @@
 # reason to move them — a security fix, most often — and `git diff eed1506` still shows
 # every such deviation.
 [versions]
-awsSdkV2 = "2.53.3"
-mskIamAuth = "2.3.7"
+awsSdkV2 = "2.54.20"
+mskIamAuth = "2.3.8"
 kafka = "3.9.2"
 avro = "1.12.1"
 flink = "1.20.5"
@@ -35,8 +35,8 @@ mockito = "5.23.0"
 mockitoKotlin = "6.3.0"
 hamcrest = "3.0"
 awaitility = "4.3.0"
-kinesisClient = "3.5.1"
-kinesisProducer = "1.0.7"
+kinesisClient = "3.5.2"
+kinesisProducer = "1.0.9"
 localstackUtils = "0.2.23"
 okio = "3.18.2"
 okioFakeFs = "3.18.2"
