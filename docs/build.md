@@ -1,6 +1,6 @@
 # Build
 
-- Gradle 9.7.0, Kotlin DSL, **JVM 17** toolchain (consumable by Kafka Connect and Flink).
+- Gradle 9.7.1, Kotlin DSL, **JVM 17** toolchain (consumable by Kafka Connect and Flink).
   Every CI job installs 17 and 21 — 21 runs Gradle itself, 17 is the compilation toolchain.
   `test-jdk` installs 25 on top, and runs the suite on 21 and 25; the order that list is
   written in matters, see [ci.md](ci.md).
@@ -250,6 +250,9 @@ com/google/protobuf/GeneratedFile`. Otherwise the floor moves up only when no co
   floor is a promise made to consumers, so it moves by decision, never by a dependency bump.
   Both carry gencode, so both are held by hand — `proto-google-common-protos` 2.74.0 is
   generated with 4.33.6 and takes the whole protobuf converter down under `-PprotobufFloor`.
+  apicurio is held at 3.3.1 for the same reason: 3.3.2 moves its `proto-google-common-protos`
+  to 2.75.0, which wins conflict resolution over our own declaration, and its two releases
+  since change nothing in `apicurio-registry-protobuf-schema-utilities`.
 - **`serializer-deserializer` builds a `tests` jar, and does not publish it.**
   `integration-tests` consumes it through the `testArtifacts` configuration, which is a
   project dependency and needs no publication. See [portage.md](portage.md).
