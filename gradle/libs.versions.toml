@@ -13,7 +13,7 @@ protobufGencode = "4.33.2"
 protobufRuntime = "4.36.1"
 apicurio = "3.3.1"
 wire = "7.0.3"
-kotlinRuntime = "2.4.10"       # Kotlin deps pulled in by mbknor/wire, distinct from the compiler version
+kotlinRuntime = "2.4.20"       # Kotlin deps pulled in by mbknor/wire, distinct from the compiler version
 mbknorJsonSchema = "1.0.39"
 scalaLibrary = "2.13.18"
 everitJsonSchema = "1.14.6"
@@ -47,7 +47,7 @@ podam = "8.0.2.RELEASE"
 jaxbApi = "2.3.1"
 
 # Plugins
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 protobufPlugin = "0.10.0"
 avroPlugin = "1.9.1"
 licenseReport = "2.9"
